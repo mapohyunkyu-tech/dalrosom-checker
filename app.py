@@ -1,5 +1,8 @@
+import os
 import re
 import html
+import json
+import requests
 from collections import Counter
 from urllib.parse import urlparse
 
@@ -8,7 +11,7 @@ import streamlit as st
 
 
 st.set_page_config(
-    page_title="달로썸 테스트 원고 검수기",
+    page_title="달로썸 원고 검수기 v2",
     page_icon="📝",
     layout="wide",
 )
@@ -33,6 +36,7 @@ FIELDS = [
 ]
 
 SOURCE_TYPES = [
+    "자동분류",
     "공식기관/법령/학회/장비 공식자료",
     "의사/변호사 직접 콘텐츠",
     "병원/법무법인 공식 홈페이지·블로그",
@@ -101,7 +105,13 @@ TITLE_TYPES = {
 OFFICIAL_DOMAINS = [
     "law.go.kr", "scourt.go.kr", "moj.go.kr", "moleg.go.kr",
     "mohw.go.kr", "kca.go.kr", "korea.kr", "nhis.or.kr",
-    "koreanbar.or.kr", "cdc.go.kr", "kdca.go.kr", "gov.kr"
+    "koreanbar.or.kr", "kdca.go.kr", "gov.kr", "hira.or.kr",
+    "kuksiwon.or.kr", "kda.or.kr", "kams.or.kr"
+]
+
+LOW_TRUST_DOMAINS = [
+    "cafe.naver.com", "kin.naver.com", "blog.naver.com",
+    "tistory.com", "brunch.co.kr"
 ]
 
 
@@ -176,9 +186,114 @@ def get_domain(url: str) -> str:
         return ""
 
 
+def get_secret(name: str):
+    try:
+        if name in st.secrets:
+            return st.secrets[name]
+    except Exception:
+        pass
+    return os.getenv(name, "")
+
+
 # =============================
-# 자료수집 / 등급 판정
+# 자동 검색 / 출처 등급
 # =============================
+
+def build_search_queries(keyword, topic, field, purpose):
+    base = " ".join([x for x in [keyword, topic] if x]).strip()
+    if not base:
+        base = keyword or topic or ""
+
+    queries = []
+
+    if field == "법률":
+        queries = [
+            f"{base} 법제처 생활법령",
+            f"{base} 법원 지급명령 소액사건 가압류",
+            f"{base} 변호사 칼럼",
+        ]
+    elif field in ["병원 / 의료", "에스테틱 / 피부관리"]:
+        queries = [
+            f"{base} 피부과 전문의 설명",
+            f"{base} 공식 자료 관리 방법",
+            f"{base} 주의사항 부작용",
+        ]
+    else:
+        queries = [
+            f"{base} 공식 자료",
+            f"{base} 전문가 설명",
+            f"{base} 주의사항",
+        ]
+
+    # 중복 제거
+    seen = set()
+    unique = []
+    for q in queries:
+        if q and q not in seen:
+            unique.append(q)
+            seen.add(q)
+    return unique
+
+
+def tavily_search(query, max_results=5):
+    api_key = get_secret("TAVILY_API_KEY")
+    if not api_key:
+        raise RuntimeError("TAVILY_API_KEY가 설정되지 않았습니다.")
+
+    url = "https://api.tavily.com/search"
+    payload = {
+        "query": query,
+        "search_depth": "basic",
+        "include_answer": False,
+        "include_raw_content": False,
+        "max_results": max_results,
+    }
+
+    # 최신 Tavily 방식: Authorization Bearer 헤더
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
+
+    # 일부 구버전 계정/환경 호환: body에 api_key 포함 재시도
+    if response.status_code in [401, 403]:
+        payload_with_key = dict(payload)
+        payload_with_key["api_key"] = api_key
+        response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload_with_key, timeout=30)
+
+    response.raise_for_status()
+    data = response.json()
+    return data.get("results", [])
+
+
+def infer_source_type(title, url, content, field):
+    domain = get_domain(url)
+    text = f"{title} {url} {content}"
+
+    if any(d in domain for d in OFFICIAL_DOMAINS):
+        return "공식기관/법령/학회/장비 공식자료"
+
+    if any(d in domain for d in LOW_TRUST_DOMAINS):
+        if "후기" in text or "리뷰" in text:
+            return "일반 블로그/카페/후기"
+        return "일반 블로그/카페/후기"
+
+    expert_words = ["의사", "전문의", "원장", "변호사", "변호사법", "대한변호사협회", "칼럼"]
+    if any(word in text for word in expert_words):
+        return "의사/변호사 직접 콘텐츠"
+
+    official_blog_words = ["병원", "의원", "클리닉", "법무법인", "법률사무소"]
+    if any(word in text for word in official_blog_words):
+        return "병원/법무법인 공식 홈페이지·블로그"
+
+    risky_words = ["후기", "경험담", "리뷰", "협찬", "광고"]
+    if any(word in text for word in risky_words):
+        return "일반 블로그/카페/후기"
+
+    return "일반 블로그/카페/후기"
+
 
 def grade_source(title: str, url: str, source_type: str, field: str, memo: str):
     domain = get_domain(url)
@@ -192,10 +307,10 @@ def grade_source(title: str, url: str, source_type: str, field: str, memo: str):
         warning = "공식기관/법령 계열 자료로 핵심 근거로 활용하기 좋습니다."
     elif source_type == "공식기관/법령/학회/장비 공식자료":
         grade = "A"
-        warning = "공식성 높은 자료입니다. 단, 최신 여부는 직접 확인하세요."
+        warning = "공식성 높은 자료입니다. 단, 최신 여부는 링크에서 직접 확인하세요."
     elif source_type == "의사/변호사 직접 콘텐츠":
         grade = "A-"
-        warning = "전문가 직접 콘텐츠입니다. 표현을 그대로 베끼지 말고 핵심만 요약해 활용하세요."
+        warning = "전문가 직접 콘텐츠입니다. 표현은 그대로 베끼지 말고 핵심만 요약해 활용하세요."
     elif source_type == "병원/법무법인 공식 홈페이지·블로그":
         grade = "B"
         warning = "광고주/동종업계 자료일 수 있습니다. 강점 참고용으로 활용하고 과장표현은 정제하세요."
@@ -206,15 +321,33 @@ def grade_source(title: str, url: str, source_type: str, field: str, memo: str):
         grade = "제외"
         warning = "출처 신뢰도가 낮거나 광고성/후기성 위험이 있어 원고 근거로 쓰지 않는 편이 좋습니다."
 
-    risky_words = ["후기", "경험담", "완치", "100%", "무조건", "최고", "1위", "유일"]
+    risky_words = ["후기", "경험담", "완치", "100%", "무조건", "최고", "1위", "유일", "보장"]
     if any(word in text for word in risky_words):
         if grade not in ["제외"]:
-            warning += " / 위험 표현 또는 후기성 단어가 감지되었습니다."
+            warning += " / 위험 표현 또는 후기성 단어가 감지되었습니다. 링크를 열어 직접 리체크하세요."
         if source_type in ["일반 블로그/카페/후기", "광고/출처불명/후기성 자료"]:
             grade = "제외"
             warning = "후기성/과장 가능성이 높아 실제 원고 근거로 쓰지 않는 편이 좋습니다."
 
     return grade, warning
+
+
+def result_to_source(result, field):
+    title = result.get("title", "")
+    url = result.get("url", "")
+    content = result.get("content", "") or result.get("snippet", "") or ""
+    source_type = infer_source_type(title, url, content, field)
+    grade, warning = grade_source(title, url, source_type, field, content)
+    return {
+        "사용": grade in ["A", "A-", "B"],
+        "등급": grade,
+        "자료명": title,
+        "URL": url,
+        "출처유형": source_type,
+        "핵심내용": content[:500],
+        "주의사항": warning,
+        "리체크": "링크 열어 최신성/후기성/과장표현 확인",
+    }
 
 
 def init_sources():
@@ -223,15 +356,18 @@ def init_sources():
 
 
 def add_source_row(title, url, source_type, memo, field):
+    if source_type == "자동분류":
+        source_type = infer_source_type(title, url, memo, field)
     grade, warning = grade_source(title, url, source_type, field, memo)
     st.session_state.sources.append({
-        "사용": grade != "제외",
+        "사용": grade in ["A", "A-", "B"],
+        "등급": grade,
         "자료명": title,
         "URL": url,
         "출처유형": source_type,
         "핵심내용": memo,
-        "등급": grade,
         "주의사항": warning,
+        "리체크": "링크 열어 최신성/후기성/과장표현 확인",
     })
 
 
@@ -254,6 +390,7 @@ def make_gpts_materials(df: pd.DataFrame):
     lines.append("- 위 자료를 참고하되, 표현은 그대로 베끼지 말고 자연스러운 블로그 원고로 재구성한다.")
     lines.append("- 의료/법률/광고 위험표현은 피한다.")
     lines.append("- 독자의 고민을 먼저 짚고, 정보는 쉽게 풀어쓴다.")
+    lines.append("- 테스트 원고라면 실제 병원명/법무법인명/원장명/변호사명을 임의로 만들지 않는다.")
     return "\n".join(lines)
 
 
@@ -547,8 +684,8 @@ def recommend_intro_type(field):
 
 init_sources()
 
-st.title("📝 달로썸 테스트 원고 검수기 v1.5")
-st.caption("자료수집/출처등급 → GPTs 핵심자료 정리 → 초안 붙여넣기 → 원고 검수 순서로 진행합니다.")
+st.title("📝 달로썸 원고 검수기 v2")
+st.caption("자동 자료수집/출처등급 → 링크 리체크 → GPTs 핵심자료 → 초안 검수 순서로 진행합니다.")
 
 with st.sidebar:
     st.header("기본 설정")
@@ -561,18 +698,77 @@ with st.sidebar:
     target = st.text_input("타깃 독자", placeholder="예: 유분과 속건조가 동시에 고민인 20~40대 여성")
     tone = st.text_input("원고 톤", placeholder="예: 에스테틱 원장이 설명하는 친절한 전문 톤")
 
-tab1, tab2, tab3 = st.tabs(["① 자료수집 / 출처등급", "② GPTs 핵심자료", "③ 초안 검수"])
+    st.divider()
+    api_key_status = "설정됨" if get_secret("TAVILY_API_KEY") else "없음"
+    st.caption(f"Tavily API 키: {api_key_status}")
+
+tab1, tab2, tab3 = st.tabs(["① 자동 자료수집 / 출처등급", "② GPTs 핵심자료", "③ 초안 검수"])
 
 with tab1:
-    st.subheader("1. 자료수집 / 출처등급")
-    st.caption("자동 검색 API 없는 v1.5입니다. 직접 찾은 자료의 URL과 핵심내용을 넣으면 등급을 매깁니다.")
+    st.subheader("1. 자동 자료수집 / 출처등급")
+    st.caption("키워드와 주제를 기준으로 자료를 긁어오고, A/B/C/제외 등급을 매깁니다. 이후 링크를 직접 열어 리체크하세요.")
 
+    api_key = get_secret("TAVILY_API_KEY")
+    if not api_key:
+        st.error("TAVILY_API_KEY가 없습니다. Streamlit Cloud의 App settings → Secrets에 API 키를 넣어야 자동 자료수집이 됩니다.")
+        st.code('TAVILY_API_KEY = "tvly-본인키"', language="toml")
+
+    search_queries = build_search_queries(keyword, topic, field, purpose)
+    query_text = st.text_area(
+        "검색 쿼리",
+        value="\n".join(search_queries),
+        height=120,
+        help="한 줄에 하나씩 검색합니다. 필요하면 직접 수정하세요."
+    )
+
+    col_search1, col_search2, col_search3 = st.columns([1, 1, 2])
+    with col_search1:
+        max_results = st.number_input("쿼리당 결과 수", min_value=1, max_value=10, value=4, step=1)
+    with col_search2:
+        run_search = st.button("자동 자료수집 실행", type="primary")
+    with col_search3:
+        st.caption("검색 결과는 자동 등급화되지만, 최종 사용 여부는 반드시 링크를 열어 확인하세요.")
+
+    if run_search:
+        if not api_key:
+            st.stop()
+
+        queries = [q.strip() for q in query_text.splitlines() if q.strip()]
+        if not queries:
+            st.warning("검색 쿼리를 입력하세요.")
+            st.stop()
+
+        found = []
+        seen_urls = set()
+
+        with st.spinner("자료를 검색하고 등급을 매기는 중입니다..."):
+            for q in queries:
+                try:
+                    results = tavily_search(q, max_results=max_results)
+                    for result in results:
+                        url = result.get("url", "")
+                        if not url or url in seen_urls:
+                            continue
+                        seen_urls.add(url)
+                        row = result_to_source(result, field)
+                        found.append(row)
+                except Exception as e:
+                    st.error(f"검색 실패: {q} / {e}")
+
+        if found:
+            st.session_state.sources = found + st.session_state.sources
+            st.success(f"{len(found)}개 자료를 수집했습니다.")
+        else:
+            st.warning("검색 결과가 없습니다. 쿼리를 바꿔보세요.")
+
+    st.divider()
+    st.write("### 수동 자료 추가")
     with st.form("source_form", clear_on_submit=True):
-        source_title = st.text_input("자료명", placeholder="예: 법제처 대여금 관련 생활법령정보 / 에스테틱 공식 칼럼")
+        source_title = st.text_input("자료명", placeholder="예: 법제처 대여금 관련 생활법령정보 / 피부과 전문의 칼럼")
         source_url = st.text_input("URL", placeholder="https://...")
         source_type = st.selectbox("출처 유형", SOURCE_TYPES)
         source_memo = st.text_area("핵심내용", height=120, placeholder="이 자료에서 원고에 쓸 핵심 내용만 요약")
-        submitted = st.form_submit_button("자료 추가")
+        submitted = st.form_submit_button("수동 자료 추가")
 
         if submitted:
             if not source_title and not source_memo:
@@ -581,31 +777,39 @@ with tab1:
                 add_source_row(source_title, source_url, source_type, source_memo, field)
                 st.success("자료가 추가되었습니다.")
 
+    st.divider()
+
     if st.session_state.sources:
         st.write("### 수집 자료표")
         df = pd.DataFrame(st.session_state.sources)
+
         edited_df = st.data_editor(
             df,
             use_container_width=True,
             num_rows="dynamic",
             column_config={
                 "사용": st.column_config.CheckboxColumn("사용", default=True),
+                "URL": st.column_config.LinkColumn("URL"),
                 "핵심내용": st.column_config.TextColumn("핵심내용", width="large"),
                 "주의사항": st.column_config.TextColumn("주의사항", width="large"),
+                "리체크": st.column_config.TextColumn("리체크", width="medium"),
             },
             key="source_editor",
         )
         st.session_state.sources = edited_df.to_dict("records")
 
-        col_a, col_b = st.columns(2)
+        col_a, col_b, col_c = st.columns(3)
         with col_a:
             if st.button("전체 자료 삭제"):
                 st.session_state.sources = []
                 st.rerun()
         with col_b:
-            st.info("사용할 자료만 체크한 뒤 ② GPTs 핵심자료 탭으로 이동하세요.")
+            used_count = int(pd.DataFrame(st.session_state.sources)["사용"].sum())
+            st.metric("사용 체크", f"{used_count}개")
+        with col_c:
+            st.info("A/A-/B 위주로 사용하고, C/제외는 보조 참고만 하세요.")
     else:
-        st.info("아직 추가된 자료가 없습니다. 자료를 2~5개 정도 넣고 시작하세요.")
+        st.info("아직 수집된 자료가 없습니다. 자동 자료수집을 실행하거나 수동으로 자료를 추가하세요.")
 
 with tab2:
     st.subheader("2. GPTs에 넣을 핵심자료")
@@ -614,10 +818,10 @@ with tab2:
     if st.session_state.sources:
         df = pd.DataFrame(st.session_state.sources)
         materials = make_gpts_materials(df)
-        st.text_area("복사해서 GPTs에 넣을 자료", value=materials, height=420)
+        st.text_area("복사해서 GPTs에 넣을 자료", value=materials, height=480)
         st.info("이 자료를 달로썸 GPTs에 넣어 초안을 받은 뒤, ③ 초안 검수 탭에 붙여넣으면 됩니다.")
     else:
-        st.warning("먼저 ① 자료수집 탭에서 자료를 추가하세요.")
+        st.warning("먼저 ① 자동 자료수집 탭에서 자료를 수집하세요.")
 
 with tab3:
     st.subheader("3. GPTs 초안 붙여넣기 / 최종 검수")

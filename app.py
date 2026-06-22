@@ -114,6 +114,29 @@ LOW_TRUST_DOMAINS = [
     "tistory.com", "brunch.co.kr"
 ]
 
+FIELD_RELEVANCE_KEYWORDS = {
+    "에스테틱 / 피부관리": [
+        "복합성", "복합성 피부", "T존", "U존", "티존", "유존",
+        "유수분", "피지", "속건조", "건조", "번들", "번들거림",
+        "수분", "유분", "피부타입", "피부 타입", "각질", "피부 장벽"
+    ],
+    "병원 / 의료": [
+        "증상", "진단", "치료", "검사", "부작용", "주의사항", "회복", "통증"
+    ],
+    "법률": [
+        "소송", "증거", "내용증명", "지급명령", "가압류", "소멸시효",
+        "민사", "형사", "변호사", "법원", "판결"
+    ],
+    "기타 전문업종": [],
+}
+
+OFF_TOPIC_DOWNGRADE_WORDS = {
+    "에스테틱 / 피부관리": [
+        "콜라겐 부스터", "진피", "물리적으로", "피부 구멍",
+        "모공 복구", "레이저", "필러", "보톡스"
+    ]
+}
+
 
 # =============================
 # 유틸 함수
@@ -204,31 +227,59 @@ def build_search_queries(keyword, topic, field, purpose):
     if not base:
         base = keyword or topic or ""
 
-    queries = []
-
     if field == "법률":
         queries = [
-            f"{base} 법제처 생활법령",
-            f"{base} 법원 지급명령 소액사건 가압류",
-            f"{base} 변호사 칼럼",
+            f'"{keyword}" 법제처 생활법령',
+            f'"{keyword}" 법원',
+            f'"{keyword}" 변호사 칼럼',
+            f'{base} 증거 절차 주의사항',
         ]
-    elif field in ["병원 / 의료", "에스테틱 / 피부관리"]:
+    elif field == "에스테틱 / 피부관리":
+        # 복합성 주제는 자외선/턴오버 자료가 과하게 섞이지 않도록 직접 관련어 중심으로 검색
+        if "복합성" in base:
+            queries = [
+                '"복합성 피부" "T존" "U존"',
+                '"복합성 피부" "유수분" "피지"',
+                '"복합성 피부" "속건조" "번들"',
+                '"복합성 피부" 피부과 전문의',
+                '"복합성 피부관리" 원장 칼럼',
+            ]
+        elif "턴오버" in base:
+            queries = [
+                '"피부 턴오버 주기" 피부과 전문의',
+                '"피부 재생 주기" 피부과 전문의',
+                '"피부 턴오버" 각질 관리',
+            ]
+        elif "여름철" in base:
+            queries = [
+                '"여름철 피부 관리" 자외선 차단제 공식',
+                '"자외선 차단제" "2~3시간" 공식',
+                '"여름 피부관리" 피부과 전문의',
+            ]
+        else:
+            queries = [
+                f'"{keyword}" 피부과 전문의',
+                f'"{keyword}" 원장 칼럼',
+                f'"{keyword}" 관리 방법',
+                f'{base} 주의사항',
+            ]
+    elif field == "병원 / 의료":
         queries = [
-            f"{base} 피부과 전문의 설명",
-            f"{base} 공식 자료 관리 방법",
-            f"{base} 주의사항 부작용",
+            f'"{keyword}" 전문의 설명',
+            f'"{keyword}" 공식 자료',
+            f'"{keyword}" 주의사항 부작용',
         ]
     else:
         queries = [
-            f"{base} 공식 자료",
-            f"{base} 전문가 설명",
-            f"{base} 주의사항",
+            f'"{keyword}" 공식 자료',
+            f'"{keyword}" 전문가 설명',
+            f'{base} 주의사항',
         ]
 
-    # 중복 제거
     seen = set()
     unique = []
     for q in queries:
+        q = q.strip()
         if q and q not in seen:
             unique.append(q)
             seen.add(q)
@@ -332,21 +383,87 @@ def grade_source(title: str, url: str, source_type: str, field: str, memo: str):
     return grade, warning
 
 
-def result_to_source(result, field):
+def relevance_score(title, url, content, field, keyword, topic):
+    text = f"{title} {url} {content}".lower()
+    keyword_text = f"{keyword} {topic}".lower()
+
+    score = 0
+    reasons = []
+
+    # 핵심 키워드 직접 포함
+    if keyword and keyword.lower() in text:
+        score += 4
+        reasons.append("키워드 직접 포함")
+
+    # 주제어 일부 포함
+    for token in re.findall(r"[가-힣A-Za-z0-9]{2,}", keyword_text):
+        if token and token in text:
+            score += 1
+
+    # 분야별 관련어 포함
+    for word in FIELD_RELEVANCE_KEYWORDS.get(field, []):
+        if word.lower() in text:
+            score += 1
+
+    # 복합성 피부처럼 명확한 주제는 관련도 강제 기준
+    if field == "에스테틱 / 피부관리" and "복합성" in keyword_text:
+        required = ["복합성", "t존", "u존", "티존", "유존", "유수분", "피지", "속건조", "번들", "유분", "수분"]
+        if not any(w in text for w in required):
+            score -= 4
+            reasons.append("복합성 피부 직접 관련어 부족")
+
+    # 주제와 벗어나는 단어 감점
+    for word in OFF_TOPIC_DOWNGRADE_WORDS.get(field, []):
+        if word.lower() in text:
+            score -= 2
+            reasons.append(f"주제 이탈 가능: {word}")
+
+    if score >= 6:
+        label = "높음"
+    elif score >= 3:
+        label = "보통"
+    else:
+        label = "낮음"
+
+    return max(score, 0), label, ", ".join(reasons) if reasons else "직접 확인 필요"
+
+
+def adjust_grade_by_relevance(grade, relevance_label):
+    if relevance_label == "낮음":
+        if grade == "A":
+            return "A-보조"
+        if grade == "A-":
+            return "B-보조"
+        if grade == "B":
+            return "C"
+        return "제외"
+    return grade
+
+
+def result_to_source(result, field, keyword="", topic=""):
     title = result.get("title", "")
     url = result.get("url", "")
     content = result.get("content", "") or result.get("snippet", "") or ""
     source_type = infer_source_type(title, url, content, field)
     grade, warning = grade_source(title, url, source_type, field, content)
+
+    rel_score, rel_label, rel_reason = relevance_score(title, url, content, field, keyword, topic)
+    adjusted_grade = adjust_grade_by_relevance(grade, rel_label)
+
+    if rel_label == "낮음":
+        warning += " / 주제 관련도가 낮아 핵심자료에서 제외하거나 보조자료로만 쓰는 편이 좋습니다."
+
     return {
-        "사용": grade in ["A", "A-", "B"],
-        "등급": grade,
+        "사용": adjusted_grade in ["A", "A-", "B"],
+        "등급": adjusted_grade,
+        "관련도": rel_label,
+        "관련도점수": rel_score,
         "자료명": title,
         "URL": url,
         "출처유형": source_type,
         "핵심내용": content[:500],
         "주의사항": warning,
-        "리체크": "링크 열어 최신성/후기성/과장표현 확인",
+        "리체크": f"링크 열어 확인: {rel_reason}",
     }
 
 
@@ -369,6 +486,19 @@ def add_source_row(title, url, source_type, memo, field):
         "주의사항": warning,
         "리체크": "링크 열어 최신성/후기성/과장표현 확인",
     })
+
+
+def dedupe_sources(rows):
+    seen = set()
+    deduped = []
+    for row in rows:
+        key = row.get("URL") or row.get("자료명")
+        key = str(key).strip().lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
 
 
 def make_gpts_materials(df: pd.DataFrame):
@@ -706,7 +836,7 @@ tab1, tab2, tab3 = st.tabs(["① 자동 자료수집 / 출처등급", "② GPTs 
 
 with tab1:
     st.subheader("1. 자동 자료수집 / 출처등급")
-    st.caption("키워드와 주제를 기준으로 자료를 긁어오고, A/B/C/제외 등급을 매깁니다. 이후 링크를 직접 열어 리체크하세요.")
+    st.caption("키워드와 주제를 기준으로 자료를 긁어오고, 출처등급과 관련도를 함께 표시합니다. A등급이어도 관련도가 낮으면 보조/제외로 내립니다.")
 
     api_key = get_secret("TAVILY_API_KEY")
     if not api_key:
@@ -727,7 +857,7 @@ with tab1:
     with col_search2:
         run_search = st.button("자동 자료수집 실행", type="primary")
     with col_search3:
-        st.caption("검색 결과는 자동 등급화되지만, 최종 사용 여부는 반드시 링크를 열어 확인하세요.")
+        st.caption("출처등급 + 관련도를 함께 보세요. A라도 주제와 멀면 체크 해제하세요.")
 
     if run_search:
         if not api_key:
@@ -750,14 +880,14 @@ with tab1:
                         if not url or url in seen_urls:
                             continue
                         seen_urls.add(url)
-                        row = result_to_source(result, field)
+                        row = result_to_source(result, field, keyword, topic)
                         found.append(row)
                 except Exception as e:
                     st.error(f"검색 실패: {q} / {e}")
 
         if found:
-            st.session_state.sources = found + st.session_state.sources
-            st.success(f"{len(found)}개 자료를 수집했습니다.")
+            st.session_state.sources = dedupe_sources(found + st.session_state.sources)
+            st.success(f"{len(found)}개 자료를 수집했습니다. 중복 URL은 자동 제거했습니다.")
         else:
             st.warning("검색 결과가 없습니다. 쿼리를 바꿔보세요.")
 
@@ -807,7 +937,7 @@ with tab1:
             used_count = int(pd.DataFrame(st.session_state.sources)["사용"].sum())
             st.metric("사용 체크", f"{used_count}개")
         with col_c:
-            st.info("A/A-/B 위주로 사용하고, C/제외는 보조 참고만 하세요.")
+            st.info("관련도 높음/보통인 A/A-/B 위주로 사용하세요. A라도 관련도 낮음이면 보조 또는 제외가 맞습니다.")
     else:
         st.info("아직 수집된 자료가 없습니다. 자동 자료수집을 실행하거나 수동으로 자료를 추가하세요.")
 

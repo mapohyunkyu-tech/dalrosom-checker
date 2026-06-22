@@ -1,28 +1,14 @@
-import os
-import re
-import html
-import json
-import requests
-from collections import Counter
-from urllib.parse import urlparse
 
+import re
 import pandas as pd
 import streamlit as st
 
-
-st.set_page_config(
-    page_title="달로썸 원고 검수기 v2",
-    page_icon="📝",
-    layout="wide",
-)
-
-# =============================
-# 기본 데이터
-# =============================
+st.set_page_config(page_title="달로썸 원고 검수기 v3", layout="wide")
 
 PURPOSES = [
-    "포트폴리오용 샘플 원고",
     "마케팅 회사 테스트 원고",
+    "포트폴리오용 샘플 원고",
+    "실제 에스테틱 광고 원고",
     "실제 병원 광고 원고",
     "실제 법률 광고 원고",
     "일반 정보성 원고",
@@ -35,1051 +21,366 @@ FIELDS = [
     "기타 전문업종",
 ]
 
-SOURCE_TYPES = [
-    "자동분류",
-    "공식기관/법령/학회/장비 공식자료",
-    "의사/변호사 직접 콘텐츠",
-    "병원/법무법인 공식 홈페이지·블로그",
-    "일반 블로그/카페/후기",
-    "광고/출처불명/후기성 자료",
+WRITER_PERSPECTIVES = [
+    "에스테틱 원장",
+    "피부과 원장/전문의",
+    "변호사",
+    "전문업종 대표",
+    "정보성 블로그 작성자",
 ]
 
-AI_SMELL_PATTERNS = {
-    "메타 문장": [
-        "설명합니다", "안내합니다", "마무리합니다", "알아보겠습니다",
-        "정리해보겠습니다", "살펴보겠습니다", "이번 글에서는",
-        "이 글에서는", "오늘은"
+RISK_PHRASES = {
+    "공통": [
+        "100%", "무조건", "반드시 개선", "확실히 개선", "완벽하게", "부작용 없음",
+        "효과 보장", "즉시 효과", "영구적", "완치", "최고", "유일한", "단 하나"
     ],
-    "AI식 반복 표현": [
-        "중요합니다", "필요합니다", "도움이 됩니다", "도움이 될 수 있습니다",
-        "검토할 수 있습니다", "고려할 수 있습니다", "확인하는 것이 좋습니다",
-        "첫걸음", "단순히"
+    "에스테틱 / 피부관리": [
+        "치료", "진단", "처방", "의료진", "병변", "질환 치료", "재생된다",
+        "피부가 완전히 바뀝니다", "무조건 좋아집니다"
     ],
-    "강한 광고 표현": [
-        "100%", "무조건", "반드시", "확실하게", "완벽하게",
-        "최고", "유일", "1위", "즉시", "단기간"
+    "병원 / 의료": [
+        "완치", "부작용 없음", "통증 없음", "흉터 없음", "재발 없음",
+        "무조건 개선", "100% 개선"
+    ],
+    "법률": [
+        "무조건 승소", "반드시 승소", "100% 승소", "확실히 받아냅니다",
+        "무조건 받을 수 있습니다"
     ],
 }
 
-MEDICAL_RISK_PATTERNS = [
-    "완치", "치료됩니다", "치료가 됩니다", "효과 보장", "부작용 없음",
-    "통증 없음", "흉터 없음", "100%", "무조건 좋아집니다",
-    "반드시 좋아집니다", "병변이 사라졌습니다", "재발 없음",
-    "환자 후기", "치료 경험담", "전후사진", "비포애프터",
-    "무조건 개선", "확실한 개선", "즉각 개선"
-]
-
-LEGAL_RISK_PATTERNS = [
-    "승소율", "성공률", "무혐의율", "무조건 승소", "반드시 승소",
-    "무조건 해결", "100% 승소", "패소 시 환불", "환불 보장",
-    "무료상담 쿠폰", "최저가", "대형 로펌보다", "전관",
-    "판사 출신", "검사 출신", "최고의 변호사", "유일한 해결사",
-    "무조건 감형", "반드시 무혐의"
+AI_PATTERNS = [
+    "이 글에서는", "오늘은", "알아보겠습니다", "설명드리겠습니다", "중요합니다",
+    "필요합니다", "도움이 됩니다", "도움이 될 수 있습니다", "확인해야 합니다",
+    "정리해보겠습니다", "살펴보겠습니다", "바로", "핵심은"
 ]
 
 GLOSSARY_TERMS = {
-    "에스테틱 / 피부관리": [
-        "피부 턴오버 주기", "유수분 균형", "피부 장벽", "각질",
-        "피지", "속건조", "복합성 피부"
-    ],
-    "병원 / 의료": [
-        "비급여", "고주파", "초음파", "HIFU", "RF",
-        "콜라겐", "염증", "재생"
-    ],
-    "법률": [
-        "내용증명", "지급명령", "가압류", "소멸시효",
-        "소액사건", "기망행위", "불기소", "무혐의"
-    ],
-    "기타 전문업종": [],
-}
-
-TITLE_TYPES = {
-    "숫자형": r"\d|[0-9]|가지|단계|분|개월|년",
-    "질문형": r"\?|까요|왜|무엇|어떻게|언제",
-    "긴급성형": r"지금|오늘|늦기 전|놓치면|반드시|꼭",
-    "궁금증형": r"이유|비밀|차이|진짜|따로",
-    "반전형": r"오해|예상과 달리|뜻밖|다르다",
-    "상황공감형": r"고민|힘든|걱정|불안|포기|찾고 있다면",
-}
-
-OFFICIAL_DOMAINS = [
-    "law.go.kr", "scourt.go.kr", "moj.go.kr", "moleg.go.kr",
-    "mohw.go.kr", "kca.go.kr", "korea.kr", "nhis.or.kr",
-    "koreanbar.or.kr", "kdca.go.kr", "gov.kr", "hira.or.kr",
-    "kuksiwon.or.kr", "kda.or.kr", "kams.or.kr"
-]
-
-LOW_TRUST_DOMAINS = [
-    "cafe.naver.com", "kin.naver.com", "blog.naver.com",
-    "tistory.com", "brunch.co.kr"
-]
-
-FIELD_RELEVANCE_KEYWORDS = {
-    "에스테틱 / 피부관리": [
-        "복합성", "복합성 피부", "T존", "U존", "티존", "유존",
-        "유수분", "피지", "속건조", "건조", "번들", "번들거림",
-        "수분", "유분", "피부타입", "피부 타입", "각질", "피부 장벽"
-    ],
-    "병원 / 의료": [
-        "증상", "진단", "치료", "검사", "부작용", "주의사항", "회복", "통증"
-    ],
-    "법률": [
-        "소송", "증거", "내용증명", "지급명령", "가압류", "소멸시효",
-        "민사", "형사", "변호사", "법원", "판결"
-    ],
-    "기타 전문업종": [],
-}
-
-OFF_TOPIC_DOWNGRADE_WORDS = {
-    "에스테틱 / 피부관리": [
-        "콜라겐 부스터", "진피", "물리적으로", "피부 구멍",
-        "모공 복구", "레이저", "필러", "보톡스"
-    ]
+    "에스테틱 / 피부관리": ["T존", "U존", "유수분", "피부 장벽", "각질", "피지", "자외선 차단제", "홈케어"],
+    "병원 / 의료": ["진피", "표피", "염증", "색소침착", "회복기간", "부작용"],
+    "법률": ["소멸시효", "지급명령", "가압류", "집행권원", "입증", "내용증명"],
 }
 
 
-# =============================
-# 유틸 함수
-# =============================
+def extract_title(title_input, draft):
+    title_input = (title_input or "").strip()
+    draft = draft or ""
 
-def clean_text(text: str) -> str:
-    return text.strip()
+    if title_input:
+        title = re.sub(r"^제목\s*[:：]\s*", "", title_input).strip()
+        return title, draft.strip(), "제목 입력칸"
+
+    lines = [l.strip() for l in draft.splitlines() if l.strip()]
+    if not lines:
+        return "", draft.strip(), "없음"
+
+    first = lines[0]
+    if first.startswith("#"):
+        title = first.lstrip("#").strip()
+        body = "\n".join(lines[1:]).strip()
+        return title, body, "본문 첫 줄"
+
+    match = re.match(r"^제목\s*[:：]\s*(.+)$", first)
+    if match:
+        title = match.group(1).strip()
+        body = "\n".join(lines[1:]).strip()
+        return title, body, "본문 제목표기"
+
+    if len(first) <= 40 and not first.endswith(("다.", "요.", "니다.", "죠.", "?")):
+        title = first
+        body = "\n".join(lines[1:]).strip()
+        return title, body, "본문 첫 줄 자동추출"
+
+    return "", draft.strip(), "없음"
 
 
-def count_keyword(text: str, keyword: str) -> int:
+def count_keyword(text, keyword):
     if not keyword:
         return 0
     return text.count(keyword)
 
 
-def korean_char_count(text: str) -> int:
-    return len(re.sub(r"\s+", "", text))
-
-
-def split_sentences(text: str):
-    sentences = re.split(r"(?<=[.!?。！？\n])\s+", text)
-    return [s.strip() for s in sentences if s.strip()]
-
-
-def get_intro(text: str) -> str:
-    sentences = split_sentences(text)
-    return " ".join(sentences[:5])[:500]
-
-
-def get_ending(text: str) -> str:
-    return text[-500:] if len(text) > 500 else text
-
-
-def detect_title_type(title: str):
-    found = []
-    for title_type, pattern in TITLE_TYPES.items():
-        if re.search(pattern, title):
-            found.append(title_type)
-    return found
-
-
-def highlight_text(text: str, phrases):
-    safe = html.escape(text)
-    unique_phrases = sorted(set([p for p in phrases if p]), key=len, reverse=True)
-
-    for phrase in unique_phrases:
-        escaped_phrase = html.escape(phrase)
-        safe = safe.replace(
-            escaped_phrase,
-            f"<mark style='background-color:#fff3a3; padding:2px 4px; border-radius:4px;'>{escaped_phrase}</mark>"
-        )
-    return safe
-
-
-def find_repeated_words(text: str, min_count: int = 8):
-    words = re.findall(r"[가-힣A-Za-z0-9]{2,}", text)
-    common = Counter(words).most_common(20)
-    stop_words = {
-        "합니다", "있습니다", "있는", "것이", "그리고", "하지만",
-        "때문에", "경우", "대한", "위해", "있어", "있고", "하는"
-    }
-    return [(word, count) for word, count in common if count >= min_count and word not in stop_words]
-
-
-def get_domain(url: str) -> str:
-    try:
-        parsed = urlparse(url)
-        return parsed.netloc.replace("www.", "")
-    except Exception:
-        return ""
-
-
-def get_secret(name: str):
-    try:
-        if name in st.secrets:
-            return st.secrets[name]
-    except Exception:
-        pass
-    return os.getenv(name, "")
-
-
-# =============================
-# 자동 검색 / 출처 등급
-# =============================
-
-def build_search_queries(keyword, topic, field, purpose):
-    base = " ".join([x for x in [keyword, topic] if x]).strip()
-    if not base:
-        base = keyword or topic or ""
-
-    if field == "법률":
-        queries = [
-            f'"{keyword}" 법제처 생활법령',
-            f'"{keyword}" 법원',
-            f'"{keyword}" 변호사 칼럼',
-            f'{base} 증거 절차 주의사항',
-        ]
-    elif field == "에스테틱 / 피부관리":
-        # 복합성 주제는 자외선/턴오버 자료가 과하게 섞이지 않도록 직접 관련어 중심으로 검색
-        if "복합성" in base:
-            queries = [
-                '"복합성 피부" "T존" "U존"',
-                '"복합성 피부" "유수분" "피지"',
-                '"복합성 피부" "속건조" "번들"',
-                '"복합성 피부" 피부과 전문의',
-                '"복합성 피부관리" 원장 칼럼',
-            ]
-        elif "턴오버" in base:
-            queries = [
-                '"피부 턴오버 주기" 피부과 전문의',
-                '"피부 재생 주기" 피부과 전문의',
-                '"피부 턴오버" 각질 관리',
-            ]
-        elif "여름철" in base:
-            queries = [
-                '"여름철 피부 관리" 자외선 차단제 공식',
-                '"자외선 차단제" "2~3시간" 공식',
-                '"여름 피부관리" 피부과 전문의',
-            ]
-        else:
-            queries = [
-                f'"{keyword}" 피부과 전문의',
-                f'"{keyword}" 원장 칼럼',
-                f'"{keyword}" 관리 방법',
-                f'{base} 주의사항',
-            ]
-    elif field == "병원 / 의료":
-        queries = [
-            f'"{keyword}" 전문의 설명',
-            f'"{keyword}" 공식 자료',
-            f'"{keyword}" 주의사항 부작용',
-        ]
-    else:
-        queries = [
-            f'"{keyword}" 공식 자료',
-            f'"{keyword}" 전문가 설명',
-            f'{base} 주의사항',
-        ]
-
-    seen = set()
-    unique = []
-    for q in queries:
-        q = q.strip()
-        if q and q not in seen:
-            unique.append(q)
-            seen.add(q)
-    return unique
-
-
-def tavily_search(query, max_results=5):
-    api_key = get_secret("TAVILY_API_KEY")
-    if not api_key:
-        raise RuntimeError("TAVILY_API_KEY가 설정되지 않았습니다.")
-
-    url = "https://api.tavily.com/search"
-    payload = {
-        "query": query,
-        "search_depth": "basic",
-        "include_answer": False,
-        "include_raw_content": False,
-        "max_results": max_results,
-    }
-
-    # 최신 Tavily 방식: Authorization Bearer 헤더
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    }
-
-    response = requests.post(url, headers=headers, json=payload, timeout=30)
-
-    # 일부 구버전 계정/환경 호환: body에 api_key 포함 재시도
-    if response.status_code in [401, 403]:
-        payload_with_key = dict(payload)
-        payload_with_key["api_key"] = api_key
-        response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload_with_key, timeout=30)
-
-    response.raise_for_status()
-    data = response.json()
-    return data.get("results", [])
-
-
-def infer_source_type(title, url, content, field):
-    domain = get_domain(url)
-    text = f"{title} {url} {content}"
-
-    if any(d in domain for d in OFFICIAL_DOMAINS):
-        return "공식기관/법령/학회/장비 공식자료"
-
-    if any(d in domain for d in LOW_TRUST_DOMAINS):
-        if "후기" in text or "리뷰" in text:
-            return "일반 블로그/카페/후기"
-        return "일반 블로그/카페/후기"
-
-    expert_words = ["의사", "전문의", "원장", "변호사", "변호사법", "대한변호사협회", "칼럼"]
-    if any(word in text for word in expert_words):
-        return "의사/변호사 직접 콘텐츠"
-
-    official_blog_words = ["병원", "의원", "클리닉", "법무법인", "법률사무소"]
-    if any(word in text for word in official_blog_words):
-        return "병원/법무법인 공식 홈페이지·블로그"
-
-    risky_words = ["후기", "경험담", "리뷰", "협찬", "광고"]
-    if any(word in text for word in risky_words):
-        return "일반 블로그/카페/후기"
-
-    return "일반 블로그/카페/후기"
-
-
-def grade_source(title: str, url: str, source_type: str, field: str, memo: str):
-    domain = get_domain(url)
-    text = f"{title} {url} {memo}"
-
-    grade = "C"
-    warning = "일반 참고자료입니다. 핵심 근거로 쓰기보다는 보조 참고용으로 사용하세요."
-
-    if any(d in domain for d in OFFICIAL_DOMAINS):
-        grade = "A"
-        warning = "공식기관/법령 계열 자료로 핵심 근거로 활용하기 좋습니다."
-    elif source_type == "공식기관/법령/학회/장비 공식자료":
-        grade = "A"
-        warning = "공식성 높은 자료입니다. 단, 최신 여부는 링크에서 직접 확인하세요."
-    elif source_type == "의사/변호사 직접 콘텐츠":
-        grade = "A-"
-        warning = "전문가 직접 콘텐츠입니다. 표현은 그대로 베끼지 말고 핵심만 요약해 활용하세요."
-    elif source_type == "병원/법무법인 공식 홈페이지·블로그":
-        grade = "B"
-        warning = "광고주/동종업계 자료일 수 있습니다. 강점 참고용으로 활용하고 과장표현은 정제하세요."
-    elif source_type == "일반 블로그/카페/후기":
-        grade = "C"
-        warning = "후기성/경험담 가능성이 있어 핵심 근거로 쓰기 어렵습니다. 독자 고민 파악용으로만 쓰세요."
-    elif source_type == "광고/출처불명/후기성 자료":
-        grade = "제외"
-        warning = "출처 신뢰도가 낮거나 광고성/후기성 위험이 있어 원고 근거로 쓰지 않는 편이 좋습니다."
-
-    risky_words = ["후기", "경험담", "완치", "100%", "무조건", "최고", "1위", "유일", "보장"]
-    if any(word in text for word in risky_words):
-        if grade not in ["제외"]:
-            warning += " / 위험 표현 또는 후기성 단어가 감지되었습니다. 링크를 열어 직접 리체크하세요."
-        if source_type in ["일반 블로그/카페/후기", "광고/출처불명/후기성 자료"]:
-            grade = "제외"
-            warning = "후기성/과장 가능성이 높아 실제 원고 근거로 쓰지 않는 편이 좋습니다."
-
-    return grade, warning
-
-
-def relevance_score(title, url, content, field, keyword, topic):
-    text = f"{title} {url} {content}".lower()
-    keyword_text = f"{keyword} {topic}".lower()
-
-    score = 0
-    reasons = []
-
-    # 핵심 키워드 직접 포함
-    if keyword and keyword.lower() in text:
-        score += 4
-        reasons.append("키워드 직접 포함")
-
-    # 주제어 일부 포함
-    for token in re.findall(r"[가-힣A-Za-z0-9]{2,}", keyword_text):
-        if token and token in text:
-            score += 1
-
-    # 분야별 관련어 포함
-    for word in FIELD_RELEVANCE_KEYWORDS.get(field, []):
-        if word.lower() in text:
-            score += 1
-
-    # 복합성 피부처럼 명확한 주제는 관련도 강제 기준
-    if field == "에스테틱 / 피부관리" and "복합성" in keyword_text:
-        required = ["복합성", "t존", "u존", "티존", "유존", "유수분", "피지", "속건조", "번들", "유분", "수분"]
-        if not any(w in text for w in required):
-            score -= 4
-            reasons.append("복합성 피부 직접 관련어 부족")
-
-    # 주제와 벗어나는 단어 감점
-    for word in OFF_TOPIC_DOWNGRADE_WORDS.get(field, []):
-        if word.lower() in text:
-            score -= 2
-            reasons.append(f"주제 이탈 가능: {word}")
-
-    if score >= 6:
-        label = "높음"
-    elif score >= 3:
-        label = "보통"
-    else:
-        label = "낮음"
-
-    return max(score, 0), label, ", ".join(reasons) if reasons else "직접 확인 필요"
-
-
-def adjust_grade_by_relevance(grade, relevance_label):
-    if relevance_label == "낮음":
-        if grade == "A":
-            return "A-보조"
-        if grade == "A-":
-            return "B-보조"
-        if grade == "B":
-            return "C"
-        return "제외"
-    return grade
-
-
-def result_to_source(result, field, keyword="", topic=""):
-    title = result.get("title", "")
-    url = result.get("url", "")
-    content = result.get("content", "") or result.get("snippet", "") or ""
-    source_type = infer_source_type(title, url, content, field)
-    grade, warning = grade_source(title, url, source_type, field, content)
-
-    rel_score, rel_label, rel_reason = relevance_score(title, url, content, field, keyword, topic)
-    adjusted_grade = adjust_grade_by_relevance(grade, rel_label)
-
-    if rel_label == "낮음":
-        warning += " / 주제 관련도가 낮아 핵심자료에서 제외하거나 보조자료로만 쓰는 편이 좋습니다."
-
-    return {
-        "사용": adjusted_grade in ["A", "A-", "B"],
-        "등급": adjusted_grade,
-        "관련도": rel_label,
-        "관련도점수": rel_score,
-        "자료명": title,
-        "URL": url,
-        "출처유형": source_type,
-        "핵심내용": content[:500],
-        "주의사항": warning,
-        "리체크": f"링크 열어 확인: {rel_reason}",
-    }
-
-
-def init_sources():
-    if "sources" not in st.session_state:
-        st.session_state.sources = []
-
-
-def add_source_row(title, url, source_type, memo, field):
-    if source_type == "자동분류":
-        source_type = infer_source_type(title, url, memo, field)
-    grade, warning = grade_source(title, url, source_type, field, memo)
-    st.session_state.sources.append({
-        "사용": grade in ["A", "A-", "B"],
-        "등급": grade,
-        "자료명": title,
-        "URL": url,
-        "출처유형": source_type,
-        "핵심내용": memo,
-        "주의사항": warning,
-        "리체크": "링크 열어 최신성/후기성/과장표현 확인",
-    })
-
-
-def dedupe_sources(rows):
-    seen = set()
-    deduped = []
-    for row in rows:
-        key = row.get("URL") or row.get("자료명")
-        key = str(key).strip().lower()
-        if not key or key in seen:
-            continue
-        seen.add(key)
-        deduped.append(row)
-    return deduped
-
-
-def make_gpts_materials(df: pd.DataFrame):
-    used = df[df["사용"] == True].copy()
-    if used.empty:
-        return "사용할 자료를 체크하면 GPTs에 넣을 핵심자료가 여기에 정리됩니다."
-
-    lines = []
-    lines.append("[GPTs 입력용 핵심자료]")
-    lines.append("")
-    for idx, row in used.iterrows():
-        lines.append(f"{idx + 1}. {row['자료명']} ({row['등급']})")
-        if row["URL"]:
-            lines.append(f"- 출처: {row['URL']}")
-        lines.append(f"- 핵심내용: {row['핵심내용']}")
-        lines.append(f"- 사용주의: {row['주의사항']}")
-        lines.append("")
-    lines.append("[작성 지시]")
-    lines.append("- 위 자료를 참고하되, 표현은 그대로 베끼지 말고 자연스러운 블로그 원고로 재구성한다.")
-    lines.append("- 의료/법률/광고 위험표현은 피한다.")
-    lines.append("- 독자의 고민을 먼저 짚고, 정보는 쉽게 풀어쓴다.")
-    lines.append("- 테스트 원고라면 실제 병원명/법무법인명/원장명/변호사명을 임의로 만들지 않는다.")
-    return "\n".join(lines)
-
-
-# =============================
-# 원고 검수 함수
-# =============================
-
-def check_title(title, keyword, draft):
+def title_check(title, keyword):
     issues = []
     score = 15
 
     if not title:
-        issues.append(("제목 없음", "제목을 입력해야 합니다."))
-        return issues, 0, []
+        return [("제목 없음", "제목 입력칸 또는 본문 첫 줄에서 제목을 찾지 못했습니다.")], 0
 
-    title_len = korean_char_count(title)
-    keyword_count = count_keyword(title, keyword)
-    found_title_types = detect_title_type(title)
+    if keyword:
+        if keyword not in title:
+            issues.append(("제목 키워드 누락", f"제목에 키워드 '{keyword}'가 정확히 들어가지 않았습니다."))
+            score -= 6
+        elif not title.startswith(keyword):
+            issues.append(("키워드 위치", "제목 키워드는 가능하면 맨 앞에 두는 것이 좋습니다."))
+            score -= 2
 
-    if keyword and not title.startswith(keyword):
-        issues.append(("키워드 위치", "키워드는 제목 맨 앞에 배치하는 것이 좋습니다."))
+    if len(title) > 30:
+        issues.append(("제목 길이", f"제목이 {len(title)}자로 30자를 넘습니다."))
         score -= 3
 
-    if keyword and keyword_count != 1:
-        issues.append(("키워드 횟수", f"제목 내 키워드 횟수는 1회가 적정합니다. 현재 {keyword_count}회입니다."))
+    if keyword and title.count(keyword) > 1:
+        issues.append(("키워드 반복", "제목에는 키워드를 1회만 넣는 편이 자연스럽습니다."))
         score -= 2
 
-    if title_len > 30:
-        issues.append(("제목 길이", f"제목은 30자 이내가 좋습니다. 현재 {title_len}자입니다."))
-        score -= 2
-
-    if not found_title_types:
-        issues.append(("클릭 요소", "숫자형, 질문형, 궁금증형, 상황공감형 중 하나를 활용하면 클릭률에 도움이 됩니다."))
-        score -= 2
-
-    if keyword and keyword not in draft:
-        issues.append(("제목/본문 연결", "제목 키워드가 본문에 충분히 연결되지 않았습니다."))
-        score -= 2
-
-    return issues, max(score, 0), found_title_types
+    return issues, max(score, 0)
 
 
-def check_intro(draft):
-    intro = get_intro(draft)
+def body_seo_check(body, keyword, target_len_min, target_len_max):
     issues = []
     score = 20
+    no_space_len = len(re.sub(r"\s+", "", body))
+    keyword_count = count_keyword(body, keyword)
 
-    weak_patterns = [
-        "이번 글에서는", "이 글에서는", "오늘은",
-        "알아보겠습니다", "설명합니다", "정리해보겠습니다"
-    ]
-    empathy_patterns = [
-        "고민", "불안", "걱정", "헷갈", "어려",
-        "궁금", "답답", "무너", "당기", "번들"
-    ]
-
-    if any(pattern in intro for pattern in weak_patterns):
-        issues.append(("AI식 도입", "도입부가 설명형으로 시작합니다. 독자의 고민이나 상황부터 건드리는 편이 좋습니다."))
+    if no_space_len < target_len_min:
+        issues.append(("본문 길이 부족", f"공백 제외 {no_space_len}자입니다. 권장 최소 {target_len_min}자보다 짧습니다."))
+        score -= 6
+    elif no_space_len > target_len_max:
+        issues.append(("본문이 김", f"공백 제외 {no_space_len}자입니다. 권장 최대 {target_len_max}자를 넘습니다."))
         score -= 5
 
-    if not any(pattern in intro for pattern in empathy_patterns):
-        issues.append(("독자 공감 부족", "첫 3~5문장 안에 독자의 불안, 고민, 궁금증이 약합니다."))
-        score -= 4
-
-    if len(intro) < 150:
-        issues.append(("도입 짧음", "도입부가 짧아 기대감을 만들기 어렵습니다."))
+    if keyword and keyword_count < 5:
+        issues.append(("본문 키워드 부족", f"본문 키워드가 {keyword_count}회입니다. 자연스럽게 5회 안팎을 권장합니다."))
+        score -= 5
+    elif keyword and keyword_count > 8:
+        issues.append(("본문 키워드 과다", f"본문 키워드가 {keyword_count}회입니다. 반복 티가 날 수 있습니다."))
         score -= 3
 
-    if "?" not in intro and "☑" not in intro and "✔" not in intro:
-        issues.append(("도입 장치 부족", "질문형 문장이나 체크리스트형 도입을 고려해볼 수 있습니다."))
-        score -= 2
+    lines = [l.strip() for l in body.splitlines() if l.strip()]
+    subheads = []
+    for line in lines:
+        if len(line) <= 38 and not line.endswith(("다.", "요.", "니다.", "죠.", "?")) and not line.startswith("☑"):
+            subheads.append(line)
 
-    return issues, max(score, 0), intro
+    if len(subheads) < 3:
+        issues.append(("소제목 부족", f"소제목으로 보이는 줄이 {len(subheads)}개입니다. 3~5개가 읽기 좋습니다."))
+        score -= 3
+
+    return issues, max(score, 0), no_space_len, keyword_count, len(subheads)
 
 
-def check_body_seo(draft, keyword):
+def intro_check(body):
     issues = []
     score = 15
+    intro = body.strip()[:500]
 
-    char_count = korean_char_count(draft)
-    body_keyword_count = count_keyword(draft, keyword)
-
-    if char_count < 1500:
-        issues.append(("분량 부족", f"본문은 1,500자 이상이 좋습니다. 현재 약 {char_count}자입니다."))
+    empathy_words = ["당기", "번들", "헷갈", "속상", "고민", "푸석", "예민", "답답"]
+    if not any(w in intro for w in empathy_words):
+        issues.append(("공감 부족", "도입부에서 독자의 실제 고민이 약합니다."))
         score -= 4
-    elif char_count > 2500:
-        issues.append(("분량 과다", f"테스트 원고 기준으로는 다소 길 수 있습니다. 현재 약 {char_count}자입니다."))
-        score -= 2
 
-    if keyword and body_keyword_count < 5:
-        issues.append(("키워드 부족", f"본문 키워드는 5회 이상 자연스럽게 들어가는 것이 좋습니다. 현재 {body_keyword_count}회입니다."))
+    if "☑" not in intro and "?" not in intro and "적 있으" not in intro:
+        issues.append(("도입 장치 약함", "체크리스트형, 질문형, 상황 묘사 중 하나가 들어가면 집중도가 올라갑니다."))
         score -= 3
 
-    heading_count = 0
-    for line in draft.splitlines():
-        line = line.strip()
-        if 4 <= len(line) <= 35 and not line.endswith((".", "다", "요")):
-            heading_count += 1
+    weak_starts = ["오늘은", "이번 글에서는", "알아보겠습니다", "설명드리겠습니다"]
+    if any(intro.startswith(w) for w in weak_starts):
+        issues.append(("뻔한 시작", "도입 첫 문장이 흔한 AI식 시작입니다. 독자 고민부터 시작하는 편이 좋습니다."))
+        score -= 4
 
-    if heading_count < 3:
-        issues.append(("소제목 부족", "본문에 소제목이 부족합니다. 모바일 가독성을 위해 3~5개 정도 권장합니다."))
-        score -= 3
-
-    if "\n\n" not in draft:
-        issues.append(("줄바꿈 부족", "문단 구분이 부족합니다. 모바일에서는 짧은 문단이 읽기 좋습니다."))
-        score -= 2
-
-    season_words = ["봄", "여름", "가을", "겨울", "요즘", "최근", "환절기", "습도", "기온", "찬바람"]
-    if not any(word in draft for word in season_words):
-        issues.append(("시의성 부족", "계절이나 최근 상황을 자연스럽게 넣으면 공감과 SEO에 도움이 됩니다."))
-        score -= 1
-
-    return issues, max(score, 0), char_count, body_keyword_count, heading_count
+    return issues, max(score, 0)
 
 
-def check_ai_smell(draft):
+def ai_smell_check(body):
     issues = []
-    found_phrases = []
     score = 15
+    found = []
 
-    for category, patterns in AI_SMELL_PATTERNS.items():
-        for phrase in patterns:
-            count = draft.count(phrase)
-            if count > 0:
-                found_phrases.append(phrase)
+    for pattern in AI_PATTERNS:
+        count = body.count(pattern)
+        if count >= 3:
+            found.append(f"{pattern}({count})")
 
-                if category == "메타 문장":
-                    issues.append((category, f"'{phrase}' 표현이 감지되었습니다. 작성자 해설문처럼 보일 수 있습니다."))
-                    score -= 2
-                elif count >= 3:
-                    issues.append((category, f"'{phrase}' 표현이 {count}회 반복됩니다. 문장 패턴을 바꾸는 것이 좋습니다."))
-                    score -= 1
+    if found:
+        issues.append(("반복 표현", ", ".join(found)))
+        score -= min(7, len(found) * 2)
 
-    colon_count = draft.count(":") + draft.count("：")
-    quote_count = (
-        draft.count("'") + draft.count('"') + draft.count("“") +
-        draft.count("”") + draft.count("‘") + draft.count("’")
-    )
-
+    colon_count = body.count(":")
+    quote_count = body.count('"') + body.count("'")
     if colon_count >= 5:
-        issues.append(("콜론 과다", f"콜론(:)이 {colon_count}회 사용되었습니다. AI식 정리문처럼 보일 수 있습니다."))
-        score -= 2
-
+        issues.append(("콜론 과다", f"콜론(:)이 {colon_count}회입니다. AI 원고 느낌이 날 수 있습니다."))
+        score -= 3
     if quote_count >= 10:
-        issues.append(("따옴표 과다", f"따옴표가 {quote_count}회 사용되었습니다. 강조 표현이 과해 보일 수 있습니다."))
+        issues.append(("따옴표 과다", f"따옴표가 {quote_count}회입니다. 인터뷰체가 아니라면 줄이는 편이 좋습니다."))
         score -= 2
 
-    repeated = find_repeated_words(draft)
-    for word, count in repeated[:5]:
-        issues.append(("반복 단어", f"'{word}' 단어가 {count}회 반복됩니다."))
-        score -= 1
-        found_phrases.append(word)
-
-    return issues, max(score, 0), found_phrases
+    return issues, max(score, 0)
 
 
-def check_compliance(draft, purpose, field):
+def compliance_check(body, field, purpose):
     issues = []
     score = 15
-    found_phrases = []
-    patterns = []
+    targets = RISK_PHRASES.get("공통", []) + RISK_PHRASES.get(field, [])
+    found = sorted(set([phrase for phrase in targets if phrase in body]))
 
-    if field in ["에스테틱 / 피부관리", "병원 / 의료"] or purpose == "실제 병원 광고 원고":
-        patterns += MEDICAL_RISK_PATTERNS
+    if found:
+        issues.append(("위험표현 감지", ", ".join(found)))
+        score -= min(10, len(found) * 2)
 
-    if field == "법률" or purpose == "실제 법률 광고 원고":
-        patterns += LEGAL_RISK_PATTERNS
+    if "테스트" in purpose:
+        fake_names = ["저희 병원", "본원", "대표원장", "전문의가 직접", "법무법인", "변호사 사무실"]
+        detected = [w for w in fake_names if w in body]
+        if detected:
+            issues.append(("테스트 원고 주의", f"실제 업체 정보가 없으면 임의 기관 표현은 피하는 편이 안전합니다: {', '.join(detected)}"))
+            score -= 4
 
-    for phrase in patterns:
-        if phrase in draft:
-            found_phrases.append(phrase)
-            issues.append(("위험 표현", f"'{phrase}' 표현은 광고 규정상 위험하거나 과장으로 보일 수 있습니다."))
-            score -= 2
+    return issues, max(score, 0)
 
-    if purpose == "포트폴리오용 샘플 원고":
-        if "포트폴리오" not in draft and "샘플" not in draft:
-            issues.append(("포폴 고지문", "포트폴리오용이라면 샘플 원고 고지문을 넣는 것이 안전합니다."))
-            score -= 2
 
-        fake_client_words = ["저희 병원", "본원은", "저희 법무법인", "본 법무법인"]
-        for word in fake_client_words:
-            if word in draft:
-                found_phrases.append(word)
-                issues.append(("포폴 위험", f"'{word}' 표현은 실제 광고주인 척 보일 수 있습니다."))
-                score -= 2
+def persona_check(body, writer_perspective):
+    issues = []
+    score = 10
 
-    if purpose == "마케팅 회사 테스트 원고":
-        fake_specific_words = ["OO병원", "OO의원", "OO법무법인", "OO변호사"]
-        for word in fake_specific_words:
-            if word in draft:
-                issues.append(("테스트 원고 주의", f"'{word}'처럼 가짜 광고주 정보가 들어간 경우 제출 전 삭제하는 것이 좋습니다."))
-                score -= 1
+    if writer_perspective == "에스테틱 원장":
+        medical_heavy = ["진단", "처방", "치료", "완치", "병변", "진료", "의료진"]
+        detected = [w for w in medical_heavy if w in body]
+        if detected:
+            issues.append(("에스테틱 톤 이탈", f"의료행위처럼 보일 수 있는 표현: {', '.join(detected)}"))
+            score -= min(5, len(detected))
 
-    if purpose == "실제 법률 광고 원고":
-        if "광고책임 변호사" not in draft:
-            issues.append(("광고책임 변호사", "실제 법률 광고 원고라면 광고책임 변호사 표시가 필요할 수 있습니다."))
+        esthetic_words = ["원장", "에스테틱", "관리", "홈케어", "피부 상태", "유수분", "상담", "피부 컨디션"]
+        if sum(1 for w in esthetic_words if w in body) < 3:
+            issues.append(("원장 관점 약함", "에스테틱 원장이 상담하듯 말하는 표현이 조금 더 필요합니다."))
             score -= 3
 
-    return issues, max(score, 0), found_phrases
+    return issues, max(score, 0)
 
 
-def check_glossary(draft, field):
-    terms = GLOSSARY_TERMS.get(field, [])
+def glossary_check(body, field):
     suggestions = []
+    terms = GLOSSARY_TERMS.get(field, [])
 
     for term in terms:
-        if term in draft:
-            has_explanation = (
-                f"{term}란" in draft or
-                f"{term}이란" in draft or
-                "여기서 잠깐" in draft
-            )
-            if not has_explanation:
+        if term in body:
+            idx = body.find(term)
+            window = body[max(0, idx - 50):idx + 120]
+            if "란" not in window and "뜻" not in window and "말합니다" not in window and "부위" not in window:
                 suggestions.append(term)
 
-    return suggestions
+    return sorted(set(suggestions))
 
 
-def check_ending(draft):
-    ending = get_ending(draft)
+def ending_check(body):
     issues = []
-    score = 5
+    score = 10
+    ending = body[-500:]
 
-    if len(ending) < 120:
-        issues.append(("마무리 약함", "마무리 문단이 짧거나 부족합니다."))
-        score -= 2
+    if len(ending.strip()) < 180:
+        issues.append(("마무리 짧음", "마무리에서 독자 행동 기준이나 관리 방향을 조금 더 정리하면 좋습니다."))
+        score -= 3
 
-    connect_words = [
-        "상담", "점검", "확인", "관리 방향", "대응 방향",
-        "전문가", "의료진", "변호사"
-    ]
-    if not any(word in ending for word in connect_words):
-        issues.append(("상담 연결 부족", "마무리가 단순 요약으로 끝날 수 있습니다. 현재 상황 점검이나 상담 연결 문장을 고려해보세요."))
-        score -= 2
+    action_words = ["확인", "상담", "점검", "관리", "살펴", "조절", "찾아"]
+    if not any(w in ending for w in action_words):
+        issues.append(("행동 유도 약함", "마지막에 독자가 다음에 무엇을 하면 좋을지 약합니다."))
+        score -= 3
 
-    guarantee_words = ["반드시", "무조건", "확실히", "100%"]
-    if any(word in ending for word in guarantee_words):
-        issues.append(("마무리 위험", "마무리에서 결과를 단정하는 표현이 감지되었습니다."))
-        score -= 1
-
-    return issues, max(score, 0), ending
+    return issues, max(score, 0)
 
 
-def estimate_price(score):
+def price_estimate(score):
     if score >= 94:
-        return "5만 원 이상급 가능"
+        return "5만 원 이상 포트폴리오급"
     if score >= 92:
-        return "4~5만 원급 테스트/포폴 원고"
+        return "4~5만 원 테스트 합격권"
     if score >= 89:
-        return "4만 원급 가능"
-    if score >= 86:
-        return "3만 원급 가능"
-    if score >= 80:
-        return "1.5~2만 원급 저단가 납품 가능"
-    return "수정 필요"
+        return "3~4만 원 실무 가능권"
+    if score >= 85:
+        return "2~3만 원 보완 필요"
+    return "초안 재작성 권장"
 
 
-def final_judgement(score):
-    if score >= 92:
-        return "제출 가능 수준입니다. 작은 표현만 다듬으면 됩니다.", "success"
-    if score >= 86:
-        return "기본기는 괜찮습니다. 도입부, 반복 표현, 마무리를 보강하면 점수가 올라갑니다.", "info"
-    return "수정이 필요합니다. 제목, 도입부, 위험표현, 본문 구조를 먼저 손보세요.", "error"
+def show_issues(title, issues):
+    st.write(f"### {title}")
+    if not issues:
+        st.success("통과")
+    else:
+        for name, desc in issues:
+            st.warning(f"**{name}** — {desc}")
 
 
-def recommend_intro_type(field):
-    if field in ["에스테틱 / 피부관리", "병원 / 의료"]:
-        return [
-            ("체크리스트형", "독자가 자신의 증상이나 피부 상태를 바로 대입할 수 있어 이탈을 줄입니다."),
-            ("질문형", "피부 고민이나 치료 고민을 바로 건드려 클릭 의도를 이어갑니다."),
-            ("상황공감형", "원장이나 전문가가 직접 상담하는 듯한 느낌을 줄 수 있습니다."),
-        ]
-
-    if field == "법률":
-        return [
-            ("체크리스트형", "독자가 자신의 사건 상황을 바로 대입할 수 있습니다."),
-            ("질문형", "차용증, 증거, 경찰조사처럼 핵심 불안을 바로 건드립니다."),
-            ("위기인식형", "방치하면 생길 수 있는 문제를 과하지 않게 알려줄 수 있습니다."),
-        ]
-
-    return [
-        ("질문형", "독자의 궁금증을 자연스럽게 유도합니다."),
-        ("체크리스트형", "상황 대입이 쉬워집니다."),
-        ("비교형", "선택 고민이 있는 주제에 적합합니다."),
-    ]
-
-
-# =============================
-# UI
-# =============================
-
-init_sources()
-
-st.title("📝 달로썸 원고 검수기 v2")
-st.caption("자동 자료수집/출처등급 → 링크 리체크 → GPTs 핵심자료 → 초안 검수 순서로 진행합니다.")
+st.title("📝 달로썸 원고 검수기 v3")
+st.caption("자료수집 기능을 빼고, 테스트 원고 검수에 필요한 제목/키워드/길이/위험표현/작성자 관점만 정확하게 봅니다.")
 
 with st.sidebar:
-    st.header("기본 설정")
-    purpose = st.radio("원고 목적", PURPOSES, index=1)
-    field = st.radio("분야", FIELDS, index=0)
+    st.header("원고 조건")
+    purpose = st.selectbox("원고 목적", PURPOSES, index=0)
+    field = st.selectbox("분야", FIELDS, index=0)
+    writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
+    keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
+    title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
+    target_len_min = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1500, step=100)
+    target_len_max = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
 
-    keyword = st.text_input("키워드", placeholder="예: 복합성 피부 좋아지는 방법")
-    title = st.text_input("제목", placeholder="예: 복합성 피부 좋아지는 방법 5가지 관리 기준")
-    topic = st.text_input("주제", placeholder="예: 복합성 피부 관리 방법")
-    target = st.text_input("타깃 독자", placeholder="예: 유분과 속건조가 동시에 고민인 20~40대 여성")
-    tone = st.text_input("원고 톤", placeholder="예: 에스테틱 원장이 설명하는 친절한 전문 톤")
+draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
-    st.divider()
-    api_key_status = "설정됨" if get_secret("TAVILY_API_KEY") else "없음"
-    st.caption(f"Tavily API 키: {api_key_status}")
+if st.button("검수 시작", type="primary"):
+    title, body, title_source = extract_title(title_input, draft)
 
-tab1, tab2, tab3 = st.tabs(["① 자동 자료수집 / 출처등급", "② GPTs 핵심자료", "③ 초안 검수"])
+    if not body:
+        st.error("본문이 비어 있습니다.")
+        st.stop()
 
-with tab1:
-    st.subheader("1. 자동 자료수집 / 출처등급")
-    st.caption("키워드와 주제를 기준으로 자료를 긁어오고, 출처등급과 관련도를 함께 표시합니다. A등급이어도 관련도가 낮으면 보조/제외로 내립니다.")
+    st.write("## 추출 결과")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("제목 인식", "성공" if title else "실패")
+    col2.metric("제목 출처", title_source)
+    col3.metric("제목 글자수", len(title) if title else 0)
+    st.info(f"인식된 제목: {title if title else '없음'}")
 
-    api_key = get_secret("TAVILY_API_KEY")
-    if not api_key:
-        st.error("TAVILY_API_KEY가 없습니다. Streamlit Cloud의 App settings → Secrets에 API 키를 넣어야 자동 자료수집이 됩니다.")
-        st.code('TAVILY_API_KEY = "tvly-본인키"', language="toml")
+    title_issues, title_score = title_check(title, keyword)
+    body_issues, body_score, no_space_len, kw_count, subhead_count = body_seo_check(body, keyword, target_len_min, target_len_max)
+    intro_issues, intro_score = intro_check(body)
+    ai_issues, ai_score = ai_smell_check(body)
+    compliance_issues, compliance_score = compliance_check(body, field, purpose)
+    persona_issues, persona_score = persona_check(body, writer_perspective)
+    ending_issues, ending_score = ending_check(body)
+    glossary_terms = glossary_check(body, field)
 
-    search_queries = build_search_queries(keyword, topic, field, purpose)
-    query_text = st.text_area(
-        "검색 쿼리",
-        value="\n".join(search_queries),
-        height=120,
-        help="한 줄에 하나씩 검색합니다. 필요하면 직접 수정하세요."
-    )
+    total = title_score + body_score + intro_score + ai_score + compliance_score + persona_score + ending_score
+    total = min(max(total, 0), 100)
 
-    col_search1, col_search2, col_search3 = st.columns([1, 1, 2])
-    with col_search1:
-        max_results = st.number_input("쿼리당 결과 수", min_value=1, max_value=10, value=4, step=1)
-    with col_search2:
-        run_search = st.button("자동 자료수집 실행", type="primary")
-    with col_search3:
-        st.caption("출처등급 + 관련도를 함께 보세요. A라도 주제와 멀면 체크 해제하세요.")
+    st.write("## 점수")
+    st.metric("총점", f"{total}점", price_estimate(total))
 
-    if run_search:
-        if not api_key:
-            st.stop()
+    score_df = pd.DataFrame([
+        {"항목": "제목", "점수": f"{title_score}/15"},
+        {"항목": "본문 SEO/길이/키워드", "점수": f"{body_score}/20"},
+        {"항목": "도입부", "점수": f"{intro_score}/15"},
+        {"항목": "AI티", "점수": f"{ai_score}/15"},
+        {"항목": "위험표현", "점수": f"{compliance_score}/15"},
+        {"항목": "작성자 관점", "점수": f"{persona_score}/10"},
+        {"항목": "마무리", "점수": f"{ending_score}/10"},
+    ])
+    st.table(score_df)
 
-        queries = [q.strip() for q in query_text.splitlines() if q.strip()]
-        if not queries:
-            st.warning("검색 쿼리를 입력하세요.")
-            st.stop()
+    st.write("## 핵심 수치")
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("공백 제외 글자수", no_space_len)
+    metric_cols[1].metric("본문 키워드 횟수", kw_count)
+    metric_cols[2].metric("소제목 수", subhead_count)
+    metric_cols[3].metric("분야", field)
 
-        found = []
-        seen_urls = set()
+    show_issues("제목 검수", title_issues)
+    show_issues("본문 SEO/길이/키워드", body_issues)
+    show_issues("도입부 검수", intro_issues)
+    show_issues("AI티 검수", ai_issues)
+    show_issues("위험표현 검수", compliance_issues)
+    show_issues("작성자 관점 검수", persona_issues)
+    show_issues("마무리 검수", ending_issues)
 
-        with st.spinner("자료를 검색하고 등급을 매기는 중입니다..."):
-            for q in queries:
-                try:
-                    results = tavily_search(q, max_results=max_results)
-                    for result in results:
-                        url = result.get("url", "")
-                        if not url or url in seen_urls:
-                            continue
-                        seen_urls.add(url)
-                        row = result_to_source(result, field, keyword, topic)
-                        found.append(row)
-                except Exception as e:
-                    st.error(f"검색 실패: {q} / {e}")
-
-        if found:
-            st.session_state.sources = dedupe_sources(found + st.session_state.sources)
-            st.success(f"{len(found)}개 자료를 수집했습니다. 중복 URL은 자동 제거했습니다.")
-        else:
-            st.warning("검색 결과가 없습니다. 쿼리를 바꿔보세요.")
-
-    st.divider()
-    st.write("### 수동 자료 추가")
-    with st.form("source_form", clear_on_submit=True):
-        source_title = st.text_input("자료명", placeholder="예: 법제처 대여금 관련 생활법령정보 / 피부과 전문의 칼럼")
-        source_url = st.text_input("URL", placeholder="https://...")
-        source_type = st.selectbox("출처 유형", SOURCE_TYPES)
-        source_memo = st.text_area("핵심내용", height=120, placeholder="이 자료에서 원고에 쓸 핵심 내용만 요약")
-        submitted = st.form_submit_button("수동 자료 추가")
-
-        if submitted:
-            if not source_title and not source_memo:
-                st.warning("자료명 또는 핵심내용을 입력하세요.")
-            else:
-                add_source_row(source_title, source_url, source_type, source_memo, field)
-                st.success("자료가 추가되었습니다.")
-
-    st.divider()
-
-    if st.session_state.sources:
-        st.write("### 수집 자료표")
-        df = pd.DataFrame(st.session_state.sources)
-
-        edited_df = st.data_editor(
-            df,
-            use_container_width=True,
-            num_rows="dynamic",
-            column_config={
-                "사용": st.column_config.CheckboxColumn("사용", default=True),
-                "URL": st.column_config.LinkColumn("URL"),
-                "핵심내용": st.column_config.TextColumn("핵심내용", width="large"),
-                "주의사항": st.column_config.TextColumn("주의사항", width="large"),
-                "리체크": st.column_config.TextColumn("리체크", width="medium"),
-            },
-            key="source_editor",
-        )
-        st.session_state.sources = edited_df.to_dict("records")
-
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            if st.button("전체 자료 삭제"):
-                st.session_state.sources = []
-                st.rerun()
-        with col_b:
-            used_count = int(pd.DataFrame(st.session_state.sources)["사용"].sum())
-            st.metric("사용 체크", f"{used_count}개")
-        with col_c:
-            st.info("관련도 높음/보통인 A/A-/B 위주로 사용하세요. A라도 관련도 낮음이면 보조 또는 제외가 맞습니다.")
+    st.write("### 용어 설명 제안")
+    if glossary_terms:
+        st.info("본문에 나오지만 초보 독자에게 설명이 있으면 좋은 용어: " + ", ".join(glossary_terms))
     else:
-        st.info("아직 수집된 자료가 없습니다. 자동 자료수집을 실행하거나 수동으로 자료를 추가하세요.")
+        st.success("용어 설명 제안 없음")
 
-with tab2:
-    st.subheader("2. GPTs에 넣을 핵심자료")
-    st.caption("①에서 사용 체크한 자료만 모아 GPTs에 붙여넣기 좋은 형태로 정리합니다.")
-
-    if st.session_state.sources:
-        df = pd.DataFrame(st.session_state.sources)
-        materials = make_gpts_materials(df)
-        st.text_area("복사해서 GPTs에 넣을 자료", value=materials, height=480)
-        st.info("이 자료를 달로썸 GPTs에 넣어 초안을 받은 뒤, ③ 초안 검수 탭에 붙여넣으면 됩니다.")
+    st.write("## 제출 판단")
+    if total >= 92:
+        st.success("제출 가능권입니다. 오탈자와 줄바꿈만 확인하세요.")
+    elif total >= 89:
+        st.info("실무 가능권입니다. 제목/도입/키워드 중 하나만 보완하면 제출권에 가까워집니다.")
+    elif total >= 85:
+        st.warning("보완 필요입니다. 길이, 제목 키워드, 도입부를 먼저 고치세요.")
     else:
-        st.warning("먼저 ① 자동 자료수집 탭에서 자료를 수집하세요.")
-
-with tab3:
-    st.subheader("3. GPTs 초안 붙여넣기 / 최종 검수")
-    draft = st.text_area("초안", height=420, placeholder="여기에 GPTs에서 받은 초안을 붙여넣으세요.")
-    run = st.button("검수 시작", type="primary")
-
-    if run:
-        if not draft.strip():
-            st.warning("초안을 먼저 붙여넣어야 합니다.")
-            st.stop()
-
-        draft = clean_text(draft)
-
-        title_issues, title_score, title_types = check_title(title, keyword, draft)
-        intro_issues, intro_score, intro = check_intro(draft)
-        body_issues, body_score, char_count, body_keyword_count, heading_count = check_body_seo(draft, keyword)
-        ai_issues, ai_score, ai_phrases = check_ai_smell(draft)
-        compliance_issues, compliance_score, risk_phrases = check_compliance(draft, purpose, field)
-        glossary_suggestions = check_glossary(draft, field)
-        ending_issues, ending_score, ending = check_ending(draft)
-
-        total_score = title_score + intro_score + body_score + ai_score + compliance_score + ending_score
-        price = estimate_price(total_score)
-
-        st.divider()
-        st.subheader("최종 점수")
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("총점", f"{total_score}점")
-        col2.metric("예상 단가", price)
-        col3.metric("본문 글자수", f"{char_count}자")
-        col4.metric("본문 키워드", f"{body_keyword_count}회")
-
-        st.progress(min(total_score / 100, 1.0))
-
-        st.write("### 세부 점수")
-        st.table({
-            "항목": ["제목", "도입부", "본문 SEO", "AI티 제거", "위험표현 안전성", "마무리"],
-            "점수": [
-                f"{title_score}/15",
-                f"{intro_score}/20",
-                f"{body_score}/15",
-                f"{ai_score}/15",
-                f"{compliance_score}/15",
-                f"{ending_score}/5",
-            ],
-        })
-
-        if title_types:
-            st.caption("감지된 제목 유형: " + ", ".join(title_types))
-
-        st.divider()
-        st.subheader("하이라이트 원고")
-
-        highlight_phrases = ai_phrases + risk_phrases
-        highlighted = highlight_text(draft, highlight_phrases)
-        st.markdown(
-            f"<div style='line-height:1.9; font-size:16px; white-space:pre-wrap;'>{highlighted}</div>",
-            unsafe_allow_html=True,
-        )
-
-        st.divider()
-        st.subheader("검수 결과")
-
-        def show_issues(title_text, issues):
-            with st.expander(title_text, expanded=True):
-                if not issues:
-                    st.success("문제 없음")
-                else:
-                    for category, message in issues:
-                        st.warning(f"[{category}] {message}")
-
-        show_issues("제목 검수", title_issues)
-        show_issues("도입부 검수", intro_issues)
-        show_issues("본문 SEO 검수", body_issues)
-        show_issues("AI티 검수", ai_issues)
-        show_issues("위험표현 검수", compliance_issues)
-        show_issues("마무리 검수", ending_issues)
-
-        st.divider()
-        st.subheader("도입부 추천")
-
-        for name, effect in recommend_intro_type(field):
-            st.info(f"**{name}**\n\n효과: {effect}")
-
-        st.divider()
-        st.subheader("어려운 용어 코너 추천")
-
-        if glossary_suggestions:
-            for term in glossary_suggestions:
-                st.write(f"✅ **여기서 잠깐! {term}란?** 코너 추가 추천")
-                st.caption("효과: 독자가 낯선 용어를 이해하기 쉬워지고, 원고가 더 친절하고 정성스러워 보입니다.")
-        else:
-            st.success("현재 감지된 어려운 용어 코너 추천은 없습니다.")
-
-        st.divider()
-        st.subheader("최종 납품 전 체크리스트")
-
-        checklist = [
-            f"본문 1,500자 이상 여부: {'통과' if char_count >= 1500 else '보완 필요'}",
-            f"제목 키워드 1회 여부: {'통과' if keyword and count_keyword(title, keyword) == 1 else '보완 필요'}",
-            f"제목 키워드 앞 배치 여부: {'통과' if keyword and title.startswith(keyword) else '보완 필요'}",
-            f"본문 키워드 5회 이상 여부: {'통과' if keyword and body_keyword_count >= 5 else '보완 필요'}",
-            f"소제목 3개 이상 여부: {'통과' if heading_count >= 3 else '보완 필요'}",
-            f"AI티 표현 여부: {'보완 필요' if ai_issues else '통과'}",
-            f"위험표현 여부: {'보완 필요' if compliance_issues else '통과'}",
-            f"마무리 연결 여부: {'보완 필요' if ending_issues else '통과'}",
-        ]
-
-        for item in checklist:
-            st.write("□ " + item)
-
-        st.divider()
-        st.subheader("판정")
-
-        judgement, level = final_judgement(total_score)
-        if level == "success":
-            st.success(judgement)
-        elif level == "info":
-            st.info(judgement)
-        else:
-            st.error(judgement)
-
-        with st.expander("현재 입력 정보", expanded=False):
-            st.write(f"원고 목적: {purpose}")
-            st.write(f"분야: {field}")
-            st.write(f"키워드: {keyword}")
-            st.write(f"제목: {title}")
-            st.write(f"주제: {topic}")
-            st.write(f"타깃: {target}")
-            st.write(f"톤: {tone}")
+        st.error("재작성 권장입니다. 구조부터 다시 잡는 편이 빠릅니다.")
+else:
+    st.info("왼쪽 조건을 입력하고 원고를 붙여넣은 뒤 검수 시작을 누르세요.")

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.9", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.0", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -246,9 +246,9 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     if include_philosophy and ending_type != "철학 없이 정보 마무리" and not has_philosophy:
         total = min(total, 92)
         cap_reasons.append("철학 반영을 선택했지만 마지막 문단의 철학 표현이 약해 총점 상한 92점 적용")
-    if no_space_len < 1500:
+    if no_space_len < min_len:
         total = min(total, 94)
-        cap_reasons.append("공백 제외 1,500자 미만이라 5만 원 이상 포트폴리오급 상한 제한")
+        cap_reasons.append(f"공백 제외 {min_len}자 미만이라 분량 조건 미달 상한 제한")
 
     return scores, issues, total, cap_reasons, {
         "no_space_len": no_space_len,
@@ -407,6 +407,42 @@ VOICE_TYPES = [
     "비교 고민형",
     "전문가 안내형",
 ]
+
+LENGTH_PRESETS = ["1000자", "1500자", "2000자", "3000자", "직접 입력"]
+SPACING_TYPES = ["공백 제외", "공백 포함"]
+PARAGRAPH_OPTIONS = ["분량 우선, 문단 수 자연 조절", "3문단", "4문단", "5문단", "6문단 이상"]
+
+def resolve_target_length(preset, custom_value):
+    if preset == "직접 입력":
+        try:
+            return int(custom_value)
+        except Exception:
+            return 1500
+    return int(re.sub(r"[^0-9]", "", preset) or 1500)
+
+def length_guidance(target_len, spacing_type, paragraph_option):
+    try:
+        target_len = int(target_len)
+    except Exception:
+        target_len = 1500
+    if paragraph_option == "분량 우선, 문단 수 자연 조절":
+        if target_len <= 1200:
+            suggested = "3~4문단"
+        elif target_len <= 1800:
+            suggested = "5문단 짧게"
+        elif target_len <= 2400:
+            suggested = "5문단 안정형"
+        else:
+            suggested = "5~6문단"
+    else:
+        suggested = paragraph_option
+    return f"""[분량 조건]
+- 전체 분량: {spacing_type} {target_len}자 내외
+- 테스트 조건에서는 기존 문장 수 설정보다 전체 분량 조건을 우선한다.
+- 권장 문단 구성: {suggested}
+- 기본 흐름은 도입 → 본문1 → 본문2 → 본문3 → 마무리를 유지하되, 분량이 짧으면 본문을 압축한다.
+- 각 문단의 문장 수를 억지로 늘리지 말고, 중복 설명을 줄인다.
+- 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다."""
 
 
 def build_research_prompt(topic, keyword, field, content_goal, extra_focus):
@@ -679,11 +715,12 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines, b_lines, c_lines, extra_rules=""):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
+    length_plan = length_guidance(target_len, spacing_type, paragraph_option)
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
 주제: {topic}
@@ -701,6 +738,8 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 [C등급 말맛 참고 포인트 - 표현 참고용]
 {c_text}
 
+{length_plan}
+
 {bridge_plan}
 
 작성 지시:
@@ -711,10 +750,10 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
 6. 키워드 “{keyword}”를 제목에 1회, 본문에 자연스럽게 여러 번 넣어줘.
 7. 단정·과장 표현은 피하고, 개인 상태나 상황에 따라 달라질 수 있다는 신중한 표현을 사용해줘.
-8. 소제목을 포함해 5문단 구성으로 작성해줘.
+8. 소제목을 포함하되, 문단 수는 위 분량 조건을 우선해 자연스럽게 조절해줘.
 9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
 10. 마무리는 강한 구매/상담 유도보다 독자가 자기 상황을 확인하게 만드는 방향으로 작성해줘.
-11. 각 문단의 첫 문장 또는 전환부 중 최소 3곳에는 독자가 실제로 헷갈리는 지점/불편한 상황/망설이는 이유를 1문장씩 배치해줘.
+11. 각 주요 문단의 첫 문장 또는 전환부에는 가능한 범위에서 독자가 실제로 헷갈리는 지점/불편한 상황/망설이는 이유를 배치해줘. 단, 1000~1500자 원고에서는 억지로 많이 넣지 말고 2~3곳만 자연스럽게 넣어줘.
 12. 공감은 “힘드셨나요?”, “불안하시죠?” 같은 빈 위로가 아니라 실제 고민 상황을 짚는 방식으로 작성해줘.
 
 피해야 할 표현:
@@ -777,8 +816,8 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 """
 
 
-st.title("📝 달로썸 원고 검수기 v3.9")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.0")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -817,7 +856,16 @@ with tab_design:
         d_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="d_field")
     with d_col2:
         d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
-        d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 총 5문단, 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
+        length_col1, length_col2 = st.columns(2)
+        with length_col1:
+            d_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="d_length_preset")
+            d_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="d_spacing_type")
+        with length_col2:
+            d_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="d_custom_length")
+            d_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="d_paragraph_option")
+        d_target_len = resolve_target_length(d_length_preset, d_custom_length)
+        st.caption(f"적용될 분량 조건: {d_spacing_type} {d_target_len}자 내외 / {d_paragraph_option}")
+        d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
 
     research_text = st.text_area("GPT 조사 결과 / 직접 확인한 자료 요약 붙여넣기", height=360, placeholder="GPT가 조사해준 자료 중 링크를 직접 확인한 내용만 붙여넣으세요.", key="research_text")
 
@@ -857,7 +905,7 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, a_lines, b_lines, c_lines, d_extra_rules)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
     claude_prompt_empty = build_claude_prompt(d_voice, d_keyword, d_field)
 
     st.write("## GPTs용 초안 프롬프트")
@@ -890,8 +938,15 @@ with tab_check:
         generate_ending = st.checkbox("마무리 문단 생성", value=False)
         homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
         homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
-        min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
-        max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
+        st.divider()
+        st.subheader("분량 검수")
+        check_length_preset = st.selectbox("테스트 분량 기준", LENGTH_PRESETS, index=1, key="check_length_preset")
+        check_custom_length = st.number_input("직접 입력 검수 글자수", min_value=500, max_value=6000, value=1500, step=100, key="check_custom_length")
+        check_target_len = resolve_target_length(check_length_preset, check_custom_length)
+        default_min = max(500, int(check_target_len * 0.85))
+        default_max = int(check_target_len * 1.15)
+        min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
+        max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
 
     draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 

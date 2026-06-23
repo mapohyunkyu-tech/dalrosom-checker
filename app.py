@@ -445,17 +445,19 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
     field = field.strip() or "병원 / 의료"
     content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
     extra_focus = extra_focus.strip()
+    length_plan = length_guidance(target_len, spacing_type, paragraph_option)
 
     return f"""주제: {topic}
 핵심 키워드: {keyword}
 분야: {field}
 원고 목적: {content_goal}
+{length_plan}
 
 위 주제로 블로그 원고 작성을 위한 사전 자료조사를 해줘.
 자료는 단순히 많이 모으는 것이 아니라, 아래처럼 등급을 나누고 원고에 어떻게 쓸지까지 정리해줘.
@@ -583,6 +585,7 @@ D등급: 참고만 가능
 소제목 방향:
 반드시 포함할 내용:
 피해야 할 표현:
+분량/문단 반영 방향:
 
 주의사항:
 - 원문을 길게 복사하지 말 것.
@@ -590,6 +593,7 @@ D등급: 참고만 가능
 - 출처 링크는 반드시 함께 줄 것.
 - {field} 분야에서 위험한 단정 표현은 피할 것.
 - 사용자가 링크를 직접 확인할 수 있도록 자료별 링크를 빠뜨리지 말 것.
+- 조사 결과 마지막에는 위 분량 조건에 맞춰 원고를 압축하거나 확장할 때 우선 반영할 내용도 정리할 것.
 """ + (f"\n추가로 중점적으로 조사할 내용:\n{extra_focus}\n" if extra_focus else "")
 
 
@@ -816,8 +820,8 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.0")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.1")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 조사 단계 분량 조건 표시 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -831,9 +835,18 @@ with tab_research:
         r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
     with col2:
         r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
+        r_len_col1, r_len_col2 = st.columns(2)
+        with r_len_col1:
+            r_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="r_length_preset")
+            r_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="r_spacing_type")
+        with r_len_col2:
+            r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
+            r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
+        r_target_len = resolve_target_length(r_length_preset, r_custom_length)
+        st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 

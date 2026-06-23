@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.2", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.3", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -28,6 +28,16 @@ INTRO_TYPES = [
     "8. 간단한 웹툰 만들어 넣기",
 ]
 INTRO_TYPE_OPTIONS = ["자동 추천"] + INTRO_TYPES
+
+TITLE_TYPES = [
+    "1. 숫자/데이터 활용형",
+    "2. 질문형",
+    "3. 긴급성/한정성 강조형",
+    "4. 궁금증 자극형",
+    "5. 반전/의외성형",
+    "6. 독자 상황 콕집기형",
+]
+TITLE_TYPE_OPTIONS = ["자동 추천"] + TITLE_TYPES
 
 ENDING_TYPES = ["관리 철학형", "상담 유도형", "체크리스트 요약형", "부드러운 CTA형", "철학 없이 정보 마무리"]
 
@@ -112,6 +122,115 @@ def detect_intro_types(body):
     return detected
 
 
+
+def detect_title_types(title):
+    """제목이 어떤 클릭 유도 방식에 가까운지 감지한다."""
+    title = title or ""
+    detected = []
+    if re.search(r"\d", title) or any(w in title for w in ["가지", "분", "개", "단계"]):
+        detected.append("1. 숫자/데이터 활용형")
+    if "?" in title or any(w in title for w in ["일까요", "할까요", "가능할까요", "왜", "어떻게", "언제"]):
+        detected.append("2. 질문형")
+    if any(w in title for w in ["지금", "오늘", "꼭", "놓치면", "늦기 전", "초기", "주의", "확인해야"]):
+        detected.append("3. 긴급성/한정성 강조형")
+    if any(w in title for w in ["이유", "비밀", "진짜", "따로", "놓친", "모르는", "알아야", "차이", "기준"]):
+        detected.append("4. 궁금증 자극형")
+    if any(w in title for w in ["오해", "진실", "예상과 달리", "의외", "반전", "사실은", "다를까요"]):
+        detected.append("5. 반전/의외성형")
+    if any(w in title for w in ["중이신가요", "계신가요", "때", "후", "앞두고", "반복", "고민", "걱정", "저림", "통증", "따갑", "붓기", "냄새", "못했을 때"]):
+        detected.append("6. 독자 상황 콕집기형")
+    return detected
+
+
+def title_style_instruction(title_type):
+    if not title_type or title_type == "자동 추천":
+        return "제목 유형은 자료와 주제에 맞춰 6가지 방식 중 하나를 자연스럽게 선택한다."
+    mapping = {
+        "1. 숫자/데이터 활용형": "제목에 3가지, 5가지, 6가지, 3분처럼 구체적인 숫자를 넣어 기준이 분명해 보이게 한다.",
+        "2. 질문형": "독자가 실제로 궁금해할 질문 형태로 제목을 만든다. 단, 답과 다른 어그로성 질문은 피한다.",
+        "3. 긴급성/한정성 강조형": "지금 확인해야 할 이유를 넣되, 병원·법률에서는 과장·공포 조장 없이 ‘확인할 기준’ 수준으로 표현한다.",
+        "4. 궁금증 자극형": "답을 모두 드러내지 않고 이유, 기준, 차이, 놓치기 쉬운 점을 예고한다.",
+        "5. 반전/의외성형": "독자가 당연하다고 생각한 부분의 오해나 의외성을 제목에 반영한다. 사실과 다른 반전은 만들지 않는다.",
+        "6. 독자 상황 콕집기형": "특정 증상, 상황, 고민을 제목에 직접 넣어 ‘내 이야기’처럼 느끼게 한다.",
+    }
+    return mapping.get(title_type, "선택한 제목 유형을 유지한다.")
+
+
+def recommend_title_style(field, topic, keyword, research_text):
+    text = " ".join([field or "", topic or "", keyword or "", research_text or ""])
+    if any(w in text for w in ["자가", "체크", "검사", "기준", "방법", "주의사항", "준비", "증거"]):
+        return "1. 숫자/데이터 활용형"
+    if any(w in text for w in ["차이", "비교", "vs", "VS", "울쎄라", "인모드", "슈링크", "써마지"]):
+        return "2. 질문형"
+    if any(w in text for w in ["경찰조사", "내용증명", "소멸시효", "초기", "방치", "오늘", "기한", "기간"]):
+        return "3. 긴급성/한정성 강조형"
+    if any(w in text for w in ["오해", "진실", "예상", "의외", "다를까요", "반전"]):
+        return "5. 반전/의외성형"
+    if any(w in text for w in ["통증", "저림", "붓기", "따갑", "냄새", "얼룩", "외도", "못했을 때", "걱정", "불안"]):
+        return "6. 독자 상황 콕집기형"
+    return "4. 궁금증 자극형"
+
+
+def clean_title_candidate(title, keyword):
+    title = re.sub(r"\s+", " ", title).strip()
+    # 제목은 가능하면 키워드로 시작하게 보정
+    if keyword and not title.startswith(keyword):
+        title = f"{keyword} {title}"
+    # 너무 긴 경우 불필요한 말 줄이기
+    title = title.replace("확인해야 하는", "확인할").replace("알아야 하는", "알아둘")
+    return title.strip()
+
+
+def generate_title_candidates(keyword, topic, title_type, b_lines=None, field=""):
+    kw = (keyword or topic or "키워드").strip()
+    title_type = title_type if title_type and title_type != "자동 추천" else "4. 궁금증 자극형"
+    base_issue = ""
+    if b_lines:
+        base_issue = re.sub(r"^[-•·\d\.\)\s]+", "", str(b_lines[0])).strip()
+    # 너무 구체적인 긴 문장은 제목에 직접 넣지 않고 흐름만 사용
+    candidates_by_type = {
+        "1. 숫자/데이터 활용형": [
+            f"{kw} 확인할 기준 5가지",
+            f"{kw} 증상 체크 3가지",
+            f"{kw} 상담 전 볼 5가지",
+        ],
+        "2. 질문형": [
+            f"{kw} 언제 확인해야 할까요",
+            f"{kw} 왜 사람마다 다를까요",
+            f"{kw} 내 상황에도 맞을까요",
+        ],
+        "3. 긴급성/한정성 강조형": [
+            f"{kw} 지금 확인할 3가지",
+            f"{kw} 늦기 전 볼 기준",
+            f"{kw} 오늘 체크할 주의점",
+        ],
+        "4. 궁금증 자극형": [
+            f"{kw} 놓치기 쉬운 기준",
+            f"{kw} 결과가 다른 이유",
+            f"{kw} 선택 전 알아둘 점",
+        ],
+        "5. 반전/의외성형": [
+            f"{kw} 흔한 오해와 진실",
+            f"{kw} 예상과 다른 이유",
+            f"{kw} 당연하지 않은 기준",
+        ],
+        "6. 독자 상황 콕집기형": [
+            f"{kw} 이런 증상이라면 확인",
+            f"{kw} 고민 중이라면 기준부터",
+            f"{kw} 반복된다면 살펴볼 점",
+        ],
+    }
+    out = candidates_by_type.get(title_type, candidates_by_type["4. 궁금증 자극형"])
+    if base_issue and len(base_issue) <= 20:
+        out.append(f"{kw} {base_issue}부터 확인")
+    # 키워드 앞, 30자 안팎을 우선하지만 무리하게 잘라 의미를 망치지 않음
+    cleaned = []
+    for c in out:
+        c = clean_title_candidate(c, kw)
+        if c not in cleaned:
+            cleaned.append(c)
+    return cleaned[:5]
+
 def is_safe_risk_context(body, phrase):
     safe_markers = ["아니", "않", "없", "피하", "보다", "있지 않습니다", "권하지", "주의", "무조건 없애", "무조건 두껍"]
     for match in re.finditer(re.escape(phrase), body):
@@ -121,13 +240,14 @@ def is_safe_risk_context(body, phrase):
     return False
 
 
-def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, ending_type, include_philosophy, philosophy_text, min_len, max_len):
+def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text, min_len, max_len):
     issues = {"제목": [], "본문": [], "도입": [], "AI티": [], "위험표현": [], "작성자 관점": [], "마무리": []}
     scores = {}
     no_space_len = len(re.sub(r"\s+", "", body))
     body_kw = count_keyword(body, keyword)
     total_kw = body_kw + count_keyword(title, keyword)
     detected_intro = detect_intro_types(body)
+    detected_title = detect_title_types(title)
 
     # 제목
     title_score = 15
@@ -144,6 +264,9 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         if len(title) > 30:
             issues["제목"].append(("제목 길이", f"제목이 {len(title)}자로 30자를 넘습니다."))
             title_score -= 3
+        if selected_title_type and selected_title_type != "자동 추천" and selected_title_type not in detected_title:
+            issues["제목"].append(("제목 유형 불일치", f"선택한 제목 유형은 '{selected_title_type}'인데, 현재 감지된 유형은 {', '.join(detected_title) if detected_title else '뚜렷한 유형 없음'}입니다."))
+            title_score -= 2
     scores["제목"] = max(title_score, 0)
 
     # 본문
@@ -257,6 +380,7 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         "total_kw": total_kw,
         "subheads": len(subheads),
         "detected_intro": detected_intro,
+        "detected_title": detected_title,
     }
 
 
@@ -446,7 +570,7 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천"):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천"):
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
     field = field.strip() or "병원 / 의료"
@@ -454,7 +578,9 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     extra_focus = extra_focus.strip()
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
     intro_type = intro_type or "자동 추천"
+    title_type = title_type or "자동 추천"
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
+    title_instruction = "제목 유형은 자료와 주제에 맞는 방식을 추천해줘." if title_type == "자동 추천" else f"제목 유형은 반드시 '{title_type}' 방향을 우선 고려해줘."
 
     return f"""주제: {topic}
 핵심 키워드: {keyword}
@@ -463,6 +589,21 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 {length_plan}
 희망 도입 방식: {intro_type}
 도입 방식 지시: {intro_instruction}
+희망 제목 유형: {title_type}
+제목 유형 지시: {title_instruction}
+
+제목 기본 기준:
+- 제목에는 핵심 키워드 "{keyword}"를 맨 앞에 1회 넣는 것을 우선한다.
+- 제목은 가능하면 30자 이내로 구성한다.
+- 자극적인 어그로가 아니라, 독자의 호기심과 실제 고민을 건드리는 제목으로 만든다.
+- 제목 내용과 본문 내용이 다르게 느껴지지 않게 한다.
+- 제목 방식은 아래 6가지 중 자료와 주제에 맞게 추천한다.
+  1) 숫자/데이터 활용형
+  2) 질문형
+  3) 긴급성/한정성 강조형
+  4) 궁금증 자극형
+  5) 반전/의외성형
+  6) 독자 상황 콕집기형
 
 위 주제로 블로그 원고 작성을 위한 사전 자료조사를 해줘.
 자료는 단순히 많이 모으는 것이 아니라, 아래처럼 등급을 나누고 원고에 어떻게 쓸지까지 정리해줘.
@@ -569,7 +710,22 @@ D등급: 참고만 가능
 후기나 댓글에서 참고할 수 있는 생활 표현을 정리해줘.
 단, 특정 개인 경험을 그대로 쓰거나 가짜 후기로 만들지 말고 말투와 표현 방향만 정리해줘.
 
-[5] 추천 도입 화법 + 달로썸 도입 8가지 방식
+[5] 추천 제목 유형 + 제목 후보
+아래 제목 방식 중 가장 어울리는 유형을 추천하고 이유를 설명해줘.
+사용자가 희망 제목 유형을 지정했다면 그 방식이 이 주제에 맞는지 판단하고, 맞지 않으면 이유와 대체안을 함께 말해줘.
+
+제목 6가지 방식:
+1. 숫자/데이터 활용형
+2. 질문형
+3. 긴급성/한정성 강조형
+4. 궁금증 자극형
+5. 반전/의외성형
+6. 독자 상황 콕집기형
+
+제목 후보는 5개 제안해줘.
+제목 후보는 가능하면 핵심 키워드를 맨 앞에 1회 넣고, 30자 이내로 작성해줘.
+
+[6] 추천 도입 화법 + 달로썸 도입 8가지 방식
 아래 중 가장 어울리는 도입 화법을 추천하고 이유를 설명해줘.
 - 질문형
 - 일상 불편형
@@ -592,11 +748,13 @@ D등급: 참고만 가능
 7. 검색만으로는 모르는 알짜 정보 예고
 8. 간단한 웹툰/장면 구성
 
-[6] GPTs 초안 작성용 요약
+[7] GPTs 초안 작성용 요약
 내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
 
 핵심 팩트 자료 요약:
 잠재고객 고민 요약:
+추천 제목 유형:
+제목 후보:
 추천 도입 화법:
 추천 달로썸 도입 방식:
 제목 방향:
@@ -775,20 +933,27 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
     intro_type = intro_type or "자동 추천"
+    title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
+    title_plan = title_style_instruction(title_type)
+    title_candidates = "\n".join([f"- {x}" for x in generate_title_candidates(keyword, topic, title_type, b_lines, field)])
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
 주제: {topic}
 핵심 키워드: {keyword}
 분야: {field}
 원고 유형: {content_type}
+선택한 제목 유형: {title_type}
+제목 유형 세부 지시: {title_plan}
+제목 후보 참고:
+{title_candidates}
 선택한 도입 화법: {voice_type}
 선택한 달로썸 도입 방식: {intro_type}
 도입 방식 세부 지시: {intro_plan}
@@ -807,6 +972,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {bridge_plan}
 
 작성 지시:
+0. 제목은 핵심 키워드 “{keyword}”를 맨 앞에 1회 넣고, 가능하면 30자 이내로 작성해줘. 선택한 제목 유형 “{title_type}”을 반영하되, 본문 내용과 다른 어그로성 제목은 쓰지 마.
 1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
 2. 선택한 달로썸 도입 방식이 체크리스트/비교표/FAQ/대화체 등 구체 형식이라면 도입부에서 그 형식이 눈에 보이게 작성해줘.
 3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
@@ -836,14 +1002,16 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {extra_rules.strip() if extra_rules.strip() else '- 없음'}
 """
 
-def build_claude_prompt(voice_type, intro_type, keyword, field, body_text=""):
+def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text=""):
     return f"""아래 원고를 다듬어줘.
 
+이 원고의 제목 유형은 “{title_type}”이다.
 이 원고의 도입 화법은 “{voice_type}”이다.
 이 원고의 달로썸 도입 방식은 “{intro_type}”이다.
-화법과 도입 방식은 절대 바꾸지 말고 유지해줘.
+제목 유형, 화법, 도입 방식은 절대 바꾸지 말고 유지해줘.
 
 건드리면 안 되는 것:
+0. 제목의 핵심 키워드 앞 배치와 “{title_type}” 유형
 1. 도입부의 “{voice_type}” 흐름
 2. 도입부의 “{intro_type}” 방식
 3. 핵심 키워드 “{keyword}”
@@ -870,6 +1038,8 @@ def build_claude_prompt(voice_type, intro_type, keyword, field, body_text=""):
 - 새로운 사례나 경험담 추가 금지
 - 없는 병원/업체 장점 만들기 금지
 - 과장 표현 추가 금지
+- 제목 유형 변경 금지
+- 제목에서 키워드 위치 변경 금지
 - 도입화법 변경 금지
 - 달로썸 도입 방식 변경 금지
 - 본문을 팩트 설명문처럼 딱딱하게 바꾸기 금지
@@ -884,8 +1054,8 @@ def build_claude_prompt(voice_type, intro_type, keyword, field, body_text=""):
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.2")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.3")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -897,6 +1067,7 @@ with tab_research:
         r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")
         r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
         r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
+        r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
         r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
     with col2:
         r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
@@ -911,7 +1082,7 @@ with tab_research:
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -953,10 +1124,21 @@ with tab_design:
     d_voice = st.selectbox("도입 화법 선택", VOICE_TYPES, index=voice_index, key="d_voice")
     st.caption(f"자동 추천 화법: {recommended_voice}")
 
+    recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
+    title_index = TITLE_TYPE_OPTIONS.index(recommended_title) if recommended_title in TITLE_TYPE_OPTIONS else 0
+    d_title_type = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=title_index, key="d_title_type")
+    st.caption(f"자동 추천 제목 유형: {recommended_title} / 필요하면 직접 바꾸면 됩니다.")
+
     recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
     intro_index = INTRO_TYPES.index(recommended_intro) if recommended_intro in INTRO_TYPES else 4
     d_intro_type = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPES, index=intro_index, key="d_intro_type")
     st.caption(f"자동 추천 도입 방식: {recommended_intro} / 필요하면 직접 바꾸면 됩니다.")
+
+    st.write("### 제목 후보")
+    title_candidates = generate_title_candidates(d_keyword, d_topic, d_title_type, b_lines, d_field)
+    for cand in title_candidates:
+        length_note = "✅ 30자 이내" if len(cand) <= 30 else f"⚠️ {len(cand)}자"
+        st.info(f"{cand}  ·  {length_note}")
 
     st.write("### 자료 등급 카운트")
     st.table(pd.DataFrame([{"구분": k, "감지 수": v} for k, v in counts.items()]))
@@ -988,8 +1170,8 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
-    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_keyword, d_field)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
+    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field)
 
     st.write("## GPTs용 초안 프롬프트")
     st.text_area("GPTs에 복붙", value=draft_prompt, height=520)
@@ -1010,6 +1192,7 @@ with tab_check:
         writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
         keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
         title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
+        selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)
         selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
         ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
         include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
@@ -1041,7 +1224,7 @@ with tab_check:
 
         scores, issues, total, cap_reasons, meta = check_all(
             title, body, keyword, field, purpose, writer_perspective,
-            selected_intro_type, ending_type, include_philosophy, philosophy_text,
+            selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text,
             min_len, max_len
         )
 
@@ -1051,7 +1234,7 @@ with tab_check:
         c2.metric("제목 출처", title_source)
         c3.metric("제목 글자수", len(title) if title else 0)
         st.info(f"인식된 제목: {title if title else '없음'}")
-        st.caption(f"선택한 현재 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
+        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
 
         st.write("## 점수")
         st.metric("총점", f"{total}점", price_estimate(total))
@@ -1071,11 +1254,12 @@ with tab_check:
         ]))
 
         st.write("## 핵심 수치")
-        m1, m2, m3, m4 = st.columns(4)
+        m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("공백 제외 글자수", meta["no_space_len"])
         m2.metric("키워드 횟수", f"본문 {meta['body_kw']} / 제목포함 {meta['total_kw']}")
         m3.metric("소제목 수", meta["subheads"])
-        m4.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
+        m4.metric("감지 제목", ", ".join(meta["detected_title"]) if meta["detected_title"] else "없음")
+        m5.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
 
         for section in ["제목", "본문", "도입", "AI티", "위험표현", "작성자 관점", "마무리"]:
             show_issues(f"{section} 검수", issues[section])

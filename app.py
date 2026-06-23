@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.0", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.2", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -27,6 +27,7 @@ INTRO_TYPES = [
     "7. 검색만으로는 모르는 알짜 정보 예고",
     "8. 간단한 웹툰 만들어 넣기",
 ]
+INTRO_TYPE_OPTIONS = ["자동 추천"] + INTRO_TYPES
 
 ENDING_TYPES = ["관리 철학형", "상담 유도형", "체크리스트 요약형", "부드러운 CTA형", "철학 없이 정보 마무리"]
 
@@ -445,19 +446,23 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천"):
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
     field = field.strip() or "병원 / 의료"
     content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
     extra_focus = extra_focus.strip()
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    intro_type = intro_type or "자동 추천"
+    intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
 
     return f"""주제: {topic}
 핵심 키워드: {keyword}
 분야: {field}
 원고 목적: {content_goal}
 {length_plan}
+희망 도입 방식: {intro_type}
+도입 방식 지시: {intro_instruction}
 
 위 주제로 블로그 원고 작성을 위한 사전 자료조사를 해줘.
 자료는 단순히 많이 모으는 것이 아니라, 아래처럼 등급을 나누고 원고에 어떻게 쓸지까지 정리해줘.
@@ -564,7 +569,7 @@ D등급: 참고만 가능
 후기나 댓글에서 참고할 수 있는 생활 표현을 정리해줘.
 단, 특정 개인 경험을 그대로 쓰거나 가짜 후기로 만들지 말고 말투와 표현 방향만 정리해줘.
 
-[5] 추천 도입 화법
+[5] 추천 도입 화법 + 달로썸 도입 8가지 방식
 아래 중 가장 어울리는 도입 화법을 추천하고 이유를 설명해줘.
 - 질문형
 - 일상 불편형
@@ -574,12 +579,26 @@ D등급: 참고만 가능
 - 비교 고민형
 - 전문가 안내형
 
+그리고 아래 달로썸 도입 8가지 중 어떤 방식이 가장 적합한지도 추천해줘.
+사용자가 희망 도입 방식을 지정했다면 그 방식이 이 주제에 맞는지 판단하고, 맞지 않으면 이유와 대체안을 함께 말해줘.
+
+달로썸 도입 8가지:
+1. 독자의 상황을 찔러주는 체크리스트 활용
+2. 비교 표 활용
+3. 대화체 문구
+4. 뉴스 기사 활용
+5. 독자에게 질문 던지기
+6. 많이 묻는 질문 인용
+7. 검색만으로는 모르는 알짜 정보 예고
+8. 간단한 웹툰/장면 구성
+
 [6] GPTs 초안 작성용 요약
 내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
 
 핵심 팩트 자료 요약:
 잠재고객 고민 요약:
 추천 도입 화법:
+추천 달로썸 도입 방식:
 제목 방향:
 도입부 방향:
 소제목 방향:
@@ -673,6 +692,43 @@ def recommend_voice_type(field, topic, keyword, research_text):
 
 
 
+def recommend_intro_style(field, topic, keyword, research_text, voice_type=""):
+    """주제/자료/화법을 보고 달로썸 도입 8가지 중 기본 추천안을 고른다. 사용자는 언제든 바꿀 수 있다."""
+    text = " ".join([field or "", topic or "", keyword or "", research_text or "", voice_type or ""])
+    if any(w in text for w in ["차이", "비교", "vs", "VS", "울쎄라", "인모드", "슈링크", "써마지", "전기면도기", "날면도기", "가격 비교"]):
+        return "2. 비교 표 활용"
+    if any(w in text for w in ["체크리스트", "확인", "자가", "증상", "냄새", "얼룩", "따갑", "저림", "통증", "관리법"]):
+        return "1. 독자의 상황을 찔러주는 체크리스트 활용"
+    if any(w in text for w in ["자주 묻", "많이 묻", "FAQ", "질문", "하이닥", "닥터나우", "지식iN", "로톡", "상담 사례"]):
+        return "6. 많이 묻는 질문 인용"
+    if any(w in text for w in ["뉴스", "기사", "최근", "보도", "통계", "자료에 따르면"]):
+        return "4. 뉴스 기사 활용"
+    if any(w in text for w in ["검색만으로", "잘 알려지지", "놓치기 쉬운", "알짜", "모르는"]):
+        return "7. 검색만으로는 모르는 알짜 정보 예고"
+    if any(w in text for w in ["웹툰", "장면", "만화", "스토리"]):
+        return "8. 간단한 웹툰 만들어 넣기"
+    if any(w in text for w in ["원장님", "변호사님", "라고 묻", "상담", "대화"]):
+        return "3. 대화체 문구"
+    return "5. 독자에게 질문 던지기"
+
+
+def intro_style_instruction(intro_type):
+    if not intro_type or intro_type == "자동 추천":
+        return "자료와 주제에 맞는 달로썸 도입 8가지 중 하나를 자연스럽게 선택해 사용한다."
+    mapping = {
+        "1. 독자의 상황을 찔러주는 체크리스트 활용": "도입부에 3~5개의 체크리스트를 넣어 독자가 자신의 상황을 바로 대입하게 만든다.",
+        "2. 비교 표 활용": "도입부 또는 도입 직후에 간단한 비교표를 넣어 선택 고민을 정리한다.",
+        "3. 대화체 문구": "실제 상담에서 나올 법한 짧은 질문이나 대화 문장으로 시작한다. 단, 가짜 후기는 만들지 않는다.",
+        "4. 뉴스 기사 활용": "최근 이슈나 보도/자료 흐름을 언급하되, 확인되지 않은 통계나 뉴스는 지어내지 않는다.",
+        "5. 독자에게 질문 던지기": "첫 문장을 독자 상황을 찌르는 질문으로 시작한다.",
+        "6. 많이 묻는 질문 인용": "실제 Q&A 문장을 복사하지 말고, 반복 질문 패턴을 재구성해 ‘많이 묻는 질문’처럼 시작한다.",
+        "7. 검색만으로는 모르는 알짜 정보 예고": "검색으로는 놓치기 쉬운 판단 기준을 예고하며 시작한다.",
+        "8. 간단한 웹툰 만들어 넣기": "1~3컷 장면 구성 또는 장면 묘사로 시작하되, 실제 이미지를 요구하지 않고 텍스트 구성안으로 처리한다.",
+    }
+    return mapping.get(intro_type, "선택한 도입 방식을 유지한다.")
+
+
+
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
     topic = (topic or keyword or "이 주제").strip()
@@ -719,12 +775,14 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    intro_type = intro_type or "자동 추천"
+    intro_plan = intro_style_instruction(intro_type)
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
 주제: {topic}
@@ -732,6 +790,8 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 분야: {field}
 원고 유형: {content_type}
 선택한 도입 화법: {voice_type}
+선택한 달로썸 도입 방식: {intro_type}
+도입 방식 세부 지시: {intro_plan}
 
 [A등급 공통 핵심정보 - 본문 팩트용]
 {a_text}
@@ -747,8 +807,9 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 {bridge_plan}
 
 작성 지시:
-1. 도입부는 반드시 “{voice_type}” 흐름으로 작성해줘.
-2. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
+1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
+2. 선택한 달로썸 도입 방식이 체크리스트/비교표/FAQ/대화체 등 구체 형식이라면 도입부에서 그 형식이 눈에 보이게 작성해줘.
+3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
 3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
@@ -775,15 +836,17 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 {extra_rules.strip() if extra_rules.strip() else '- 없음'}
 """
 
-def build_claude_prompt(voice_type, keyword, field, body_text=""):
+def build_claude_prompt(voice_type, intro_type, keyword, field, body_text=""):
     return f"""아래 원고를 다듬어줘.
 
 이 원고의 도입 화법은 “{voice_type}”이다.
-이 화법은 절대 바꾸지 말고 유지해줘.
+이 원고의 달로썸 도입 방식은 “{intro_type}”이다.
+화법과 도입 방식은 절대 바꾸지 말고 유지해줘.
 
 건드리면 안 되는 것:
 1. 도입부의 “{voice_type}” 흐름
-2. 핵심 키워드 “{keyword}”
+2. 도입부의 “{intro_type}” 방식
+3. 핵심 키워드 “{keyword}”
 3. {field} 분야에 맞는 신중한 톤
 4. 핵심 고민 포인트와 제목/소제목 방향
 5. 본문 문단마다 들어간 ‘독자가 실제로 헷갈리는 지점’
@@ -808,6 +871,7 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 - 없는 병원/업체 장점 만들기 금지
 - 과장 표현 추가 금지
 - 도입화법 변경 금지
+- 달로썸 도입 방식 변경 금지
 - 본문을 팩트 설명문처럼 딱딱하게 바꾸기 금지
 
 수정 후 아래 형식으로 답해줘.
@@ -820,8 +884,8 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.1")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 조사 단계 분량 조건 표시 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.2")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -833,6 +897,7 @@ with tab_research:
         r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")
         r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
         r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
+        r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
     with col2:
         r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
         r_len_col1, r_len_col2 = st.columns(2)
@@ -846,7 +911,7 @@ with tab_research:
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -888,6 +953,11 @@ with tab_design:
     d_voice = st.selectbox("도입 화법 선택", VOICE_TYPES, index=voice_index, key="d_voice")
     st.caption(f"자동 추천 화법: {recommended_voice}")
 
+    recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
+    intro_index = INTRO_TYPES.index(recommended_intro) if recommended_intro in INTRO_TYPES else 4
+    d_intro_type = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPES, index=intro_index, key="d_intro_type")
+    st.caption(f"자동 추천 도입 방식: {recommended_intro} / 필요하면 직접 바꾸면 됩니다.")
+
     st.write("### 자료 등급 카운트")
     st.table(pd.DataFrame([{"구분": k, "감지 수": v} for k, v in counts.items()]))
 
@@ -918,8 +988,8 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
-    claude_prompt_empty = build_claude_prompt(d_voice, d_keyword, d_field)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
+    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_keyword, d_field)
 
     st.write("## GPTs용 초안 프롬프트")
     st.text_area("GPTs에 복붙", value=draft_prompt, height=520)

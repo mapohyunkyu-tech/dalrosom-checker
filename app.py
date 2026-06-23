@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.8", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v3.9", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -631,10 +631,59 @@ def recommend_voice_type(field, topic, keyword, research_text):
     return "질문형"
 
 
+
+
+def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
+    """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
+    topic = (topic or keyword or "이 주제").strip()
+    # 핵심 고민 후보를 4개까지 사용
+    clean = []
+    for x in b_lines or []:
+        xx = re.sub(r"^[-•·\d\.\)\s]+", "", str(x)).strip()
+        if xx and xx not in clean:
+            clean.append(xx)
+        if len(clean) >= 4:
+            break
+    while len(clean) < 4:
+        defaults = [
+            f"{topic}을 검색하는 독자가 가장 먼저 헷갈리는 지점",
+            "증상이 정상 범위인지 문제 신호인지 판단하기 어려운 상황",
+            "검사나 상담이 필요한지 몰라 망설이는 상황",
+            "혼자 넘겨도 되는지, 지금 확인해야 하는지 고민하는 상황",
+        ]
+        clean.append(defaults[len(clean)])
+
+    return f"""[문단별 고민 배치안]
+도입부:
+- 가장 강한 고민을 먼저 짚는다: {clean[0]}
+- 단순 위로문이 아니라 실제 검색자가 겪는 장면과 판단 혼란을 문장으로 만든다.
+
+본문 1 시작/전환부:
+- 설명으로 바로 들어가지 말고 이 고민을 먼저 건드린다: {clean[1]}
+- 그 다음 A등급 팩트로 원인/정의/구조를 설명한다.
+
+본문 2 시작/전환부:
+- 증상 반복, 일상 불편, 악화 상황에 대한 고민을 짚는다: {clean[2]}
+- 그 다음 A등급 팩트로 기준/구분/주의사항을 설명한다.
+
+본문 3 시작/전환부:
+- 검사, 치료, 비용, 선택 불안처럼 독자가 망설이는 지점을 짚는다: {clean[3]}
+- 그 다음 검사/치료/선택 기준을 신중하게 설명한다.
+
+마무리:
+- 독자의 현재 상황으로 다시 돌아온다.
+- 과한 상담 유도보다 “혼자 단정하지 말고 현재 상태를 확인해보자”는 흐름으로 마무리한다.
+
+금지:
+- B등급 고민을 도입부에만 쓰고 본문은 A등급 팩트 나열로 끝내지 말 것.
+- 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
+- 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
+
 def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines, b_lines, c_lines, extra_rules=""):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
+    bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
 주제: {topic}
@@ -646,16 +695,18 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 [A등급 공통 핵심정보 - 본문 팩트용]
 {a_text}
 
-[B등급 잠재고객 고민패턴 - 제목/도입/소제목용]
+[B등급 잠재고객 고민패턴 - 제목/도입/소제목/문단 전환부용]
 {b_text}
 
 [C등급 말맛 참고 포인트 - 표현 참고용]
 {c_text}
 
+{bridge_plan}
+
 작성 지시:
 1. 도입부는 반드시 “{voice_type}” 흐름으로 작성해줘.
-2. B등급 고민패턴을 제목, 도입부, 소제목에 자연스럽게 반영해줘.
-3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용해줘.
+2. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
+3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
 6. 키워드 “{keyword}”를 제목에 1회, 본문에 자연스럽게 여러 번 넣어줘.
@@ -663,6 +714,8 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 8. 소제목을 포함해 5문단 구성으로 작성해줘.
 9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
 10. 마무리는 강한 구매/상담 유도보다 독자가 자기 상황을 확인하게 만드는 방향으로 작성해줘.
+11. 각 문단의 첫 문장 또는 전환부 중 최소 3곳에는 독자가 실제로 헷갈리는 지점/불편한 상황/망설이는 이유를 1문장씩 배치해줘.
+12. 공감은 “힘드셨나요?”, “불안하시죠?” 같은 빈 위로가 아니라 실제 고민 상황을 짚는 방식으로 작성해줘.
 
 피해야 할 표현:
 - 100%
@@ -673,11 +726,11 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines,
 - 효과 보장
 - 최고/유일
 - 가짜 개인 경험담
+- 힘드셨나요/불안하시죠/걱정되시죠의 반복
 
 추가 조건:
 {extra_rules.strip() if extra_rules.strip() else '- 없음'}
 """
-
 
 def build_claude_prompt(voice_type, keyword, field, body_text=""):
     return f"""아래 원고를 다듬어줘.
@@ -690,8 +743,9 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 2. 핵심 키워드 “{keyword}”
 3. {field} 분야에 맞는 신중한 톤
 4. 핵심 고민 포인트와 제목/소제목 방향
-5. 가짜 후기처럼 보이는 개인 경험 금지
-6. 원고 전체 구조 대폭 변경 금지
+5. 본문 문단마다 들어간 ‘독자가 실제로 헷갈리는 지점’
+6. 가짜 후기처럼 보이는 개인 경험 금지
+7. 원고 전체 구조 대폭 변경 금지
 
 수정 허용 범위:
 - 문장 리듬 개선
@@ -700,12 +754,18 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 - AI가 쓴 듯한 딱딱한 표현 완화
 - 너무 반복되는 표현 정리
 
+중요:
+- 정보 설명만 남기고 감정/고민 문장을 삭제하지 말 것.
+- B등급 고민패턴에서 나온 공감 포인트를 살려둘 것.
+- “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화하지 말 것.
+- 공감 문장은 실제 상황, 판단 혼란, 생활 불편을 짚는 방식으로 유지할 것.
+
 금지:
 - 새로운 사례나 경험담 추가 금지
 - 없는 병원/업체 장점 만들기 금지
 - 과장 표현 추가 금지
 - 도입화법 변경 금지
-- “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화 금지
+- 본문을 팩트 설명문처럼 딱딱하게 바꾸기 금지
 
 수정 후 아래 형식으로 답해줘.
 1. 예상 점수
@@ -717,8 +777,8 @@ def build_claude_prompt(voice_type, keyword, field, body_text=""):
 """
 
 
-st.title("📝 달로썸 원고 검수기 v3.8")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법 설계 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v3.9")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법/문단별 고민 배치 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -792,6 +852,10 @@ with tab_design:
                 st.success(x)
         else:
             st.info("C등급 말맛 참고는 없어도 됩니다. 단, 후기형 원고라면 있으면 좋습니다.")
+
+    st.write("## 문단별 고민 배치안")
+    bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
+    st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
     draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, a_lines, b_lines, c_lines, d_extra_rules)
     claude_prompt_empty = build_claude_prompt(d_voice, d_keyword, d_field)

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.7", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v3.8", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -388,118 +388,535 @@ def generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, 
     return f"""{topic}은 검색으로 얻은 정보만으로 바로 결론을 내리기보다, 자신의 상황에 맞는 기준을 차분히 확인하는 것이 중요합니다. 홈페이지 정보가 없다면 업체의 철학이나 강점을 임의로 만들지 말고, 핵심 내용 요약과 다음 행동 기준을 중심으로 마무리하는 편이 안전합니다."""
 
 
-st.title("📝 달로썸 원고 검수기 v3.7")
-st.caption("검수 결과를 먼저 보여주고, 필요할 때만 도입/마무리 리라이트를 생성합니다.")
 
-with st.sidebar:
-    st.header("원고 조건")
-    purpose = st.selectbox("원고 목적", PURPOSES, index=0)
-    field = st.selectbox("분야", FIELDS, index=0)
-    writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
-    keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
-    title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
-    selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
-    ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
-    include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
-    philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
-    st.divider()
-    st.subheader("검수 후 생성 옵션")
-    generate_intro = st.checkbox("도입 리라이트 생성", value=False)
-    rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
-    generate_ending = st.checkbox("마무리 문단 생성", value=False)
-    homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
-    homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
-    min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
-    max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
 
-draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
+# =========================
+# v3.8: 자료조사 프롬프트 / 원고 설계 모드
+# =========================
+RESEARCH_FIELDS = [
+    "병원 / 의료", "법률", "에스테틱 / 피부관리", "청소 / 홈케어", "생활용품", "학원 / 교육",
+    "인테리어 / 리모델링", "보험 / 금융 / 부동산", "맛집 / 여행 / 숙박", "기타"
+]
+CONTENT_TYPES = ["정보성", "바이럴", "업체 홍보", "후기형", "전문가 설명형"]
+VOICE_TYPES = [
+    "질문형",
+    "일상 불편형",
+    "판단 혼란형",
+    "감정 직면형",
+    "억울함 공감형",
+    "비교 고민형",
+    "전문가 안내형",
+]
 
-if st.button("검수 시작", type="primary"):
-    title, body, title_source = extract_title(title_input, draft)
-    if not body:
-        st.error("본문이 비어 있습니다.")
-        st.stop()
 
-    scores, issues, total, cap_reasons, meta = check_all(
-        title, body, keyword, field, purpose, writer_perspective,
-        selected_intro_type, ending_type, include_philosophy, philosophy_text,
-        min_len, max_len
-    )
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus):
+    topic = topic.strip() or "써마지 시술"
+    keyword = keyword.strip() or topic
+    field = field.strip() or "병원 / 의료"
+    content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
+    extra_focus = extra_focus.strip()
 
-    st.write("## 추출 결과")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("제목 인식", "성공" if title else "실패")
-    c2.metric("제목 출처", title_source)
-    c3.metric("제목 글자수", len(title) if title else 0)
-    st.info(f"인식된 제목: {title if title else '없음'}")
-    st.caption(f"선택한 현재 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
+    return f"""주제: {topic}
+핵심 키워드: {keyword}
+분야: {field}
+원고 목적: {content_goal}
 
-    st.write("## 점수")
-    st.metric("총점", f"{total}점", price_estimate(total))
-    if cap_reasons:
-        with st.expander("점수 상한 적용 이유"):
-            for r in cap_reasons:
-                st.warning(r)
+위 주제로 블로그 원고 작성을 위한 사전 자료조사를 해줘.
+자료는 단순히 많이 모으는 것이 아니라, 아래처럼 등급을 나누고 원고에 어떻게 쓸지까지 정리해줘.
 
-    st.table(pd.DataFrame([
-        {"항목": "제목", "점수": f"{scores['제목']}/15"},
-        {"항목": "본문 SEO/길이/키워드", "점수": f"{scores['본문']}/20"},
-        {"항목": "도입부", "점수": f"{scores['도입']}/15"},
-        {"항목": "AI티", "점수": f"{scores['AI티']}/15"},
-        {"항목": "위험표현", "점수": f"{scores['위험표현']}/15"},
-        {"항목": "작성자 관점", "점수": f"{scores['작성자 관점']}/10"},
-        {"항목": "마무리", "점수": f"{scores['마무리']}/10"},
-    ]))
+가장 중요한 목표:
+1. A등급 자료에서는 여러 자료에서 공통으로 확인되는 핵심 사실을 뽑아줘.
+2. B등급 자료에서는 실제 사람들이 반복해서 묻는 고민, 불안, 질문 패턴을 뽑아줘.
+3. C등급 자료에서는 자연스러운 생활 표현, 후기 말투, 망설임 표현만 참고해줘.
+4. 원문 문장을 그대로 베끼지 말고, 원고에 반영할 수 있는 패턴으로 재구성해줘.
 
-    st.write("## 핵심 수치")
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("공백 제외 글자수", meta["no_space_len"])
-    m2.metric("키워드 횟수", f"본문 {meta['body_kw']} / 제목포함 {meta['total_kw']}")
-    m3.metric("소제목 수", meta["subheads"])
-    m4.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
+자료 등급 기준:
 
-    for section in ["제목", "본문", "도입", "AI티", "위험표현", "작성자 관점", "마무리"]:
-        show_issues(f"{section} 검수", issues[section])
+A등급: 팩트 확인용
+- 정부기관 자료
+- 학회/협회 자료
+- 병원 공식자료
+- 제조사 공식자료
+- 법령/판례/공식 안내자료
+- 신뢰 가능한 전문자료
 
-    st.write("### 용어 설명 제안")
-    glossary_terms = glossary_check(body, field)
-    if glossary_terms:
-        st.info("본문에 나오지만 초보 독자에게 설명이 있으면 좋은 용어: " + ", ".join(glossary_terms))
+A등급에서 뽑을 내용:
+- 여러 자료에서 공통으로 반복되는 핵심 사실
+- 원리, 정의, 적용 대상, 주의사항
+- 개인차가 있는 부분
+- 단정하면 위험한 부분
+- 본문에 안전하게 넣을 수 있는 기준
+
+B등급: 잠재고객 고민 추출용
+- 하이닥 Q&A
+- 닥터나우 상담
+- 로톡 상담 사례
+- 법률메카 Q&A
+- 네이버 지식iN
+- 유튜브 댓글/질문
+- 커뮤니티 질문글
+
+B등급에서 뽑을 내용:
+- 사람들이 실제로 걱정하는 질문
+- 반복되는 고민
+- 판단이 어려운 지점
+- 비용, 부작용, 효과, 기간, 선택 불안
+- 제목과 도입부에 넣을 만한 질문형 포인트
+
+C등급: 말맛/후기 참고용
+- 블로그 후기
+- 카페 후기
+- 쇼핑몰 리뷰
+- 네이버 플레이스 리뷰
+- 숨고 후기
+- 댓글
+
+C등급에서 뽑을 내용:
+- 사람들이 불편함을 표현하는 방식
+- 실제 독자 말투
+- 후기형 글에 참고할 수 있는 분위기
+- 단, 가짜 경험담은 만들지 말 것
+
+D등급: 참고만 가능
+- 출처 불명 블로그
+- 광고성 글
+- AI 느낌 강한 글
+- 오래된 글
+- 피상적인 정보글
+
+제외 자료:
+- 개인정보가 드러나는 글
+- 특정 업체 비방글
+- 과도한 공포 마케팅
+- 근거 없는 루머
+- 의료/법률/금융적으로 위험한 단정 표현
+
+출력 형식:
+
+[1] 자료 목록 및 등급 평가
+각 자료마다 아래 형식으로 정리해줘.
+
+자료 제목:
+자료 링크:
+자료 유형:
+예상 등급: A/B/C/D/제외
+관련성: 높음/보통/낮음
+신뢰도: 높음/보통/낮음
+고민 추출 가치: 높음/보통/낮음
+최신성: 높음/보통/낮음
+원고 활용 목적:
+주의할 점:
+
+[2] A등급 공통 핵심정보
+여러 A등급 자료에서 공통으로 확인되는 내용만 5~8개로 정리해줘.
+단, 한 자료에만 나오는 내용은 “단일 자료 확인 내용”으로 따로 분리해줘.
+자료끼리 내용이 다르면 “추가 확인 필요”로 표시해줘.
+
+[3] B등급 잠재고객 고민패턴
+실제 질문/댓글/상담글에서 반복될 가능성이 높은 고민을 정리해줘.
+아래 기준으로 나눠줘.
+- 반복 질문
+- 불안 포인트
+- 판단이 어려운 지점
+- 비용/효과/부작용/기간/선택 고민
+- 제목으로 바꿀 수 있는 질문
+- 도입부에 넣을 공감 포인트
+
+[4] C등급 말맛 참고 포인트
+후기나 댓글에서 참고할 수 있는 생활 표현을 정리해줘.
+단, 특정 개인 경험을 그대로 쓰거나 가짜 후기로 만들지 말고 말투와 표현 방향만 정리해줘.
+
+[5] 추천 도입 화법
+아래 중 가장 어울리는 도입 화법을 추천하고 이유를 설명해줘.
+- 질문형
+- 일상 불편형
+- 판단 혼란형
+- 감정 직면형
+- 억울함 공감형
+- 비교 고민형
+- 전문가 안내형
+
+[6] GPTs 초안 작성용 요약
+내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
+
+핵심 팩트 자료 요약:
+잠재고객 고민 요약:
+추천 도입 화법:
+제목 방향:
+도입부 방향:
+소제목 방향:
+반드시 포함할 내용:
+피해야 할 표현:
+
+주의사항:
+- 원문을 길게 복사하지 말 것.
+- 실제 문장을 그대로 원고에 쓰지 말 것.
+- 출처 링크는 반드시 함께 줄 것.
+- {field} 분야에서 위험한 단정 표현은 피할 것.
+- 사용자가 링크를 직접 확인할 수 있도록 자료별 링크를 빠뜨리지 말 것.
+""" + (f"\n추가로 중점적으로 조사할 내용:\n{extra_focus}\n" if extra_focus else "")
+
+
+def extract_lines_by_keywords(text, keywords, max_items=8):
+    if not text.strip():
+        return []
+    lines = []
+    for raw in re.split(r"[\n\r]+", text):
+        line = raw.strip(" -•·\t")
+        if len(line) < 8:
+            continue
+        if any(k in line for k in keywords):
+            lines.append(line)
+    # de-duplicate preserving order
+    out = []
+    seen = set()
+    for l in lines:
+        key = re.sub(r"\s+", "", l)[:60]
+        if key not in seen:
+            out.append(l)
+            seen.add(key)
+        if len(out) >= max_items:
+            break
+    return out
+
+
+def section_after(text, names, stop_names=None, max_chars=2000):
+    stop_names = stop_names or []
+    for name in names:
+        idx = text.find(name)
+        if idx >= 0:
+            part = text[idx: idx + max_chars]
+            stop_idx = len(part)
+            for stop in stop_names:
+                j = part.find(stop, len(name))
+                if j >= 0:
+                    stop_idx = min(stop_idx, j)
+            return part[:stop_idx].strip()
+    return ""
+
+
+def analyze_research_text(text):
+    t = text or ""
+    counts = {
+        "A등급": len(re.findall(r"A등급|예상 등급:\s*A|예상등급:\s*A", t)),
+        "B등급": len(re.findall(r"B등급|예상 등급:\s*B|예상등급:\s*B", t)),
+        "C등급": len(re.findall(r"C등급|예상 등급:\s*C|예상등급:\s*C", t)),
+        "D등급": len(re.findall(r"D등급|예상 등급:\s*D|예상등급:\s*D", t)),
+        "제외": len(re.findall(r"제외|사용 금지|반영 비추천", t)),
+    }
+    a_section = section_after(t, ["[2] A등급 공통 핵심정보", "A등급 공통 핵심정보", "핵심 팩트 자료 요약"], ["[3]", "B등급", "잠재고객"], 2600)
+    b_section = section_after(t, ["[3] B등급 잠재고객 고민패턴", "B등급 잠재고객 고민패턴", "잠재고객 고민 요약"], ["[4]", "C등급", "말맛"], 2600)
+    c_section = section_after(t, ["[4] C등급 말맛 참고 포인트", "C등급 말맛 참고", "말맛 참고 포인트"], ["[5]", "추천 도입"], 1800)
+
+    a_lines = extract_lines_by_keywords(a_section or t, ["공통", "원리", "정의", "개인차", "주의", "효과", "시술", "치료", "절차", "기준", "사용", "필요"], 8)
+    b_lines = extract_lines_by_keywords(b_section or t, ["걱정", "불안", "궁금", "통증", "부작용", "비용", "효과", "기간", "차이", "비교", "헷갈", "고민", "질문", "막막", "억울"], 10)
+    c_lines = extract_lines_by_keywords(c_section or t, ["말투", "표현", "후기", "불편", "느낌", "사용감", "망설", "생활"], 8)
+    return counts, a_lines, b_lines, c_lines
+
+
+def recommend_voice_type(field, topic, keyword, research_text):
+    text = " ".join([field or "", topic or "", keyword or "", research_text or ""])
+    if any(w in text for w in ["외도", "상간", "이혼", "배신", "폭행", "사기", "형사"]):
+        return "감정 직면형"
+    if any(w in text for w in ["억울", "책임", "누수", "대여금", "돈", "소송", "민원", "손해"]):
+        return "억울함 공감형"
+    if any(w in text for w in ["차이", "비교", "추천", "울쎄라", "인모드", "슈링크", "전기면도기", "날면도기", "가격"]):
+        return "비교 고민형"
+    if any(w in text for w in ["부작용", "정상", "염증", "회복", "헷갈", "괜찮", "문제", "신호"]):
+        return "판단 혼란형"
+    if any(w in text for w in ["통증", "아프", "냄새", "얼룩", "불편", "붓기", "따갑", "가려움", "일상"]):
+        return "일상 불편형"
+    if field in ["병원 / 의료", "법률", "보험 / 금융 / 부동산"]:
+        return "전문가 안내형"
+    return "질문형"
+
+
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, a_lines, b_lines, c_lines, extra_rules=""):
+    a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
+    b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
+    c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
+    return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
+
+주제: {topic}
+핵심 키워드: {keyword}
+분야: {field}
+원고 유형: {content_type}
+선택한 도입 화법: {voice_type}
+
+[A등급 공통 핵심정보 - 본문 팩트용]
+{a_text}
+
+[B등급 잠재고객 고민패턴 - 제목/도입/소제목용]
+{b_text}
+
+[C등급 말맛 참고 포인트 - 표현 참고용]
+{c_text}
+
+작성 지시:
+1. 도입부는 반드시 “{voice_type}” 흐름으로 작성해줘.
+2. B등급 고민패턴을 제목, 도입부, 소제목에 자연스럽게 반영해줘.
+3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용해줘.
+4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
+5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
+6. 키워드 “{keyword}”를 제목에 1회, 본문에 자연스럽게 여러 번 넣어줘.
+7. 단정·과장 표현은 피하고, 개인 상태나 상황에 따라 달라질 수 있다는 신중한 표현을 사용해줘.
+8. 소제목을 포함해 5문단 구성으로 작성해줘.
+9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
+10. 마무리는 강한 구매/상담 유도보다 독자가 자기 상황을 확인하게 만드는 방향으로 작성해줘.
+
+피해야 할 표현:
+- 100%
+- 무조건
+- 반드시 좋아짐
+- 완벽
+- 부작용 없음
+- 효과 보장
+- 최고/유일
+- 가짜 개인 경험담
+
+추가 조건:
+{extra_rules.strip() if extra_rules.strip() else '- 없음'}
+"""
+
+
+def build_claude_prompt(voice_type, keyword, field, body_text=""):
+    return f"""아래 원고를 다듬어줘.
+
+이 원고의 도입 화법은 “{voice_type}”이다.
+이 화법은 절대 바꾸지 말고 유지해줘.
+
+건드리면 안 되는 것:
+1. 도입부의 “{voice_type}” 흐름
+2. 핵심 키워드 “{keyword}”
+3. {field} 분야에 맞는 신중한 톤
+4. 핵심 고민 포인트와 제목/소제목 방향
+5. 가짜 후기처럼 보이는 개인 경험 금지
+6. 원고 전체 구조 대폭 변경 금지
+
+수정 허용 범위:
+- 문장 리듬 개선
+- 어미 반복 줄이기
+- 어색한 문장 자연스럽게 수정
+- AI가 쓴 듯한 딱딱한 표현 완화
+- 너무 반복되는 표현 정리
+
+금지:
+- 새로운 사례나 경험담 추가 금지
+- 없는 병원/업체 장점 만들기 금지
+- 과장 표현 추가 금지
+- 도입화법 변경 금지
+- “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화 금지
+
+수정 후 아래 형식으로 답해줘.
+1. 예상 점수
+2. 바꾼 부분 요약
+3. 최종 수정 원고
+
+[원고]
+{body_text.strip() if body_text.strip() else '여기에 원고를 붙여넣기'}
+"""
+
+
+st.title("📝 달로썸 원고 검수기 v3.8")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/도입화법 설계 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+
+tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
+
+with tab_research:
+    st.header("① GPT에게 붙여넣을 조사 프롬프트")
+    st.write("GPT가 먼저 조사하고, 너는 링크를 직접 확인한 뒤 확인된 자료를 ② 원고 설계 모드에 붙여넣는 흐름입니다.")
+    col1, col2 = st.columns(2)
+    with col1:
+        r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")
+        r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
+        r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
+    with col2:
+        r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
+        r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
+
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra)
+    st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
+    st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
+
+    with st.expander("사용 순서"):
+        st.write("""
+1. 위 프롬프트를 GPT에 붙여넣고 조사시킵니다.
+2. GPT가 준 링크를 직접 열어봅니다.
+3. 광고글, 오래된 글, 관련 없는 글은 버립니다.
+4. 확인한 자료 요약만 ② 원고 설계 모드에 붙여넣습니다.
+5. 프로그램이 A등급 공통정보, B등급 고민패턴, 도입화법, GPTs 초안 프롬프트를 만들어줍니다.
+""")
+
+with tab_design:
+    st.header("② 원고 설계 모드")
+    st.write("확인한 조사 결과를 붙여넣으면 A등급 공통정보, B등급 고민패턴, 도입화법, GPTs용 초안 프롬프트를 정리합니다.")
+    d_col1, d_col2 = st.columns(2)
+    with d_col1:
+        d_topic = st.text_input("주제", value="써마지 시술", key="d_topic")
+        d_keyword = st.text_input("핵심 키워드", value="써마지", key="d_keyword")
+        d_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="d_field")
+    with d_col2:
+        d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
+        d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 총 5문단, 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
+
+    research_text = st.text_area("GPT 조사 결과 / 직접 확인한 자료 요약 붙여넣기", height=360, placeholder="GPT가 조사해준 자료 중 링크를 직접 확인한 내용만 붙여넣으세요.", key="research_text")
+
+    counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
+    recommended_voice = recommend_voice_type(d_field, d_topic, d_keyword, research_text)
+    voice_index = VOICE_TYPES.index(recommended_voice) if recommended_voice in VOICE_TYPES else 0
+    d_voice = st.selectbox("도입 화법 선택", VOICE_TYPES, index=voice_index, key="d_voice")
+    st.caption(f"자동 추천 화법: {recommended_voice}")
+
+    st.write("### 자료 등급 카운트")
+    st.table(pd.DataFrame([{"구분": k, "감지 수": v} for k, v in counts.items()]))
+
+    cc1, cc2, cc3 = st.columns(3)
+    with cc1:
+        st.write("### A등급 공통 핵심정보 후보")
+        if a_lines:
+            for x in a_lines:
+                st.info(x)
+        else:
+            st.warning("A등급 공통정보 후보가 약합니다. GPT 조사 결과의 [2] A등급 공통 핵심정보 섹션을 붙여넣어 주세요.")
+    with cc2:
+        st.write("### B등급 고민패턴 후보")
+        if b_lines:
+            for x in b_lines:
+                st.warning(x)
+        else:
+            st.warning("B등급 고민패턴 후보가 약합니다. 실제 질문/댓글/상담글 요약을 더 넣어주세요.")
+    with cc3:
+        st.write("### C등급 말맛 참고 후보")
+        if c_lines:
+            for x in c_lines:
+                st.success(x)
+        else:
+            st.info("C등급 말맛 참고는 없어도 됩니다. 단, 후기형 원고라면 있으면 좋습니다.")
+
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, a_lines, b_lines, c_lines, d_extra_rules)
+    claude_prompt_empty = build_claude_prompt(d_voice, d_keyword, d_field)
+
+    st.write("## GPTs용 초안 프롬프트")
+    st.text_area("GPTs에 복붙", value=draft_prompt, height=520)
+    st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt")
+
+    st.write("## Claude용 윤문 지시문 기본형")
+    st.text_area("Claude에 보낼 때 원고와 함께 복붙", value=claude_prompt_empty, height=420)
+    st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt")
+
+with tab_check:
+    st.title("📝 원고 검수 모드")
+    st.caption("초안 작성 후 점수, 위험표현, 도입/마무리를 확인합니다. 필요할 때만 리라이트를 생성합니다.")
+
+    with st.sidebar:
+        st.header("원고 조건")
+        purpose = st.selectbox("원고 목적", PURPOSES, index=0)
+        field = st.selectbox("분야", FIELDS, index=0)
+        writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
+        keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
+        title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
+        selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
+        ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
+        include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
+        philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
+        st.divider()
+        st.subheader("검수 후 생성 옵션")
+        generate_intro = st.checkbox("도입 리라이트 생성", value=False)
+        rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
+        generate_ending = st.checkbox("마무리 문단 생성", value=False)
+        homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
+        homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
+        min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
+        max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
+
+    draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
+
+    if st.button("검수 시작", type="primary"):
+        title, body, title_source = extract_title(title_input, draft)
+        if not body:
+            st.error("본문이 비어 있습니다.")
+            st.stop()
+
+        scores, issues, total, cap_reasons, meta = check_all(
+            title, body, keyword, field, purpose, writer_perspective,
+            selected_intro_type, ending_type, include_philosophy, philosophy_text,
+            min_len, max_len
+        )
+
+        st.write("## 추출 결과")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("제목 인식", "성공" if title else "실패")
+        c2.metric("제목 출처", title_source)
+        c3.metric("제목 글자수", len(title) if title else 0)
+        st.info(f"인식된 제목: {title if title else '없음'}")
+        st.caption(f"선택한 현재 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
+
+        st.write("## 점수")
+        st.metric("총점", f"{total}점", price_estimate(total))
+        if cap_reasons:
+            with st.expander("점수 상한 적용 이유"):
+                for r in cap_reasons:
+                    st.warning(r)
+
+        st.table(pd.DataFrame([
+            {"항목": "제목", "점수": f"{scores['제목']}/15"},
+            {"항목": "본문 SEO/길이/키워드", "점수": f"{scores['본문']}/20"},
+            {"항목": "도입부", "점수": f"{scores['도입']}/15"},
+            {"항목": "AI티", "점수": f"{scores['AI티']}/15"},
+            {"항목": "위험표현", "점수": f"{scores['위험표현']}/15"},
+            {"항목": "작성자 관점", "점수": f"{scores['작성자 관점']}/10"},
+            {"항목": "마무리", "점수": f"{scores['마무리']}/10"},
+        ]))
+
+        st.write("## 핵심 수치")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("공백 제외 글자수", meta["no_space_len"])
+        m2.metric("키워드 횟수", f"본문 {meta['body_kw']} / 제목포함 {meta['total_kw']}")
+        m3.metric("소제목 수", meta["subheads"])
+        m4.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
+
+        for section in ["제목", "본문", "도입", "AI티", "위험표현", "작성자 관점", "마무리"]:
+            show_issues(f"{section} 검수", issues[section])
+
+        st.write("### 용어 설명 제안")
+        glossary_terms = glossary_check(body, field)
+        if glossary_terms:
+            st.info("본문에 나오지만 초보 독자에게 설명이 있으면 좋은 용어: " + ", ".join(glossary_terms))
+        else:
+            st.success("용어 설명 제안 없음")
+
+        st.write("## 검수 후 리라이트 생성")
+
+        if not generate_intro and not generate_ending:
+            st.success("현재는 리라이트 생성이 꺼져 있습니다. 점수와 검수 결과만 확인하면 됩니다.")
+            if total >= 92 and not issues["도입"] and not issues["마무리"]:
+                st.info("현재 도입과 마무리는 유지해도 괜찮습니다. 굳이 새 문단으로 바꿀 필요는 없습니다.")
+
+        if generate_intro:
+            st.write("### 선택한 방식으로 도입 다시 쓰기")
+            rewritten_intro = generate_intro_rewrite(rewrite_intro_type, keyword, title, field, writer_perspective)
+            st.text_area("생성된 도입 문단", value=rewritten_intro, height=260)
+        else:
+            st.caption("도입 리라이트가 필요하면 왼쪽에서 '도입 리라이트 생성'을 켜세요.")
+
+        if generate_ending:
+            st.write("### 마지막 문단 생성")
+            final_paragraph = generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text if include_philosophy else "")
+            st.text_area("생성된 마무리 문단", value=final_paragraph, height=240)
+        else:
+            st.caption("마무리 문단 생성이 필요하면 왼쪽에서 '마무리 문단 생성'을 켜세요.")
+
+        if generate_intro and rewrite_intro_type == "8. 간단한 웹툰 만들어 넣기":
+            st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
+
+        st.write("## 제출 판단")
+        if total >= 92:
+            st.success("제출 가능권입니다. 오탈자와 줄바꿈만 확인하세요.")
+        elif total >= 88:
+            st.info("실무 가능권입니다. 제출은 가능하지만 도입 방식/마무리 철학 중 하나는 보완하는 편이 좋습니다.")
+        elif total >= 82:
+            st.warning("부분 보완 필요입니다. 재작성까지는 아니고 길이/키워드/도입만 손보세요.")
+        else:
+            st.error("재작성 권장입니다. 구조부터 다시 잡는 편이 빠릅니다.")
     else:
-        st.success("용어 설명 제안 없음")
-
-    st.write("## 검수 후 리라이트 생성")
-
-    if not generate_intro and not generate_ending:
-        st.success("현재는 리라이트 생성이 꺼져 있습니다. 점수와 검수 결과만 확인하면 됩니다.")
-        if total >= 92 and not issues["도입"] and not issues["마무리"]:
-            st.info("현재 도입과 마무리는 유지해도 괜찮습니다. 굳이 새 문단으로 바꿀 필요는 없습니다.")
-
-    if generate_intro:
-        st.write("### 선택한 방식으로 도입 다시 쓰기")
-        rewritten_intro = generate_intro_rewrite(rewrite_intro_type, keyword, title, field, writer_perspective)
-        st.text_area("생성된 도입 문단", value=rewritten_intro, height=260)
-    else:
-        st.caption("도입 리라이트가 필요하면 왼쪽에서 '도입 리라이트 생성'을 켜세요.")
-
-    if generate_ending:
-        st.write("### 마지막 문단 생성")
-        final_paragraph = generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text if include_philosophy else "")
-        st.text_area("생성된 마무리 문단", value=final_paragraph, height=240)
-    else:
-        st.caption("마무리 문단 생성이 필요하면 왼쪽에서 '마무리 문단 생성'을 켜세요.")
-
-    if generate_intro and rewrite_intro_type == "8. 간단한 웹툰 만들어 넣기":
-        st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
-
-    st.write("## 제출 판단")
-    if total >= 92:
-        st.success("제출 가능권입니다. 오탈자와 줄바꿈만 확인하세요.")
-    elif total >= 88:
-        st.info("실무 가능권입니다. 제출은 가능하지만 도입 방식/마무리 철학 중 하나는 보완하는 편이 좋습니다.")
-    elif total >= 82:
-        st.warning("부분 보완 필요입니다. 재작성까지는 아니고 길이/키워드/도입만 손보세요.")
-    else:
-        st.error("재작성 권장입니다. 구조부터 다시 잡는 편이 빠릅니다.")
-else:
-    st.info("왼쪽 조건을 입력하고 원고를 붙여넣은 뒤 검수 시작을 누르세요.")
+        st.info("왼쪽 조건을 입력하고 원고를 붙여넣은 뒤 검수 시작을 누르세요.")

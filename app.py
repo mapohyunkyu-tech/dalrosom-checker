@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.6", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v3.7", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -388,8 +388,8 @@ def generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, 
     return f"""{topic}은 검색으로 얻은 정보만으로 바로 결론을 내리기보다, 자신의 상황에 맞는 기준을 차분히 확인하는 것이 중요합니다. 홈페이지 정보가 없다면 업체의 철학이나 강점을 임의로 만들지 말고, 핵심 내용 요약과 다음 행동 기준을 중심으로 마무리하는 편이 안전합니다."""
 
 
-st.title("📝 달로썸 원고 검수기 v3.6")
-st.caption("검수 후 도입 리라이트와 홈페이지 정보 기반 마무리 문단까지 생성합니다.")
+st.title("📝 달로썸 원고 검수기 v3.7")
+st.caption("검수 결과를 먼저 보여주고, 필요할 때만 도입/마무리 리라이트를 생성합니다.")
 
 with st.sidebar:
     st.header("원고 조건")
@@ -404,7 +404,9 @@ with st.sidebar:
     philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
     st.divider()
     st.subheader("검수 후 생성 옵션")
+    generate_intro = st.checkbox("도입 리라이트 생성", value=False)
     rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
+    generate_ending = st.checkbox("마무리 문단 생성", value=False)
     homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
     homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
     min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
@@ -468,15 +470,27 @@ if st.button("검수 시작", type="primary"):
 
     st.write("## 검수 후 리라이트 생성")
 
-    st.write("### 선택한 방식으로 도입 다시 쓰기")
-    rewritten_intro = generate_intro_rewrite(rewrite_intro_type, keyword, title, field, writer_perspective)
-    st.text_area("생성된 도입 문단", value=rewritten_intro, height=260)
+    if not generate_intro and not generate_ending:
+        st.success("현재는 리라이트 생성이 꺼져 있습니다. 점수와 검수 결과만 확인하면 됩니다.")
+        if total >= 92 and not issues["도입"] and not issues["마무리"]:
+            st.info("현재 도입과 마무리는 유지해도 괜찮습니다. 굳이 새 문단으로 바꿀 필요는 없습니다.")
 
-    st.write("### 마지막 문단 생성")
-    final_paragraph = generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text if include_philosophy else "")
-    st.text_area("생성된 마무리 문단", value=final_paragraph, height=240)
+    if generate_intro:
+        st.write("### 선택한 방식으로 도입 다시 쓰기")
+        rewritten_intro = generate_intro_rewrite(rewrite_intro_type, keyword, title, field, writer_perspective)
+        st.text_area("생성된 도입 문단", value=rewritten_intro, height=260)
+    else:
+        st.caption("도입 리라이트가 필요하면 왼쪽에서 '도입 리라이트 생성'을 켜세요.")
 
-    st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
+    if generate_ending:
+        st.write("### 마지막 문단 생성")
+        final_paragraph = generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text if include_philosophy else "")
+        st.text_area("생성된 마무리 문단", value=final_paragraph, height=240)
+    else:
+        st.caption("마무리 문단 생성이 필요하면 왼쪽에서 '마무리 문단 생성'을 켜세요.")
+
+    if generate_intro and rewrite_intro_type == "8. 간단한 웹툰 만들어 넣기":
+        st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
 
     st.write("## 제출 판단")
     if total >= 92:

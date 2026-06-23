@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.5", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v3.6", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -14,20 +14,8 @@ PURPOSES = [
     "일반 정보성 원고",
 ]
 
-FIELDS = [
-    "에스테틱 / 피부관리",
-    "병원 / 의료",
-    "법률",
-    "기타 전문업종",
-]
-
-WRITER_PERSPECTIVES = [
-    "에스테틱 원장",
-    "피부과 원장/전문의",
-    "변호사",
-    "전문업종 대표",
-    "정보성 블로그 작성자",
-]
+FIELDS = ["에스테틱 / 피부관리", "병원 / 의료", "법률", "기타 전문업종"]
+WRITER_PERSPECTIVES = ["에스테틱 원장", "피부과 원장/전문의", "변호사", "전문업종 대표", "정보성 블로그 작성자"]
 
 INTRO_TYPES = [
     "1. 독자의 상황을 찔러주는 체크리스트 활용",
@@ -40,39 +28,15 @@ INTRO_TYPES = [
     "8. 간단한 웹툰 만들어 넣기",
 ]
 
-ENDING_TYPES = [
-    "관리 철학형",
-    "상담 유도형",
-    "체크리스트 요약형",
-    "부드러운 CTA형",
-    "철학 없이 정보 마무리",
-]
+ENDING_TYPES = ["관리 철학형", "상담 유도형", "체크리스트 요약형", "부드러운 CTA형", "철학 없이 정보 마무리"]
 
-RISK_PHRASES = {
-    "공통": [
-        "100%", "무조건", "반드시 개선", "확실히 개선", "완벽하게", "부작용 없음",
-        "효과 보장", "즉시 효과", "영구적", "완치", "최고", "유일한", "단 하나"
-    ],
-    "에스테틱 / 피부관리": [
-        "치료", "진단", "처방", "의료진", "병변", "질환 치료", "재생된다",
-        "피부가 완전히 바뀝니다", "무조건 좋아집니다"
-    ],
-    "병원 / 의료": [
-        "완치", "부작용 없음", "통증 없음", "흉터 없음", "재발 없음",
-        "무조건 개선", "100% 개선"
-    ],
-    "법률": [
-        "무조건 승소", "반드시 승소", "100% 승소", "확실히 받아냅니다",
-        "무조건 받을 수 있습니다"
-    ],
+RISK_COMMON = ["100%", "무조건", "반드시 개선", "확실히 개선", "완벽하게", "부작용 없음", "효과 보장", "즉시 효과", "영구적", "완치", "최고", "유일한", "단 하나"]
+RISK_FIELD = {
+    "에스테틱 / 피부관리": ["치료", "진단", "처방", "의료진", "병변", "질환 치료", "재생된다", "무조건 좋아집니다"],
+    "병원 / 의료": ["완치", "부작용 없음", "통증 없음", "흉터 없음", "재발 없음", "무조건 개선", "100% 개선"],
+    "법률": ["무조건 승소", "반드시 승소", "100% 승소", "확실히 받아냅니다", "무조건 받을 수 있습니다"],
 }
-
-AI_PATTERNS = [
-    "이 글에서는", "오늘은", "알아보겠습니다", "설명드리겠습니다", "중요합니다",
-    "필요합니다", "도움이 됩니다", "도움이 될 수 있습니다", "확인해야 합니다",
-    "정리해보겠습니다", "살펴보겠습니다", "바로", "핵심은"
-]
-
+AI_PATTERNS = ["이 글에서는", "오늘은", "알아보겠습니다", "설명드리겠습니다", "중요합니다", "필요합니다", "도움이 됩니다", "도움이 될 수 있습니다", "확인해야 합니다", "정리해보겠습니다", "살펴보겠습니다"]
 GLOSSARY_TERMS = {
     "에스테틱 / 피부관리": ["T존", "U존", "유수분", "피부 장벽", "각질", "피지", "자외선 차단제", "홈케어"],
     "병원 / 의료": ["진피", "표피", "염증", "색소침착", "회복기간", "부작용"],
@@ -93,106 +57,26 @@ def default_philosophy_by_field(field, writer_perspective):
 def extract_title(title_input, draft):
     title_input = (title_input or "").strip()
     draft = draft or ""
-
     if title_input:
         title = re.sub(r"^제목\s*[:：]\s*", "", title_input).strip()
         return title, draft.strip(), "제목 입력칸"
 
     lines = [l.strip() for l in draft.splitlines() if l.strip()]
     if not lines:
-        return "", draft.strip(), "없음"
-
+        return "", "", "없음"
     first = lines[0]
     if first.startswith("#"):
-        title = first.lstrip("#").strip()
-        body = "\n".join(lines[1:]).strip()
-        return title, body, "본문 첫 줄"
-
-    match = re.match(r"^제목\s*[:：]\s*(.+)$", first)
-    if match:
-        title = match.group(1).strip()
-        body = "\n".join(lines[1:]).strip()
-        return title, body, "본문 제목표기"
-
+        return first.lstrip("#").strip(), "\n".join(lines[1:]).strip(), "본문 첫 줄"
+    m = re.match(r"^제목\s*[:：]\s*(.+)$", first)
+    if m:
+        return m.group(1).strip(), "\n".join(lines[1:]).strip(), "본문 제목표기"
     if len(first) <= 40 and not first.endswith(("다.", "요.", "니다.", "죠.", "?")):
-        title = first
-        body = "\n".join(lines[1:]).strip()
-        return title, body, "본문 첫 줄 자동추출"
-
+        return first, "\n".join(lines[1:]).strip(), "본문 첫 줄 자동추출"
     return "", draft.strip(), "없음"
 
 
 def count_keyword(text, keyword):
-    if not keyword:
-        return 0
-    return text.count(keyword)
-
-
-def title_check(title, keyword):
-    issues = []
-    score = 15
-
-    if not title:
-        return [("제목 없음", "제목 입력칸 또는 본문 첫 줄에서 제목을 찾지 못했습니다.")], 0
-
-    if keyword:
-        if keyword not in title:
-            issues.append(("제목 키워드 누락", f"제목에 키워드 '{keyword}'가 정확히 들어가지 않았습니다."))
-            score -= 6
-        elif not title.startswith(keyword):
-            issues.append(("키워드 위치", "제목 키워드는 가능하면 맨 앞에 두는 것이 좋습니다."))
-            score -= 2
-
-    if len(title) > 30:
-        issues.append(("제목 길이", f"제목이 {len(title)}자로 30자를 넘습니다."))
-        score -= 3
-
-    if keyword and title.count(keyword) > 1:
-        issues.append(("키워드 반복", "제목에는 키워드를 1회만 넣는 편이 자연스럽습니다."))
-        score -= 2
-
-    return issues, max(score, 0)
-
-
-def body_seo_check(body, keyword, target_len_min, target_len_max, title=""):
-    issues = []
-    score = 20
-    no_space_len = len(re.sub(r"\s+", "", body))
-    body_keyword_count = count_keyword(body, keyword)
-    title_keyword_count = count_keyword(title, keyword)
-    total_keyword_count = body_keyword_count + title_keyword_count
-
-    if no_space_len < 1200:
-        issues.append(("본문 길이 부족", f"공백 제외 {no_space_len}자입니다. 최소 1,300자 이상은 맞추는 편이 좋습니다."))
-        score -= 6
-    elif no_space_len < target_len_min:
-        issues.append(("본문이 약간 짧음", f"공백 제외 {no_space_len}자입니다. 큰 문제는 아니지만 100~200자 정도 보강하면 더 안정적입니다."))
-        score -= 2
-    elif no_space_len > target_len_max:
-        issues.append(("본문이 김", f"공백 제외 {no_space_len}자입니다. 권장 최대 {target_len_max}자를 넘습니다."))
-        score -= 4
-
-    if keyword and total_keyword_count < 5:
-        issues.append(("키워드 부족", f"제목 포함 키워드가 {total_keyword_count}회입니다. 자연스럽게 총 5회 안팎을 권장합니다."))
-        score -= 4
-    elif keyword and body_keyword_count < 4:
-        issues.append(("본문 키워드 약간 부족", f"본문 키워드가 {body_keyword_count}회입니다. 본문에 1회 정도 더 넣으면 안정적입니다."))
-        score -= 2
-    elif keyword and total_keyword_count > 9:
-        issues.append(("키워드 과다", f"제목 포함 키워드가 {total_keyword_count}회입니다. 반복 티가 날 수 있습니다."))
-        score -= 3
-
-    lines = [l.strip() for l in body.splitlines() if l.strip()]
-    subheads = []
-    for line in lines:
-        if len(line) <= 38 and not line.endswith(("다.", "요.", "니다.", "죠.", "?")) and not line.startswith("☑"):
-            subheads.append(line)
-
-    if len(subheads) < 3:
-        issues.append(("소제목 부족", f"소제목으로 보이는 줄이 {len(subheads)}개입니다. 3~5개가 읽기 좋습니다."))
-        score -= 3
-
-    return issues, max(score, 0), no_space_len, body_keyword_count, total_keyword_count, len(subheads)
+    return text.count(keyword) if keyword else 0
 
 
 def detect_intro_types(body):
@@ -203,7 +87,6 @@ def detect_intro_types(body):
     if "☑" in intro or "□" in intro or len(list_lines) >= 2:
         detected.append("1. 독자의 상황을 찔러주는 체크리스트 활용")
 
-    # 실제 표 형태가 있어야 비교 표로 인정
     if "|" in intro or ("구분" in intro and ("T존" in intro or "U존" in intro or "차이" in intro)):
         detected.append("2. 비교 표 활용")
 
@@ -219,7 +102,6 @@ def detect_intro_types(body):
     if any(w in intro for w in ["많이 받는 질문", "자주 받는 질문", "많이 묻는", "자주 묻는", "FAQ", "질문 중 하나"]):
         detected.append("6. 많이 묻는 질문 인용")
 
-    # 명시적인 예고가 있을 때만 알짜 정보 예고로 인정
     if any(w in intro for w in ["검색만으로", "잘 알려지지", "알짜", "놓치기 쉬운", "이 부분을 모르면", "여기서 알 수"]):
         detected.append("7. 검색만으로는 모르는 알짜 정보 예고")
 
@@ -229,156 +111,152 @@ def detect_intro_types(body):
     return detected
 
 
-def intro_check(body, intro_type):
-    issues = []
-    score = 15
-    intro = body.strip()[:900]
-    detected = detect_intro_types(body)
-
-    empathy_words = ["당기", "번들", "헷갈", "속상", "고민", "푸석", "예민", "답답", "불안", "막막"]
-    if not any(w in intro for w in empathy_words):
-        issues.append(("공감 부족", "도입부에서 독자의 실제 고민이 약합니다."))
-        score -= 3
-
-    if intro_type not in detected:
-        issues.append(("도입 방식 불일치", f"선택한 달로썸 도입 방식은 '{intro_type}'인데, 현재 감지된 방식은 {', '.join(detected) if detected else '뚜렷한 유형 없음'}입니다."))
-        score -= 6
-
-    reason_words = ["그래서", "하지만", "다만", "핵심", "기준", "알아두", "확인", "오늘은", "이번 글"]
-    if not any(w in intro for w in reason_words):
-        issues.append(("계속 읽을 이유 약함", "도입부에서 이 글을 읽으면 무엇을 얻는지 조금 더 보여주면 좋습니다."))
-        score -= 2
-
-    weak_starts = ["오늘은", "이번 글에서는", "알아보겠습니다", "설명드리겠습니다"]
-    if any(intro.startswith(w) for w in weak_starts):
-        issues.append(("뻔한 시작", "도입 첫 문장이 흔한 AI식 시작입니다. 독자 상황이나 질문부터 시작하는 편이 좋습니다."))
-        score -= 3
-
-    return issues, max(score, 0), detected
-
-
-def ai_smell_check(body):
-    issues = []
-    score = 15
-    found = []
-
-    for pattern in AI_PATTERNS:
-        count = body.count(pattern)
-        if count >= 3:
-            found.append(f"{pattern}({count})")
-
-    if found:
-        issues.append(("반복 표현", ", ".join(found)))
-        score -= min(7, len(found) * 2)
-
-    colon_count = body.count(":")
-    quote_count = body.count('"') + body.count("'")
-    if colon_count >= 5:
-        issues.append(("콜론 과다", f"콜론(:)이 {colon_count}회입니다. AI 원고 느낌이 날 수 있습니다."))
-        score -= 3
-    if quote_count >= 10:
-        issues.append(("따옴표 과다", f"따옴표가 {quote_count}회입니다. 인터뷰체가 아니라면 줄이는 편이 좋습니다."))
-        score -= 2
-
-    return issues, max(score, 0)
-
-
 def is_safe_risk_context(body, phrase):
     safe_markers = ["아니", "않", "없", "피하", "보다", "있지 않습니다", "권하지", "주의", "무조건 없애", "무조건 두껍"]
     for match in re.finditer(re.escape(phrase), body):
-        start = max(0, match.start() - 20)
-        end = min(len(body), match.end() + 40)
-        window = body[start:end]
+        window = body[max(0, match.start() - 20): min(len(body), match.end() + 40)]
         if any(marker in window for marker in safe_markers):
             return True
     return False
 
 
-def compliance_check(body, field, purpose):
-    issues = []
-    score = 15
-    targets = RISK_PHRASES.get("공통", []) + RISK_PHRASES.get(field, [])
-    found = sorted(set([phrase for phrase in targets if phrase in body and not is_safe_risk_context(body, phrase)]))
+def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, ending_type, include_philosophy, philosophy_text, min_len, max_len):
+    issues = {"제목": [], "본문": [], "도입": [], "AI티": [], "위험표현": [], "작성자 관점": [], "마무리": []}
+    scores = {}
+    no_space_len = len(re.sub(r"\s+", "", body))
+    body_kw = count_keyword(body, keyword)
+    total_kw = body_kw + count_keyword(title, keyword)
+    detected_intro = detect_intro_types(body)
 
+    # 제목
+    title_score = 15
+    if not title:
+        issues["제목"].append(("제목 없음", "제목 입력칸 또는 본문 첫 줄에서 제목을 찾지 못했습니다."))
+        title_score = 0
+    else:
+        if keyword and keyword not in title:
+            issues["제목"].append(("제목 키워드 누락", f"제목에 키워드 '{keyword}'가 정확히 들어가지 않았습니다."))
+            title_score -= 6
+        elif keyword and not title.startswith(keyword):
+            issues["제목"].append(("키워드 위치", "제목 키워드는 가능하면 맨 앞에 두는 것이 좋습니다."))
+            title_score -= 2
+        if len(title) > 30:
+            issues["제목"].append(("제목 길이", f"제목이 {len(title)}자로 30자를 넘습니다."))
+            title_score -= 3
+    scores["제목"] = max(title_score, 0)
+
+    # 본문
+    body_score = 20
+    if no_space_len < 1200:
+        issues["본문"].append(("본문 길이 부족", f"공백 제외 {no_space_len}자입니다. 최소 1,300자 이상 권장합니다."))
+        body_score -= 6
+    elif no_space_len < min_len:
+        issues["본문"].append(("본문이 약간 짧음", f"공백 제외 {no_space_len}자입니다. 100~200자 보강하면 더 안정적입니다."))
+        body_score -= 2
+    elif no_space_len > max_len:
+        issues["본문"].append(("본문이 김", f"공백 제외 {no_space_len}자입니다. 권장 최대 {max_len}자를 넘습니다."))
+        body_score -= 4
+    if keyword and total_kw < 5:
+        issues["본문"].append(("키워드 부족", f"제목 포함 키워드가 {total_kw}회입니다. 총 5회 안팎을 권장합니다."))
+        body_score -= 4
+    elif keyword and total_kw > 9:
+        issues["본문"].append(("키워드 과다", f"제목 포함 키워드가 {total_kw}회입니다. 반복 티가 날 수 있습니다."))
+        body_score -= 3
+    lines = [l.strip() for l in body.splitlines() if l.strip()]
+    subheads = [l for l in lines if len(l) <= 38 and not l.endswith(("다.", "요.", "니다.", "죠.", "?")) and not l.startswith("☑")]
+    if len(subheads) < 3:
+        issues["본문"].append(("소제목 부족", f"소제목으로 보이는 줄이 {len(subheads)}개입니다."))
+        body_score -= 3
+    scores["본문"] = max(body_score, 0)
+
+    # 도입
+    intro_score = 15
+    intro = body[:900]
+    if not any(w in intro for w in ["당기", "번들", "헷갈", "속상", "고민", "푸석", "예민", "답답", "불안", "막막"]):
+        issues["도입"].append(("공감 부족", "도입부에서 독자의 실제 고민이 약합니다."))
+        intro_score -= 3
+    if selected_intro_type not in detected_intro:
+        issues["도입"].append(("도입 방식 불일치", f"선택한 달로썸 도입 방식은 '{selected_intro_type}'인데, 현재 감지된 방식은 {', '.join(detected_intro) if detected_intro else '뚜렷한 유형 없음'}입니다."))
+        intro_score -= 6
+    if any(intro.startswith(w) for w in ["오늘은", "이번 글에서는", "알아보겠습니다", "설명드리겠습니다"]):
+        issues["도입"].append(("뻔한 시작", "도입 첫 문장이 흔한 AI식 시작입니다."))
+        intro_score -= 3
+    scores["도입"] = max(intro_score, 0)
+
+    # AI티
+    ai_score = 15
+    repeated = [f"{p}({body.count(p)})" for p in AI_PATTERNS if body.count(p) >= 3]
+    if repeated:
+        issues["AI티"].append(("반복 표현", ", ".join(repeated)))
+        ai_score -= min(7, len(repeated) * 2)
+    if body.count(":") >= 5:
+        issues["AI티"].append(("콜론 과다", f"콜론(:)이 {body.count(':')}회입니다."))
+        ai_score -= 3
+    scores["AI티"] = max(ai_score, 0)
+
+    # 위험표현
+    comp_score = 15
+    targets = RISK_COMMON + RISK_FIELD.get(field, [])
+    found = sorted(set([p for p in targets if p in body and not is_safe_risk_context(body, p)]))
     if found:
-        issues.append(("위험표현 감지", ", ".join(found)))
-        score -= min(10, len(found) * 2)
-
+        issues["위험표현"].append(("위험표현 감지", ", ".join(found)))
+        comp_score -= min(10, len(found) * 2)
     if "테스트" in purpose:
-        fake_names = ["저희 병원", "본원", "대표원장", "전문의가 직접", "법무법인", "변호사 사무실"]
-        detected = [w for w in fake_names if w in body]
-        if detected:
-            issues.append(("테스트 원고 주의", f"실제 업체 정보가 없으면 임의 기관 표현은 피하는 편이 안전합니다: {', '.join(detected)}"))
-            score -= 4
+        fake = [w for w in ["저희 병원", "본원", "대표원장", "전문의가 직접", "법무법인", "변호사 사무실"] if w in body]
+        if fake:
+            issues["위험표현"].append(("테스트 원고 주의", f"임의 기관 표현 주의: {', '.join(fake)}"))
+            comp_score -= 4
+    scores["위험표현"] = max(comp_score, 0)
 
-    return issues, max(score, 0)
-
-
-def persona_check(body, writer_perspective):
-    issues = []
-    score = 10
-
+    # 페르소나
+    persona_score = 10
     if writer_perspective == "에스테틱 원장":
-        medical_heavy = ["진단", "처방", "치료", "완치", "병변", "진료", "의료진"]
-        detected = [w for w in medical_heavy if w in body]
-        if detected:
-            issues.append(("에스테틱 톤 이탈", f"의료행위처럼 보일 수 있는 표현: {', '.join(detected)}"))
-            score -= min(5, len(detected))
-
+        medical = [w for w in ["진단", "처방", "치료", "완치", "병변", "진료", "의료진"] if w in body]
+        if medical:
+            issues["작성자 관점"].append(("에스테틱 톤 이탈", f"의료행위처럼 보일 수 있는 표현: {', '.join(medical)}"))
+            persona_score -= min(5, len(medical))
         esthetic_words = ["원장", "에스테틱", "관리", "홈케어", "피부 상태", "유수분", "상담", "피부 컨디션"]
         if sum(1 for w in esthetic_words if w in body) < 3:
-            issues.append(("원장 관점 약함", "에스테틱 원장이 상담하듯 말하는 표현이 조금 더 필요합니다."))
-            score -= 3
+            issues["작성자 관점"].append(("원장 관점 약함", "에스테틱 원장이 상담하듯 말하는 표현이 조금 더 필요합니다."))
+            persona_score -= 3
+    scores["작성자 관점"] = max(persona_score, 0)
 
-    return issues, max(score, 0)
-
-
-def glossary_check(body, field):
-    suggestions = []
-    terms = GLOSSARY_TERMS.get(field, [])
-
-    for term in terms:
-        if term in body:
-            idx = body.find(term)
-            window = body[max(0, idx - 50):idx + 120]
-            if "란" not in window and "뜻" not in window and "말합니다" not in window and "부위" not in window:
-                suggestions.append(term)
-
-    return sorted(set(suggestions))
-
-
-def ending_check(body, ending_type="관리 철학형", include_philosophy=True, philosophy_text=""):
-    issues = []
-    score = 10
+    # 마무리
+    ending_score = 10
     ending = body[-700:]
-
-    if len(ending.strip()) < 180:
-        issues.append(("마무리 짧음", "마무리에서 독자 행동 기준이나 관리 방향을 조금 더 정리하면 좋습니다."))
-        score -= 3
-
-    action_words = ["확인", "상담", "점검", "관리", "살펴", "조절", "찾아"]
-    if ending_type in ["상담 유도형", "부드러운 CTA형"] and not any(w in ending for w in action_words):
-        issues.append(("행동 유도 약함", "선택한 마무리 방식상 독자가 다음에 무엇을 하면 좋을지 한 문장 정도 필요합니다."))
-        score -= 2
-
     philosophy_words = ["중요하게 생각", "지향", "철학", "원칙", "무리", "편안", "균형", "정직", "섬세", "과정이라고 생각"]
     has_philosophy = any(w in ending for w in philosophy_words)
-
-    if include_philosophy and ending_type != "철학 없이 정보 마무리":
-        if not has_philosophy:
-            issues.append(("철학 반영 부족", "마지막 문단에 원장의 관리 철학이나 상담 기준이 약합니다."))
-            score -= 4
-        if philosophy_text:
-            key_tokens = [w for w in re.findall(r"[가-힣A-Za-z0-9]{2,}", philosophy_text) if w not in ["피부", "관리", "생각합니다", "중요하게"]]
-            if key_tokens and not any(t in ending for t in key_tokens[:5]):
-                issues.append(("입력 철학 미반영", "입력한 철학 문구의 핵심 표현이 마지막 문단에 충분히 반영되지 않았습니다."))
-                score -= 2
-
+    if include_philosophy and ending_type != "철학 없이 정보 마무리" and not has_philosophy:
+        issues["마무리"].append(("철학 반영 부족", "마지막 문단에 원장의 관리 철학이나 상담 기준이 약합니다."))
+        ending_score -= 4
     if ending_type == "체크리스트 요약형" and not any(w in ending for w in ["첫째", "둘째", "정리하면", "기억해"]):
-        issues.append(("요약형 마무리 부족", "체크리스트 요약형이면 마지막에 핵심 기준 2~3개를 정리해주는 문장이 좋습니다."))
-        score -= 2
+        issues["마무리"].append(("요약형 마무리 부족", "핵심 기준 2~3개를 정리하는 문장이 좋습니다."))
+        ending_score -= 2
+    scores["마무리"] = max(ending_score, 0)
 
-    return issues, max(score, 0)
+    raw_total = scores["제목"] + scores["본문"] + scores["도입"] + scores["AI티"] + scores["위험표현"] + scores["작성자 관점"] + scores["마무리"]
+    total = min(max(raw_total, 0), 100)
+    cap_reasons = []
+    if selected_intro_type not in detected_intro:
+        total = min(total, 90)
+        cap_reasons.append("선택한 달로썸 도입 방식과 실제 도입 방식이 달라 총점 상한 90점 적용")
+    if selected_intro_type == "1. 독자의 상황을 찔러주는 체크리스트 활용" and selected_intro_type not in detected_intro:
+        total = min(total, 88)
+        cap_reasons.append("체크리스트형 선택했지만 실제 체크리스트가 없어 총점 상한 88점 적용")
+    if include_philosophy and ending_type != "철학 없이 정보 마무리" and not has_philosophy:
+        total = min(total, 92)
+        cap_reasons.append("철학 반영을 선택했지만 마지막 문단의 철학 표현이 약해 총점 상한 92점 적용")
+    if no_space_len < 1500:
+        total = min(total, 94)
+        cap_reasons.append("공백 제외 1,500자 미만이라 5만 원 이상 포트폴리오급 상한 제한")
+
+    return scores, issues, total, cap_reasons, {
+        "no_space_len": no_space_len,
+        "body_kw": body_kw,
+        "total_kw": total_kw,
+        "subheads": len(subheads),
+        "detected_intro": detected_intro,
+    }
 
 
 def price_estimate(score):
@@ -393,17 +271,125 @@ def price_estimate(score):
     return "초안 재작성 권장"
 
 
-def show_issues(title, issues):
+def show_issues(title, items):
     st.write(f"### {title}")
-    if not issues:
+    if not items:
         st.success("통과")
     else:
-        for name, desc in issues:
+        for name, desc in items:
             st.warning(f"**{name}** — {desc}")
 
 
-st.title("📝 달로썸 원고 검수기 v3.5")
-st.caption("검수 전용 보정 버전입니다. 달로썸 8가지 도입과 고득점 상한 규칙을 더 엄격하게 반영합니다.")
+def glossary_check(body, field):
+    terms = GLOSSARY_TERMS.get(field, [])
+    suggestions = []
+    for term in terms:
+        if term in body:
+            idx = body.find(term)
+            window = body[max(0, idx - 50):idx + 120]
+            if "란" not in window and "뜻" not in window and "말합니다" not in window and "부위" not in window:
+                suggestions.append(term)
+    return sorted(set(suggestions))
+
+
+def generate_intro_rewrite(intro_type, keyword, title, field, writer_perspective):
+    topic = keyword or title or "이 주제"
+    if field == "에스테틱 / 피부관리" and "복합성" in topic:
+        examples = {
+            "1. 독자의 상황을 찔러주는 체크리스트 활용": f"""☑ 아침에는 볼이 당기는데 오후에는 T존이 번들거린다
+☑ 수분크림을 바르면 답답하고, 안 바르면 금방 건조하다
+☑ 내 피부가 지성인지 건성인지 헷갈린다
+
+이런 고민이 반복된다면 단순히 지성이나 건성으로 나누기보다, 부위별 상태가 다른 복합성 피부인지 먼저 살펴볼 필요가 있습니다. {topic}은 피지를 무조건 줄이는 것이 아니라 T존과 U존의 차이를 보고 유수분 균형을 맞춰가는 데서 시작됩니다.""",
+            "2. 비교 표 활용": f"""복합성 피부는 한 얼굴 안에서도 부위별 반응이 다르게 나타납니다.
+
+| 구분 | 자주 느끼는 상태 | 관리 방향 |
+|---|---|---|
+| T존 | 번들거림, 피지 | 강한 제거보다 부드러운 정리 |
+| U존 | 당김, 푸석함 | 수분감과 보호감 보충 |
+
+그래서 {topic}은 한 제품을 얼굴 전체에 똑같이 바르는 방식보다, 부위별로 필요한 관리가 무엇인지 나누어 보는 것이 중요합니다.""",
+            "3. 대화체 문구": f"""“원장님, 저는 지성인가요 건성인가요?”
+
+에스테틱 현장에서 정말 자주 듣는 질문입니다. 아침에는 볼이 당기는데 오후만 되면 코와 이마가 번들거린다면 스스로도 피부 타입을 정하기 어렵게 느껴질 수 있습니다. 이럴 때 {topic}은 피부를 하나의 타입으로 단정하기보다, T존과 U존의 차이를 살피는 데서 시작해야 합니다.""",
+            "4. 뉴스 기사 활용": f"""최근 자외선 차단과 피부 장벽 관리에 대한 관심이 높아지면서, 계절에 따라 피부 컨디션이 달라지는 분들의 상담도 늘고 있습니다. 특히 복합성 피부는 여름에는 T존 번들거림이, 겨울에는 볼과 입가의 당김이 더 크게 느껴질 수 있습니다. {topic}을 찾고 있다면 계절과 생활환경에 따라 달라지는 유수분 균형을 함께 봐야 합니다.""",
+            "5. 독자에게 질문 던지기": f"""아침에는 볼이 당기는데, 오후에는 코와 이마가 번들거린다면 내 피부를 지성이라고 봐야 할까요? 아니면 건성이라고 봐야 할까요?
+
+사실 이런 경우는 한 가지 피부 타입으로 단정하기보다 복합성 피부의 특징을 함께 살펴보는 것이 좋습니다. {topic}은 피지와 건조함 중 하나만 잡는 관리가 아니라, 부위별로 필요한 관리 방향을 다르게 잡는 데서 시작됩니다.""",
+            "6. 많이 묻는 질문 인용": f"""“저는 피부가 지성인지 건성인지 모르겠어요.”
+
+원장으로 상담하다 보면 복합성 피부 고객에게 가장 자주 듣는 질문 중 하나입니다. 코와 이마는 번들거리는데 볼과 입가는 당긴다면, 피부가 유난히 까다로운 것이 아니라 부위마다 필요한 관리가 다르다는 신호일 수 있습니다. {topic}은 바로 이 차이를 읽는 데서 시작됩니다.""",
+            "7. 검색만으로는 모르는 알짜 정보 예고": f"""검색을 해보면 복합성 피부에 좋다는 제품 추천은 많습니다. 하지만 실제 관리에서 중요한 것은 어떤 제품을 쓰느냐보다, 어느 부위에 어떤 제형을 얼마나 쓰느냐입니다. {topic}을 제대로 이해하려면 T존과 U존을 같은 기준으로 보지 않는 것이 핵심입니다.""",
+            "8. 간단한 웹툰 만들어 넣기": f"""[웹툰 도입 구성안]
+1컷: 아침에 거울을 보며 볼이 당겨 고민하는 고객
+2컷: 오후가 되자 코와 이마가 번들거려 당황하는 고객
+3컷: “저 지성인가요, 건성인가요?”라고 묻는 장면
+4컷: 원장이 “복합성 피부는 부위별 관리가 달라야 해요”라고 설명하는 장면
+
+웹툰 아래 본문 도입:
+아침에는 당기고 오후에는 번들거리는 피부라면 한 가지 타입으로 단정하기 어렵습니다. {topic}은 T존과 U존의 차이를 살피고, 부위별로 관리 강도를 조절하는 데서 시작됩니다."""
+        }
+        return examples[intro_type]
+
+    common = {
+        "1. 독자의 상황을 찔러주는 체크리스트 활용": f"""☑ {topic}을 검색해도 내 상황에 맞는 기준이 잘 보이지 않는다
+☑ 정보는 많은데 무엇부터 확인해야 할지 헷갈린다
+☑ 괜히 잘못 선택했다가 손해를 볼까 걱정된다
+
+이런 상황이라면 단순한 정보 나열보다, 내 상황에 맞는 기준을 먼저 정리하는 것이 중요합니다.""",
+        "2. 비교 표 활용": f"""| 구분 | 흔한 판단 | 실제 확인할 점 |
+|---|---|---|
+| 겉으로 보이는 문제 | 단순하게 판단 | 원인과 상황 확인 |
+| 해결 방법 | 빠른 선택 | 기준에 맞는 선택 |
+
+{topic}은 단순히 하나의 답을 고르는 문제가 아니라, 상황에 맞는 기준을 나누어 보는 것이 중요합니다.""",
+        "3. 대화체 문구": f"""“이럴 때는 어떻게 해야 하나요?”
+
+현장에서 자주 듣는 질문입니다. {topic}은 단순히 검색 결과만 보고 판단하기보다, 내 상황과 조건을 함께 살펴보는 것이 중요합니다.""",
+        "4. 뉴스 기사 활용": f"""최근 관련 이슈가 늘면서 {topic}에 대한 관심도 함께 높아지고 있습니다. 다만 기사나 검색 결과만으로는 내 상황에 바로 적용하기 어려운 경우가 많아, 핵심 기준을 먼저 정리해보는 것이 좋습니다.""",
+        "5. 독자에게 질문 던지기": f"""{topic}을 알아보고 있다면, 지금 가장 궁금한 점은 무엇인가요? 단순한 방법보다 내 상황에 맞는 기준을 먼저 확인하는 것이 중요합니다.""",
+        "6. 많이 묻는 질문 인용": f"""“이 경우에는 어떻게 해야 하나요?”
+
+{topic}과 관련해 가장 많이 나오는 질문 중 하나입니다. 같은 상황처럼 보여도 세부 조건에 따라 판단이 달라질 수 있기 때문에 기준을 나누어 살펴보는 것이 좋습니다.""",
+        "7. 검색만으로는 모르는 알짜 정보 예고": f"""검색하면 기본 정보는 쉽게 찾을 수 있습니다. 하지만 실제로 중요한 것은 검색 결과에 잘 나오지 않는 판단 기준입니다. {topic}은 표면적인 정보보다 상황별 기준을 함께 봐야 합니다.""",
+        "8. 간단한 웹툰 만들어 넣기": f"""[웹툰 도입 구성안]
+1컷: 검색창에 {topic}을 입력하는 독자
+2컷: 너무 많은 정보에 혼란스러워하는 장면
+3컷: 전문가가 핵심 기준을 짚어주는 장면
+
+웹툰 아래 본문 도입:
+정보가 많을수록 오히려 판단은 어려워질 수 있습니다. {topic}은 내 상황에 맞는 기준을 먼저 잡는 것이 중요합니다."""
+    }
+    return common[intro_type]
+
+
+def generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text):
+    topic = keyword or "이 주제"
+    homepage_info = (homepage_info or "").strip()
+    philosophy_text = (philosophy_text or "").strip()
+
+    if homepage_mode == "홈페이지 정보 있음":
+        if homepage_info:
+            return f"""{topic}은 한 번에 완벽한 답을 찾기보다, 현재 상태와 생활 습관을 함께 살피며 관리 방향을 조절하는 과정입니다. 입력해주신 홈페이지 정보 기준으로 보면, {homepage_info} 이러한 방향을 원고 말미에 자연스럽게 연결할 수 있습니다.
+
+다만 테스트 원고에서는 실제 업체명이나 원장명을 임의로 만들기보다, 홈페이지에 확인된 강점만 담백하게 반영하는 것이 안전합니다. 마지막 문단은 과장된 약속보다 독자가 자신의 상태를 점검하고 상담 필요성을 자연스럽게 느끼도록 마무리하는 편이 좋습니다."""
+        return f"""홈페이지 정보 있음으로 선택되어 있지만 입력된 정보가 없습니다. 이 경우 실제 업체 철학이나 강점을 임의로 만들면 안 됩니다.
+
+{topic}은 현재 상태를 먼저 확인하고, 필요한 관리 방향을 차분히 조절하는 것이 중요합니다. 홈페이지에서 확인한 실제 강점이나 상담 철학이 있다면 마지막 문단에 1~2문장으로만 자연스럽게 연결하세요."""
+
+    if field == "에스테틱 / 피부관리":
+        base = f"""{topic}은 한 번에 완벽한 제품을 찾는 데서 끝나는 관리가 아닙니다. 오늘 내 피부에서 어느 부위가 번들거리고, 어느 부위가 당기는지 살펴보며 세안과 보습, 자외선 차단 루틴을 조절하는 것이 먼저입니다."""
+        if philosophy_text:
+            base += f"\n\n{philosophy_text}"
+        else:
+            base += "\n\n에스테틱 관리는 피부를 억지로 바꾸는 일이 아니라, 지금 피부가 편안하게 받아들일 수 있는 균형을 찾는 과정이라고 생각합니다."
+        return base
+
+    return f"""{topic}은 검색으로 얻은 정보만으로 바로 결론을 내리기보다, 자신의 상황에 맞는 기준을 차분히 확인하는 것이 중요합니다. 홈페이지 정보가 없다면 업체의 철학이나 강점을 임의로 만들지 말고, 핵심 내용 요약과 다음 행동 기준을 중심으로 마무리하는 편이 안전합니다."""
+
+
+st.title("📝 달로썸 원고 검수기 v3.6")
+st.caption("검수 후 도입 리라이트와 홈페이지 정보 기반 마무리 문단까지 생성합니다.")
 
 with st.sidebar:
     st.header("원고 조건")
@@ -412,117 +398,85 @@ with st.sidebar:
     writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
     keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
     title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
-    intro_type = st.selectbox("도입 방식", INTRO_TYPES, index=0)
-    ending_type = st.selectbox("마무리 방식", ENDING_TYPES, index=0)
+    selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
+    ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
     include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
-    philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=100)
-    target_len_min = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
-    target_len_max = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
+    philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
+    st.divider()
+    st.subheader("검수 후 생성 옵션")
+    rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
+    homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
+    homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
+    min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=800, max_value=3000, value=1300, step=100)
+    max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=1000, max_value=4000, value=2200, step=100)
 
 draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
 if st.button("검수 시작", type="primary"):
     title, body, title_source = extract_title(title_input, draft)
-
     if not body:
         st.error("본문이 비어 있습니다.")
         st.stop()
 
+    scores, issues, total, cap_reasons, meta = check_all(
+        title, body, keyword, field, purpose, writer_perspective,
+        selected_intro_type, ending_type, include_philosophy, philosophy_text,
+        min_len, max_len
+    )
+
     st.write("## 추출 결과")
-    col1, col2, col3 = st.columns(3)
-    col1.metric("제목 인식", "성공" if title else "실패")
-    col2.metric("제목 출처", title_source)
-    col3.metric("제목 글자수", len(title) if title else 0)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("제목 인식", "성공" if title else "실패")
+    c2.metric("제목 출처", title_source)
+    c3.metric("제목 글자수", len(title) if title else 0)
     st.info(f"인식된 제목: {title if title else '없음'}")
-    st.caption(f"선택한 달로썸 도입 방식: {intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
-
-    title_issues, title_score = title_check(title, keyword)
-    body_issues, body_score, no_space_len, body_kw_count, total_kw_count, subhead_count = body_seo_check(body, keyword, target_len_min, target_len_max, title)
-    intro_issues, intro_score, detected_intro_types = intro_check(body, intro_type)
-    ai_issues, ai_score = ai_smell_check(body)
-    compliance_issues, compliance_score = compliance_check(body, field, purpose)
-    persona_issues, persona_score = persona_check(body, writer_perspective)
-    ending_issues, ending_score = ending_check(body, ending_type, include_philosophy, philosophy_text)
-    glossary_terms = glossary_check(body, field)
-
-    raw_total = title_score + body_score + intro_score + ai_score + compliance_score + persona_score + ending_score
-    total = min(max(raw_total, 0), 100)
-
-    cap_reasons = []
-
-    if intro_type not in detected_intro_types:
-        total = min(total, 90)
-        cap_reasons.append("선택한 달로썸 도입 방식과 실제 도입 방식이 달라 총점 상한 90점 적용")
-
-    if intro_type == "1. 독자의 상황을 찔러주는 체크리스트 활용" and intro_type not in detected_intro_types:
-        total = min(total, 88)
-        cap_reasons.append("체크리스트형 선택했지만 실제 체크리스트가 없어 총점 상한 88점 적용")
-
-    if include_philosophy and ending_type != "철학 없이 정보 마무리":
-        ending_tail = body[-700:]
-        philosophy_words = ["중요하게 생각", "지향", "철학", "원칙", "무리", "편안", "균형", "정직", "섬세", "과정이라고 생각"]
-        if not any(w in ending_tail for w in philosophy_words):
-            total = min(total, 92)
-            cap_reasons.append("철학 반영을 선택했지만 마지막 문단의 철학 표현이 약해 총점 상한 92점 적용")
-
-    if no_space_len < 1500:
-        total = min(total, 94)
-        cap_reasons.append("공백 제외 1,500자 미만이라 5만 원 이상 포트폴리오급 상한 제한")
+    st.caption(f"선택한 현재 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
 
     st.write("## 점수")
     st.metric("총점", f"{total}점", price_estimate(total))
     if cap_reasons:
         with st.expander("점수 상한 적용 이유"):
-            for reason in cap_reasons:
-                st.warning(reason)
+            for r in cap_reasons:
+                st.warning(r)
 
-    score_df = pd.DataFrame([
-        {"항목": "제목", "점수": f"{title_score}/15"},
-        {"항목": "본문 SEO/길이/키워드", "점수": f"{body_score}/20"},
-        {"항목": "도입부", "점수": f"{intro_score}/15"},
-        {"항목": "AI티", "점수": f"{ai_score}/15"},
-        {"항목": "위험표현", "점수": f"{compliance_score}/15"},
-        {"항목": "작성자 관점", "점수": f"{persona_score}/10"},
-        {"항목": "마무리", "점수": f"{ending_score}/10"},
-    ])
-    st.table(score_df)
+    st.table(pd.DataFrame([
+        {"항목": "제목", "점수": f"{scores['제목']}/15"},
+        {"항목": "본문 SEO/길이/키워드", "점수": f"{scores['본문']}/20"},
+        {"항목": "도입부", "점수": f"{scores['도입']}/15"},
+        {"항목": "AI티", "점수": f"{scores['AI티']}/15"},
+        {"항목": "위험표현", "점수": f"{scores['위험표현']}/15"},
+        {"항목": "작성자 관점", "점수": f"{scores['작성자 관점']}/10"},
+        {"항목": "마무리", "점수": f"{scores['마무리']}/10"},
+    ]))
 
     st.write("## 핵심 수치")
-    metric_cols = st.columns(4)
-    metric_cols[0].metric("공백 제외 글자수", no_space_len)
-    metric_cols[1].metric("키워드 횟수", f"본문 {body_kw_count} / 제목포함 {total_kw_count}")
-    metric_cols[2].metric("소제목 수", subhead_count)
-    metric_cols[3].metric("감지 도입", ", ".join(detected_intro_types) if detected_intro_types else "없음")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("공백 제외 글자수", meta["no_space_len"])
+    m2.metric("키워드 횟수", f"본문 {meta['body_kw']} / 제목포함 {meta['total_kw']}")
+    m3.metric("소제목 수", meta["subheads"])
+    m4.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
 
-    show_issues("제목 검수", title_issues)
-    show_issues("본문 SEO/길이/키워드", body_issues)
-    show_issues("도입부 검수", intro_issues)
-    show_issues("AI티 검수", ai_issues)
-    show_issues("위험표현 검수", compliance_issues)
-    show_issues("작성자 관점 검수", persona_issues)
-    show_issues("마무리 검수", ending_issues)
+    for section in ["제목", "본문", "도입", "AI티", "위험표현", "작성자 관점", "마무리"]:
+        show_issues(f"{section} 검수", issues[section])
 
     st.write("### 용어 설명 제안")
+    glossary_terms = glossary_check(body, field)
     if glossary_terms:
         st.info("본문에 나오지만 초보 독자에게 설명이 있으면 좋은 용어: " + ", ".join(glossary_terms))
     else:
         st.success("용어 설명 제안 없음")
 
-    st.write("### 보완 문장 제안")
-    intro_examples = {
-        "1. 독자의 상황을 찔러주는 체크리스트 활용": "☑ 아침엔 볼이 당기는데 오후엔 T존이 번들거린다 / ☑ 수분크림은 답답하고 안 바르면 건조하다 / ☑ 지성인지 건성인지 헷갈린다",
-        "2. 비교 표 활용": "비교 표 예시: T존은 피지 정리 중심, U존은 수분과 보호감 중심으로 나누어 관리합니다.",
-        "3. 대화체 문구": "대화체 예시: “원장님, 저는 지성인가요 건성인가요?” 에스테틱 현장에서 정말 자주 듣는 질문입니다.",
-        "4. 뉴스 기사 활용": "뉴스 기사 활용 예시: 최근 여름철 자외선 차단과 피부 관리에 대한 관심이 높아지면서, 자외선 차단제 사용법을 다시 확인하는 분들이 많습니다.",
-        "5. 독자에게 질문 던지기": "질문형 예시: 아침에는 볼이 당기는데 오후에는 코와 이마가 번들거린다면, 내 피부를 단순히 지성이라고 봐도 될까요?",
-        "6. 많이 묻는 질문 인용": "FAQ 인용 예시: “저는 피부가 지성인지 건성인지 모르겠어요.” 복합성 피부 상담에서 가장 많이 나오는 질문 중 하나입니다.",
-        "7. 검색만으로는 모르는 알짜 정보 예고": "알짜 정보 예시: 검색하면 제품 추천은 많지만, 실제 관리에서는 어느 부위에 어떤 제형을 얼마나 쓰는지가 더 중요합니다.",
-        "8. 간단한 웹툰 만들어 넣기": "웹툰 예시: 1컷: 아침엔 볼이 당기는 고객 / 2컷: 오후엔 T존이 번들거리는 고객 / 3컷: 원장이 부위별 관리법을 설명하는 장면",
-    }
-    st.info(intro_examples.get(intro_type, "선택한 도입 방식에 맞춰 첫 문단을 보완하세요."))
+    st.write("## 검수 후 리라이트 생성")
 
-    if include_philosophy and ending_type != "철학 없이 정보 마무리":
-        st.info("마무리 철학 예시: 에스테틱 관리는 피부를 무리하게 바꾸는 일이 아니라, 지금 피부가 편안하게 받아들일 수 있는 균형을 찾는 과정이라고 생각합니다.")
+    st.write("### 선택한 방식으로 도입 다시 쓰기")
+    rewritten_intro = generate_intro_rewrite(rewrite_intro_type, keyword, title, field, writer_perspective)
+    st.text_area("생성된 도입 문단", value=rewritten_intro, height=260)
+
+    st.write("### 마지막 문단 생성")
+    final_paragraph = generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text if include_philosophy else "")
+    st.text_area("생성된 마무리 문단", value=final_paragraph, height=240)
+
+    st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
 
     st.write("## 제출 판단")
     if total >= 92:

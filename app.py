@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v3.4", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v3.5", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -199,35 +199,30 @@ def detect_intro_types(body):
     intro = body.strip()[:900]
     detected = []
 
-    # 1. 체크리스트
-    if "☑" in intro or "□" in intro or len([l for l in intro.splitlines() if l.strip().startswith(("-", "·", "•", "✓", "✔"))]) >= 2:
+    list_lines = [l for l in intro.splitlines() if l.strip().startswith(("-", "·", "•", "✓", "✔", "☑", "□"))]
+    if "☑" in intro or "□" in intro or len(list_lines) >= 2:
         detected.append("1. 독자의 상황을 찔러주는 체크리스트 활용")
 
-    # 2. 비교 표
-    if "|" in intro or "비교" in intro or "차이" in intro or "반면" in intro or "표로" in intro:
+    # 실제 표 형태가 있어야 비교 표로 인정
+    if "|" in intro or ("구분" in intro and ("T존" in intro or "U존" in intro or "차이" in intro)):
         detected.append("2. 비교 표 활용")
 
-    # 3. 대화체
     if any(w in intro for w in ['"저는', '"혹시', '"왜', '"어떻게', "라고 하시는", "라고 묻는", "하시죠", "있으실 거예요", "아시나요"]):
         detected.append("3. 대화체 문구")
 
-    # 4. 뉴스 기사 활용
     if any(w in intro for w in ["뉴스", "기사", "보도", "최근", "언론", "자료에 따르면"]):
         detected.append("4. 뉴스 기사 활용")
 
-    # 5. 질문 던지기
     if "?" in intro or "않으신가요" in intro or "적 있으" in intro or "궁금" in intro:
         detected.append("5. 독자에게 질문 던지기")
 
-    # 6. 많이 묻는 질문 인용
     if any(w in intro for w in ["많이 받는 질문", "자주 받는 질문", "많이 묻는", "자주 묻는", "FAQ", "질문 중 하나"]):
         detected.append("6. 많이 묻는 질문 인용")
 
-    # 7. 알짜 정보 예고
-    if any(w in intro for w in ["검색만으로", "잘 알려지지", "알짜", "현장에서", "실제로", "놓치기 쉬운", "여기서", "핵심은"]):
+    # 명시적인 예고가 있을 때만 알짜 정보 예고로 인정
+    if any(w in intro for w in ["검색만으로", "잘 알려지지", "알짜", "놓치기 쉬운", "이 부분을 모르면", "여기서 알 수"]):
         detected.append("7. 검색만으로는 모르는 알짜 정보 예고")
 
-    # 8. 웹툰
     if any(w in intro for w in ["웹툰", "컷", "만화", "그림", "장면", "[컷", "1컷", "2컷"]):
         detected.append("8. 간단한 웹툰 만들어 넣기")
 
@@ -247,9 +242,8 @@ def intro_check(body, intro_type):
 
     if intro_type not in detected:
         issues.append(("도입 방식 불일치", f"선택한 달로썸 도입 방식은 '{intro_type}'인데, 현재 감지된 방식은 {', '.join(detected) if detected else '뚜렷한 유형 없음'}입니다."))
-        score -= 3
+        score -= 6
 
-    # 달로썸식 도입은 독자가 계속 읽을 이유가 보여야 함
     reason_words = ["그래서", "하지만", "다만", "핵심", "기준", "알아두", "확인", "오늘은", "이번 글"]
     if not any(w in intro for w in reason_words):
         issues.append(("계속 읽을 이유 약함", "도입부에서 이 글을 읽으면 무엇을 얻는지 조금 더 보여주면 좋습니다."))
@@ -356,7 +350,7 @@ def glossary_check(body, field):
 def ending_check(body, ending_type="관리 철학형", include_philosophy=True, philosophy_text=""):
     issues = []
     score = 10
-    ending = body[-600:]
+    ending = body[-700:]
 
     if len(ending.strip()) < 180:
         issues.append(("마무리 짧음", "마무리에서 독자 행동 기준이나 관리 방향을 조금 더 정리하면 좋습니다."))
@@ -367,11 +361,13 @@ def ending_check(body, ending_type="관리 철학형", include_philosophy=True, 
         issues.append(("행동 유도 약함", "선택한 마무리 방식상 독자가 다음에 무엇을 하면 좋을지 한 문장 정도 필요합니다."))
         score -= 2
 
-    philosophy_words = ["중요하게 생각", "지향", "철학", "원칙", "무리", "편안", "균형", "정직", "섬세"]
+    philosophy_words = ["중요하게 생각", "지향", "철학", "원칙", "무리", "편안", "균형", "정직", "섬세", "과정이라고 생각"]
+    has_philosophy = any(w in ending for w in philosophy_words)
+
     if include_philosophy and ending_type != "철학 없이 정보 마무리":
-        if not any(w in ending for w in philosophy_words):
+        if not has_philosophy:
             issues.append(("철학 반영 부족", "마지막 문단에 원장의 관리 철학이나 상담 기준이 약합니다."))
-            score -= 3
+            score -= 4
         if philosophy_text:
             key_tokens = [w for w in re.findall(r"[가-힣A-Za-z0-9]{2,}", philosophy_text) if w not in ["피부", "관리", "생각합니다", "중요하게"]]
             if key_tokens and not any(t in ending for t in key_tokens[:5]):
@@ -386,7 +382,7 @@ def ending_check(body, ending_type="관리 철학형", include_philosophy=True, 
 
 
 def price_estimate(score):
-    if score >= 94:
+    if score >= 95:
         return "5만 원 이상 포트폴리오급"
     if score >= 92:
         return "4~5만 원 테스트 합격권"
@@ -406,8 +402,8 @@ def show_issues(title, issues):
             st.warning(f"**{name}** — {desc}")
 
 
-st.title("📝 달로썸 원고 검수기 v3.4")
-st.caption("검수 전용 보정 버전입니다. 달로썸 8가지 도입 방식과 마지막 문단 철학 반영까지 봅니다.")
+st.title("📝 달로썸 원고 검수기 v3.5")
+st.caption("검수 전용 보정 버전입니다. 달로썸 8가지 도입과 고득점 상한 규칙을 더 엄격하게 반영합니다.")
 
 with st.sidebar:
     st.header("원고 조건")
@@ -449,11 +445,36 @@ if st.button("검수 시작", type="primary"):
     ending_issues, ending_score = ending_check(body, ending_type, include_philosophy, philosophy_text)
     glossary_terms = glossary_check(body, field)
 
-    total = title_score + body_score + intro_score + ai_score + compliance_score + persona_score + ending_score
-    total = min(max(total, 0), 100)
+    raw_total = title_score + body_score + intro_score + ai_score + compliance_score + persona_score + ending_score
+    total = min(max(raw_total, 0), 100)
+
+    cap_reasons = []
+
+    if intro_type not in detected_intro_types:
+        total = min(total, 90)
+        cap_reasons.append("선택한 달로썸 도입 방식과 실제 도입 방식이 달라 총점 상한 90점 적용")
+
+    if intro_type == "1. 독자의 상황을 찔러주는 체크리스트 활용" and intro_type not in detected_intro_types:
+        total = min(total, 88)
+        cap_reasons.append("체크리스트형 선택했지만 실제 체크리스트가 없어 총점 상한 88점 적용")
+
+    if include_philosophy and ending_type != "철학 없이 정보 마무리":
+        ending_tail = body[-700:]
+        philosophy_words = ["중요하게 생각", "지향", "철학", "원칙", "무리", "편안", "균형", "정직", "섬세", "과정이라고 생각"]
+        if not any(w in ending_tail for w in philosophy_words):
+            total = min(total, 92)
+            cap_reasons.append("철학 반영을 선택했지만 마지막 문단의 철학 표현이 약해 총점 상한 92점 적용")
+
+    if no_space_len < 1500:
+        total = min(total, 94)
+        cap_reasons.append("공백 제외 1,500자 미만이라 5만 원 이상 포트폴리오급 상한 제한")
 
     st.write("## 점수")
     st.metric("총점", f"{total}점", price_estimate(total))
+    if cap_reasons:
+        with st.expander("점수 상한 적용 이유"):
+            for reason in cap_reasons:
+                st.warning(reason)
 
     score_df = pd.DataFrame([
         {"항목": "제목", "점수": f"{title_score}/15"},
@@ -507,7 +528,7 @@ if st.button("검수 시작", type="primary"):
     if total >= 92:
         st.success("제출 가능권입니다. 오탈자와 줄바꿈만 확인하세요.")
     elif total >= 88:
-        st.info("실무 가능권입니다. 한두 문장만 보완하면 제출권에 가깝습니다.")
+        st.info("실무 가능권입니다. 제출은 가능하지만 도입 방식/마무리 철학 중 하나는 보완하는 편이 좋습니다.")
     elif total >= 82:
         st.warning("부분 보완 필요입니다. 재작성까지는 아니고 길이/키워드/도입만 손보세요.")
     else:

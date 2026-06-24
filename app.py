@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.3", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.4", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -37,7 +37,7 @@ TITLE_TYPES = [
     "5. 반전/의외성형",
     "6. 독자 상황 콕집기형",
 ]
-TITLE_TYPE_OPTIONS = ["자동 추천"] + TITLE_TYPES
+TITLE_TYPE_OPTIONS = ["선택 안함", "자동 추천"] + TITLE_TYPES
 
 ENDING_TYPES = ["관리 철학형", "상담 유도형", "체크리스트 요약형", "부드러운 CTA형", "철학 없이 정보 마무리"]
 
@@ -143,7 +143,9 @@ def detect_title_types(title):
 
 
 def title_style_instruction(title_type):
-    if not title_type or title_type == "자동 추천":
+    if not title_type or title_type == "선택 안함":
+        return "특정 제목 유형을 강제하지 않는다. 다만 키워드 앞 배치, 30자 이내, 어그로 금지 등 제목 기본 기준은 유지한다."
+    if title_type == "자동 추천":
         return "제목 유형은 자료와 주제에 맞춰 6가지 방식 중 하나를 자연스럽게 선택한다."
     mapping = {
         "1. 숫자/데이터 활용형": "제목에 3가지, 5가지, 6가지, 3분처럼 구체적인 숫자를 넣어 기준이 분명해 보이게 한다.",
@@ -183,12 +185,20 @@ def clean_title_candidate(title, keyword):
 
 def generate_title_candidates(keyword, topic, title_type, b_lines=None, field=""):
     kw = (keyword or topic or "키워드").strip()
-    title_type = title_type if title_type and title_type != "자동 추천" else "4. 궁금증 자극형"
+    if not title_type or title_type == "선택 안함":
+        title_type = "기본형"
+    elif title_type == "자동 추천":
+        title_type = "4. 궁금증 자극형"
     base_issue = ""
     if b_lines:
         base_issue = re.sub(r"^[-•·\d\.\)\s]+", "", str(b_lines[0])).strip()
     # 너무 구체적인 긴 문장은 제목에 직접 넣지 않고 흐름만 사용
     candidates_by_type = {
+        "기본형": [
+            f"{kw} 확인할 기준",
+            f"{kw} 알아둘 점",
+            f"{kw} 살펴볼 내용",
+        ],
         "1. 숫자/데이터 활용형": [
             f"{kw} 확인할 기준 5가지",
             f"{kw} 증상 체크 3가지",
@@ -264,7 +274,7 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         if len(title) > 30:
             issues["제목"].append(("제목 길이", f"제목이 {len(title)}자로 30자를 넘습니다."))
             title_score -= 3
-        if selected_title_type and selected_title_type != "자동 추천" and selected_title_type not in detected_title:
+        if selected_title_type and selected_title_type not in ("자동 추천", "선택 안함") and selected_title_type not in detected_title:
             issues["제목"].append(("제목 유형 불일치", f"선택한 제목 유형은 '{selected_title_type}'인데, 현재 감지된 유형은 {', '.join(detected_title) if detected_title else '뚜렷한 유형 없음'}입니다."))
             title_score -= 2
     scores["제목"] = max(title_score, 0)
@@ -580,7 +590,12 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
-    title_instruction = "제목 유형은 자료와 주제에 맞는 방식을 추천해줘." if title_type == "자동 추천" else f"제목 유형은 반드시 '{title_type}' 방향을 우선 고려해줘."
+    if title_type == "선택 안함":
+        title_instruction = "제목 유형은 따로 선택하지 않는다. 6가지 유형을 강제하지 말고 키워드 앞 배치, 30자 이내, 어그로 금지 등 제목 기본 기준만 지켜줘."
+    elif title_type == "자동 추천":
+        title_instruction = "제목 유형은 자료와 주제에 맞는 방식을 추천해줘."
+    else:
+        title_instruction = f"제목 유형은 반드시 '{title_type}' 방향을 우선 고려해줘."
 
     return f"""주제: {topic}
 핵심 키워드: {keyword}
@@ -943,6 +958,12 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
     title_plan = title_style_instruction(title_type)
+    if title_type == "선택 안함":
+        title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 단, 6가지 제목 유형은 강제하지 말고 주제와 본문에 맞게 자연스럽게 구성해줘."
+    elif title_type == "자동 추천":
+        title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 자료와 주제에 맞는 제목 유형을 자연스럽게 선택하되 어그로성 제목은 쓰지 마."
+    else:
+        title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 선택한 제목 유형 ‘{title_type}’을 반영하되, 본문 내용과 다른 어그로성 제목은 쓰지 마."
     title_candidates = "\n".join([f"- {x}" for x in generate_title_candidates(keyword, topic, title_type, b_lines, field)])
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
@@ -972,7 +993,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {bridge_plan}
 
 작성 지시:
-0. 제목은 핵심 키워드 “{keyword}”를 맨 앞에 1회 넣고, 가능하면 30자 이내로 작성해줘. 선택한 제목 유형 “{title_type}”을 반영하되, 본문 내용과 다른 어그로성 제목은 쓰지 마.
+0. {title_rule}
 1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
 2. 선택한 달로썸 도입 방식이 체크리스트/비교표/FAQ/대화체 등 구체 형식이라면 도입부에서 그 형식이 눈에 보이게 작성해줘.
 3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
@@ -1003,15 +1024,25 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 """
 
 def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text=""):
+    if title_type == "선택 안함":
+        title_guard = "특정 제목 유형은 선택하지 않았다. 제목 유형을 억지로 맞추지 말고, 키워드 앞 배치와 30자 이내 권장, 어그로 금지 기준만 유지해줘."
+        title_touch_rule = "0. 제목은 키워드 앞 배치와 기본 기준만 유지. 특정 제목 유형 강제 금지"
+        title_change_rule = "- 제목 유형을 새로 만들거나 억지로 맞추기 금지"
+        title_keep_sentence = "도입 화법과 달로썸 도입 방식은 절대 바꾸지 말고 유지해줘. 제목은 기본 기준만 유지하고 특정 유형을 강제하지 마."
+    else:
+        title_guard = f"이 원고의 제목 유형은 “{title_type}”이다."
+        title_touch_rule = f"0. 제목의 핵심 키워드 앞 배치와 “{title_type}” 유형"
+        title_change_rule = "- 제목 유형 변경 금지"
+        title_keep_sentence = "제목 유형, 화법, 도입 방식은 절대 바꾸지 말고 유지해줘."
     return f"""아래 원고를 다듬어줘.
 
-이 원고의 제목 유형은 “{title_type}”이다.
+{title_guard}
 이 원고의 도입 화법은 “{voice_type}”이다.
 이 원고의 달로썸 도입 방식은 “{intro_type}”이다.
-제목 유형, 화법, 도입 방식은 절대 바꾸지 말고 유지해줘.
+{title_keep_sentence}
 
 건드리면 안 되는 것:
-0. 제목의 핵심 키워드 앞 배치와 “{title_type}” 유형
+{title_touch_rule}
 1. 도입부의 “{voice_type}” 흐름
 2. 도입부의 “{intro_type}” 방식
 3. 핵심 키워드 “{keyword}”
@@ -1038,7 +1069,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 - 새로운 사례나 경험담 추가 금지
 - 없는 병원/업체 장점 만들기 금지
 - 과장 표현 추가 금지
-- 제목 유형 변경 금지
+{title_change_rule}
 - 제목에서 키워드 위치 변경 금지
 - 도입화법 변경 금지
 - 달로썸 도입 방식 변경 금지
@@ -1054,8 +1085,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.3")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.4")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형 선택/선택안함/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1127,7 +1158,7 @@ with tab_design:
     recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
     title_index = TITLE_TYPE_OPTIONS.index(recommended_title) if recommended_title in TITLE_TYPE_OPTIONS else 0
     d_title_type = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=title_index, key="d_title_type")
-    st.caption(f"자동 추천 제목 유형: {recommended_title} / 필요하면 직접 바꾸면 됩니다.")
+    st.caption(f"자동 추천 제목 유형: {recommended_title} / 필요하면 직접 바꾸거나 '선택 안함'으로 둘 수 있습니다.")
 
     recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
     intro_index = INTRO_TYPES.index(recommended_intro) if recommended_intro in INTRO_TYPES else 4

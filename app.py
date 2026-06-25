@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.4", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.5", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -251,7 +251,7 @@ def is_safe_risk_context(body, phrase):
 
 
 def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text, min_len, max_len):
-    issues = {"제목": [], "본문": [], "도입": [], "AI티": [], "위험표현": [], "작성자 관점": [], "마무리": []}
+    issues = {"제목": [], "본문": [], "도입": [], "AI티": [], "복사찌꺼기": [], "위험표현": [], "작성자 관점": [], "마무리": []}
     scores = {}
     no_space_len = len(re.sub(r"\s+", "", body))
     body_kw = count_keyword(body, keyword)
@@ -328,6 +328,22 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         ai_score -= 3
     scores["AI티"] = max(ai_score, 0)
 
+    # 복사 찌꺼기 / 출처 흔적
+    artifact_score = 10
+    artifact_patterns = []
+    if "�" in body or "�" in title:
+        artifact_patterns.append("깨진 문자(�)")
+    if re.search(r"(?:^|\s)(?:[A-Za-z가-힣][A-Za-z가-힣\s]{1,20})\s\+1(?:\s|$)", body):
+        artifact_patterns.append("출처 +1 흔적")
+    if re.search(r"\[[0-9]+\]", body):
+        artifact_patterns.append("각주 번호 흔적")
+    if any(w in body.lower() for w in ["cite", "source", "reference", "turn0", "utm_source"]):
+        artifact_patterns.append("출처/검색 시스템 흔적")
+    if artifact_patterns:
+        issues["복사찌꺼기"].append(("복사 찌꺼기 감지", ", ".join(sorted(set(artifact_patterns)))))
+        artifact_score -= min(8, len(set(artifact_patterns))*3)
+    scores["복사찌꺼기"] = max(artifact_score, 0)
+
     # 위험표현
     comp_score = 15
     targets = RISK_COMMON + RISK_FIELD.get(field, [])
@@ -368,7 +384,7 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         ending_score -= 2
     scores["마무리"] = max(ending_score, 0)
 
-    raw_total = scores["제목"] + scores["본문"] + scores["도입"] + scores["AI티"] + scores["위험표현"] + scores["작성자 관점"] + scores["마무리"]
+    raw_total = scores["제목"] + scores["본문"] + scores["도입"] + scores["AI티"] + scores["위험표현"] + scores["작성자 관점"] + scores["마무리"] - (10 - scores["복사찌꺼기"])
     total = min(max(raw_total, 0), 100)
     cap_reasons = []
     if selected_intro_type not in detected_intro:
@@ -902,6 +918,93 @@ def intro_style_instruction(intro_type):
 
 
 
+
+def intro_force_block(intro_type):
+    """선택한 도입 8가지가 초안에서 실제 형식으로 보이도록 강제하는 블록."""
+    if not intro_type or intro_type == "자동 추천":
+        return """[도입 방식 필수 적용 규칙]
+- 자료와 주제에 맞는 달로썸 도입 8가지 중 1개를 선택해 도입부에 실제 형식으로 반영한다.
+- 도입 방식은 단순 참고가 아니라 도입부 구조에 보여야 한다.
+- 도입부가 일반 설명문으로만 시작하면 지시 불이행으로 본다."""
+    if intro_type == "1. 독자의 상황을 찔러주는 체크리스트 활용":
+        return """[도입 방식 필수 적용 규칙 - 체크리스트]
+- 도입부 첫 5문장 안에 체크리스트를 반드시 넣는다.
+- 체크리스트는 3~5개로 작성한다.
+- 각 항목은 실제 독자 고민이나 상황이어야 한다.
+- 체크리스트 없이 일반 설명으로만 시작하면 지시 불이행이다."""
+    if intro_type == "2. 비교 표 활용":
+        return """[도입 방식 필수 적용 규칙 - 비교 표]
+- 비교표는 본문 중간이 아니라 도입부에서 반드시 사용한다.
+- 제목 다음 첫 소제목 또는 첫 문단 직후에 배치한다.
+- 비교표는 반드시 마크다운 표 형식으로 작성한다.
+- 표에는 반드시 `|---|---|---|` 구분선을 포함한다.
+- 표 이후에 표 내용을 자연스럽게 풀어서 설명한다.
+- 아래 형식을 따른다.
+
+| 구분 | A | B |
+|---|---|---|
+| 방식 |  |  |
+| 연결되는 고민 |  |  |
+| 확인 기준 |  |  |
+
+- 비교표를 도입부가 아닌 본문 중간에만 넣으면 지시 불이행이다."""
+    if intro_type == "3. 대화체 문구":
+        return """[도입 방식 필수 적용 규칙 - 대화체]
+- 도입부 첫 부분에 실제 상담에서 나올 법한 짧은 대화형 문장을 넣는다.
+- 예: “둘 중 뭐가 더 좋은가요?”처럼 반복 질문 패턴을 재구성한다.
+- 가짜 후기나 실제 경험담처럼 쓰지 않는다."""
+    if intro_type == "4. 뉴스 기사 활용":
+        return """[도입 방식 필수 적용 규칙 - 뉴스/자료형]
+- 도입부에서 최근 관심 증가, 자료 흐름, 업계 이슈 등을 언급한다.
+- 확인되지 않은 통계, 기사명, 수치는 지어내지 않는다.
+- 뉴스 느낌만 내고 근거 없는 단정으로 시작하지 않는다."""
+    if intro_type == "5. 독자에게 질문 던지기":
+        return """[도입 방식 필수 적용 규칙 - 질문형]
+- 첫 문장은 독자의 실제 상황을 묻는 질문으로 시작한다.
+- 질문은 막연한 질문이 아니라 자료에서 나온 고민을 반영한다.
+- 예: “자다가 손이 저려 깨고, 손을 털면 잠깐 괜찮아지는 일이 반복되고 계신가요?”"""
+    if intro_type == "6. 많이 묻는 질문 인용":
+        return """[도입 방식 필수 적용 규칙 - FAQ 인용]
+- 도입부 초반에 실제 사람들이 자주 묻는 질문을 재구성해 넣는다.
+- 실제 Q&A 문장을 그대로 복사하지 않는다.
+- “많은 분들이 ‘~’라고 묻습니다” 또는 “상담에서 자주 나오는 질문은 ~입니다” 형태를 사용할 수 있다."""
+    if intro_type == "7. 검색만으로는 모르는 알짜 정보 예고":
+        return """[도입 방식 필수 적용 규칙 - 알짜정보 예고]
+- 도입부에서 검색만으로 놓치기 쉬운 판단 기준을 예고한다.
+- ‘검색해도 정보는 많지만 정작 중요한 기준은 다를 수 있다’는 흐름을 만든다.
+- 과한 비밀/충격식 표현은 쓰지 않는다."""
+    if intro_type == "8. 간단한 웹툰 만들어 넣기":
+        return """[도입 방식 필수 적용 규칙 - 웹툰/장면]
+- 도입부에 1~3컷 장면 구성 또는 짧은 장면 묘사를 넣는다.
+- 실제 이미지를 만들지 말고 텍스트 구성안으로 처리한다.
+- 장면 이후 본문 도입으로 자연스럽게 연결한다."""
+    return "[도입 방식 필수 적용 규칙]\n- 선택한 도입 방식을 도입부에서 눈에 보이게 반영한다."
+
+
+def title_force_block(title_type, keyword):
+    kw = keyword or "핵심 키워드"
+    base = f"""[제목 필수 기준]
+- 제목은 가능하면 핵심 키워드 “{kw}”로 시작한다.
+- 핵심 키워드는 제목에 1회만 넣는다.
+- 제목은 가능하면 30자 이내로 작성한다.
+- 자극적인 어그로가 아니라 독자의 실제 고민과 호기심을 건드린다.
+- 본문 내용과 다른 제목을 만들지 않는다.
+- 제목 후보 3개를 먼저 제시한 뒤, 가장 적합한 제목 1개를 최종 제목으로 사용한다."""
+    if not title_type or title_type == "선택 안함":
+        return base + "\n- 특정 제목 유형은 강제하지 않는다."
+    if title_type == "자동 추천":
+        return base + "\n- 자료와 주제에 맞는 제목 유형을 6가지 중에서 자동 선택한다."
+    return base + f"\n- 선택한 제목 유형 “{title_type}”을 반드시 반영한다."
+
+
+def output_hygiene_block():
+    return """[출력 정리 규칙]
+- 출처 찌꺼기나 검색 흔적을 본문에 남기지 않는다.
+- `+1`, `[1]`, `[2]`, `cite`, `source`, `reference`, `�` 같은 표시는 출력하지 않는다.
+- 출처명이나 링크를 본문 중간에 끼워 넣지 않는다.
+- 자료는 참고만 하고 원고는 자연스러운 블로그 문장으로 작성한다.
+- 홈페이지 정보가 없으면 “저희 병원은”, “본원은”, “대표원장은”처럼 기관 철학을 지어내지 않는다."""
+
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
     topic = (topic or keyword or "이 주제").strip()
@@ -948,7 +1051,7 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용"):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
@@ -958,6 +1061,13 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
     title_plan = title_style_instruction(title_type)
+    intro_force = intro_force_block(intro_type)
+    title_force = title_force_block(title_type, keyword)
+    hygiene_force = output_hygiene_block()
+    if prompt_mode == "외부 GPTs용 강제 프롬프트":
+        mode_notice = "외부 GPTs용입니다. 아래 조건은 추천이 아니라 필수 작성 조건입니다. 조건을 지키지 못하면 다시 작성해야 합니다."
+    else:
+        mode_notice = "달로썸 GPTs용입니다. 기존 GPTs 설정과 충돌하더라도 아래 선택 조건을 우선 적용합니다."
     if title_type == "선택 안함":
         title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 단, 6가지 제목 유형은 강제하지 말고 주제와 본문에 맞게 자연스럽게 구성해줘."
     elif title_type == "자동 추천":
@@ -971,13 +1081,23 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 핵심 키워드: {keyword}
 분야: {field}
 원고 유형: {content_type}
+프롬프트 출력 방식: {prompt_mode}
+
+[중요]
+{mode_notice}
+
 선택한 제목 유형: {title_type}
 제목 유형 세부 지시: {title_plan}
+{title_force}
 제목 후보 참고:
 {title_candidates}
+
 선택한 도입 화법: {voice_type}
 선택한 달로썸 도입 방식: {intro_type}
 도입 방식 세부 지시: {intro_plan}
+{intro_force}
+
+{hygiene_force}
 
 [A등급 공통 핵심정보 - 본문 팩트용]
 {a_text}
@@ -995,7 +1115,9 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 작성 지시:
 0. {title_rule}
 1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
-2. 선택한 달로썸 도입 방식이 체크리스트/비교표/FAQ/대화체 등 구체 형식이라면 도입부에서 그 형식이 눈에 보이게 작성해줘.
+2. 선택한 달로썸 도입 방식은 추천이 아니라 필수 구조다. 도입부 첫 5문장 안에서 눈에 보이게 반영해줘.
+2-1. 비교표 방식이면 마크다운 표와 `|---|---|---|` 구분선을 반드시 넣어줘.
+2-2. 제목 후보 3개를 먼저 제시한 뒤 최종 제목 1개를 선택하고, 그 제목으로 원고를 작성해줘.
 3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
 3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
@@ -1074,6 +1196,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 - 도입화법 변경 금지
 - 달로썸 도입 방식 변경 금지
 - 본문을 팩트 설명문처럼 딱딱하게 바꾸기 금지
+- `+1`, `[1]`, `[2]`, `cite`, `source`, `reference`, `�` 같은 복사 찌꺼기 남기기 금지
+- 홈페이지 정보가 없는데 “저희 병원은”, “본원은” 등 기관 철학을 지어내기 금지
 
 수정 후 아래 형식으로 답해줘.
 1. 예상 점수
@@ -1085,8 +1209,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.4")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형 선택/선택안함/도입화법/달로썸 도입 8가지 선택/문단별 고민 배치 → 분량 조건 반영 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v4.5")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형/도입화법/도입8가지 → 달로썸 GPTs용·외부 GPTs용 강제 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1136,6 +1260,8 @@ with tab_design:
         d_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="d_field")
     with d_col2:
         d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
+        d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
+        st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
         length_col1, length_col2 = st.columns(2)
         with length_col1:
             d_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="d_length_preset")
@@ -1201,7 +1327,7 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode)
     claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field)
 
     st.write("## GPTs용 초안 프롬프트")
@@ -1279,6 +1405,7 @@ with tab_check:
             {"항목": "본문 SEO/길이/키워드", "점수": f"{scores['본문']}/20"},
             {"항목": "도입부", "점수": f"{scores['도입']}/15"},
             {"항목": "AI티", "점수": f"{scores['AI티']}/15"},
+            {"항목": "복사찌꺼기", "점수": f"{scores['복사찌꺼기']}/10"},
             {"항목": "위험표현", "점수": f"{scores['위험표현']}/15"},
             {"항목": "작성자 관점", "점수": f"{scores['작성자 관점']}/10"},
             {"항목": "마무리", "점수": f"{scores['마무리']}/10"},
@@ -1292,7 +1419,7 @@ with tab_check:
         m4.metric("감지 제목", ", ".join(meta["detected_title"]) if meta["detected_title"] else "없음")
         m5.metric("감지 도입", ", ".join(meta["detected_intro"]) if meta["detected_intro"] else "없음")
 
-        for section in ["제목", "본문", "도입", "AI티", "위험표현", "작성자 관점", "마무리"]:
+        for section in ["제목", "본문", "도입", "AI티", "복사찌꺼기", "위험표현", "작성자 관점", "마무리"]:
             show_issues(f"{section} 검수", issues[section])
 
         st.write("### 용어 설명 제안")

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.9", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v5.3", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -643,6 +643,16 @@ VOICE_TYPES = [
 ]
 VOICE_TYPE_OPTIONS = ["자동 추천"] + VOICE_TYPES
 
+FIRST_SENTENCE_TYPES = [
+    "자동 추천",
+    "의문문 강제",
+    "체크리스트형",
+    "많이 묻는 질문 인용형",
+    "대화체형",
+    "장면 묘사형",
+    "전문가 안내형",
+]
+
 LENGTH_PRESETS = ["1000자", "1500자", "2000자", "3000자", "직접 입력"]
 SPACING_TYPES = ["공백 제외", "공백 포함"]
 PARAGRAPH_OPTIONS = ["분량 우선, 문단 수 자연 조절", "3문단", "4문단", "5문단", "6문단 이상"]
@@ -681,7 +691,7 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천"):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천"):
 
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
@@ -693,6 +703,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     voice_type = voice_type or "자동 추천"
+    first_sentence_type = first_sentence_type or "자동 추천"
+    first_sentence_plan = first_sentence_instruction(first_sentence_type, intro_type)
     voice_instruction = "도입 화법은 자료를 보고 가장 적합한 화법을 추천해줘." if voice_type == "자동 추천" else f"도입 화법은 반드시 '{voice_type}' 흐름을 우선 고려해줘."
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
     if title_type == "선택 안함":
@@ -710,6 +722,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 {keyword_plan}
 희망 도입 화법: {voice_type}
 도입 화법 지시: {voice_instruction}
+희망 도입 첫문장 형태: {first_sentence_type}
+도입 첫문장 형태 지시: {first_sentence_plan}
 희망 도입 방식: {intro_type}
 도입 방식 지시: {intro_instruction}
 희망 제목 유형: {title_type}
@@ -878,6 +892,68 @@ D등급: 참고만 가능
 7. 검색만으로는 모르는 알짜 정보 예고
 8. 간단한 웹툰/장면 구성
 
+[6-1] 선택 화법 실제 적용 설계
+중요: “추천 도입 화법: 판단 혼란형 + 후회 예방형”처럼 이름만 쓰고 끝내지 말 것.
+반드시 조사된 B등급 고민패턴을 바탕으로 아래까지 구체적으로 작성해줘.
+
+선택 화법:
+화법 선택 이유:
+화법 설명:
+- 이 화법으로 독자에게 어떤 감정/상황을 먼저 건드릴지 설명한다.
+
+감정 도입 첫문장 후보 3개:
+1. 문장:
+   근거 B등급 고민:
+2. 문장:
+   근거 B등급 고민:
+3. 문장:
+   근거 B등급 고민:
+
+본문 고민 브릿지 후보 3개:
+1. 문장:
+   근거 B등급 고민:
+2. 문장:
+   근거 B등급 고민:
+3. 문장:
+   근거 B등급 고민:
+
+마무리 재연결 문장 후보 2개:
+1. 문장:
+   근거 B등급 고민:
+2. 문장:
+   근거 B등급 고민:
+
+작성 규칙:
+- 감정 도입 첫문장, 본문 고민 브릿지, 마무리 재연결 문장은 반드시 조사된 B등급 잠재고객 고민패턴에서 끌어와 만든다.
+- 자료에 없는 감정, 증상, 비용 불안, 선택 상황을 임의로 만들지 않는다.
+- 원문 문장을 그대로 베끼지 말고, 근거 고민을 상담형 문장으로 재구성한다.
+- B등급 고민이 부족하면 “B등급 고민 부족”이라고 표시하고 구체 공감문을 억지로 만들지 않는다.
+- 도입 첫문장은 정보 설명이 아니라 독자의 상황/판단 혼란/비용 불안/선택 불안을 먼저 짚는다.
+- 본문 브릿지는 도입 문장을 그대로 반복하지 말고, 정보 설명 앞에 짧게 연결하는 문장으로 만든다.
+- 마무리는 업체/병원/전문가 장점을 지어내지 말고, 독자가 무엇을 확인하고 선택해야 하는지 정리한다.
+- 병원/법률/금융 분야는 단정·보장·확정 표현을 피한다.
+- 생활/제품/홈케어 분야는 과장 표현과 가짜 후기 표현을 피한다.
+
+[6-2] 도입 첫문장 형태 설계
+중요: 화법 이름과 도입 방식만으로는 첫문장 형태가 보장되지 않는다.
+선택된 첫문장 형태에 맞춰 실제 초안에서 보일 수 있게 아래까지 작성해줘.
+
+도입 첫문장 형태:
+첫문장 형태 선택 이유:
+첫문장 필수 규칙:
+- 의문문 강제라면 첫 문장은 반드시 물음표(?)로 끝나야 한다.
+- 체크리스트형이라면 도입부 첫 5문장 안에 체크리스트 3~5개가 보여야 한다.
+- 많이 묻는 질문 인용형이라면 도입부 초반에 질문 2~3개 또는 따옴표 질문이 보여야 한다.
+- 대화체형이라면 실제 상담에서 나올 법한 짧은 말걸기 문장으로 시작한다.
+- 장면 묘사형이라면 독자가 겪는 구체적인 생활 장면으로 시작한다.
+- 전문가 안내형이라면 감정을 과하게 키우지 않고 확인 기준을 먼저 제시한다.
+- 어떤 형태든 첫 문장을 정보 정의문으로 시작하지 않는다.
+
+첫문장 예시 3개:
+1.
+2.
+3.
+
 [7] GPTs 초안 작성용 요약
 내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
 
@@ -886,6 +962,17 @@ D등급: 참고만 가능
 추천 제목 유형:
 제목 후보:
 추천 도입 화법:
+화법 선택 이유:
+화법 설명:
+도입 첫문장 형태:
+첫문장 형태 선택 이유:
+첫문장 필수 규칙:
+감정 도입 첫문장 후보:
+감정 도입 첫문장 근거 고민:
+본문 고민 브릿지 후보:
+본문 고민 브릿지 근거 고민:
+마무리 재연결 문장 후보:
+마무리 재연결 근거 고민:
 추천 달로썸 도입 방식:
 제목 방향:
 도입부 방향:
@@ -900,6 +987,7 @@ D등급: 참고만 가능
 - 출처 링크는 반드시 함께 줄 것.
 - {field} 분야에서 위험한 단정 표현은 피할 것.
 - 사용자가 링크를 직접 확인할 수 있도록 자료별 링크를 빠뜨리지 말 것.
+- 숫자 범위는 반드시 “2~3개”, “3~4개”, “4~6회”처럼 물결표를 넣어 표기하고, “23개”, “34개”, “46회”처럼 붙여 쓰지 말 것.
 - 조사 결과 마지막에는 위 분량 조건에 맞춰 원고를 압축하거나 확장할 때 우선 반영할 내용도 정리할 것.
 """ + (f"\n추가로 중점적으로 조사할 내용:\n{extra_focus}\n" if extra_focus else "")
 
@@ -1002,6 +1090,67 @@ def voice_style_instruction(voice_type):
     return mapping.get(voice_type, "선택한 화법을 유지한다.")
 
 
+def first_sentence_instruction(first_sentence_type, intro_type=""):
+    """도입 첫문장 형태를 별도로 강제하는 지시문."""
+    first_sentence_type = first_sentence_type or "자동 추천"
+    intro_type = intro_type or "자동 추천"
+    if first_sentence_type == "자동 추천":
+        return "도입 방식과 화법에 맞춰 첫문장 형태를 선택한다. 질문형/FAQ/체크리스트 도입이면 첫 문장을 의문문 또는 질문형 항목으로 시작하고, 전문가 안내형/뉴스형이면 신중한 안내형 문장도 가능하다. 단, 첫 문장을 주제 정의나 장비/제도 설명으로 시작하지 않는다."
+    mapping = {
+        "의문문 강제": "도입부 첫 문장은 반드시 독자에게 직접 묻는 의문문으로 작성한다. 문장 끝은 반드시 물음표(?)로 끝낸다.",
+        "체크리스트형": "도입부 첫 5문장 안에 체크리스트를 넣고, 각 항목은 독자의 실제 상황을 짚는 질문형 또는 짧은 상황형 문장으로 작성한다.",
+        "많이 묻는 질문 인용형": "도입부 초반에 실제 사람들이 자주 묻는 질문을 따옴표 또는 질문문 형태로 재구성한다. 첫 블록에 물음표가 보이게 한다.",
+        "대화체형": "도입부 첫 부분을 실제 상담에서 나올 법한 짧은 대화체 질문이나 독자에게 말 거는 문장으로 시작한다.",
+        "장면 묘사형": "도입부 첫 문장은 독자가 겪는 구체적인 생활 장면이나 상황 묘사로 시작한다. 의문문이 아니어도 되지만 정보 정의문은 금지한다.",
+        "전문가 안내형": "도입부 첫 문장은 차분한 안내형 평서문도 가능하다. 다만 주제 정의로 시작하지 말고 독자가 확인해야 할 기준이나 판단 상황을 먼저 짚는다.",
+    }
+    return mapping.get(first_sentence_type, "선택한 첫문장 형태를 유지한다.")
+
+
+def first_sentence_force_block(first_sentence_type, keyword, intro_type=""):
+    kw = keyword or "핵심 키워드"
+    first_sentence_type = first_sentence_type or "자동 추천"
+    common = f"""[도입 첫문장 형태 필수 규칙]
+- 선택한 첫문장 형태: {first_sentence_type}
+- 첫 문장을 “{kw}은/는 무엇입니다”, “{kw}은/는 ~입니다”, “최근 많은 분들이 ~” 같은 정보 설명형으로 시작하지 않는다.
+- 첫 문장은 반드시 B등급 고민패턴에서 확인된 독자의 상황, 질문, 판단 혼란, 비용 불안, 선택 불안을 먼저 건드린다.
+- 자료에 없는 증상, 감정, 비용 불안, 선택 상황을 GPT가 임의로 만들지 않는다.
+- B등급 고민이 부족하면 구체적인 공감문을 억지로 만들지 말고, “내 상황에 맞는 기준을 확인한다” 수준으로만 쓴다.
+- 도입 첫문장과 본문 브릿지는 같은 문장을 반복하지 않는다."""
+    if first_sentence_type == "자동 추천":
+        return common + """
+- 도입 방식에 맞춰 의문문/체크리스트/FAQ/대화체/장면형/전문가 안내형 중 가장 자연스러운 첫문장을 선택한다."""
+    if first_sentence_type == "의문문 강제":
+        return common + """
+- 도입부 첫 문장은 반드시 독자에게 직접 묻는 의문문으로 작성한다.
+- 첫 문장 끝은 반드시 물음표(?)로 끝낸다.
+- 예: ‘자다가 손이 저려 깨는 일이 반복되고 계신가요?’처럼 구체적인 상황을 묻는다."""
+    if first_sentence_type == "체크리스트형":
+        return common + """
+- 도입부 첫 5문장 안에 체크리스트 3~5개를 반드시 넣는다.
+- 체크리스트 항목은 ‘□’, ‘-’, ‘✓’ 중 하나로 표시한다.
+- 각 항목은 독자가 자신의 상황을 바로 대입할 수 있어야 한다."""
+    if first_sentence_type == "많이 묻는 질문 인용형":
+        return common + """
+- 도입부 초반에 따옴표가 있는 질문문 또는 질문 2~3개를 배치한다.
+- 첫 블록 안에 반드시 물음표(?)가 보여야 한다.
+- 실제 Q&A 문장을 그대로 복사하지 말고 반복 질문 패턴만 재구성한다."""
+    if first_sentence_type == "대화체형":
+        return common + """
+- 도입부 첫 부분에 실제 상담에서 나올 법한 짧은 대화체 문장을 넣는다.
+- ‘원장님, 이럴 때도 필요한가요?’처럼 자연스럽게 말 걸 수 있으나 가짜 후기나 실제 경험담처럼 쓰지 않는다."""
+    if first_sentence_type == "장면 묘사형":
+        return common + """
+- 첫 문장은 독자가 겪는 구체적인 장면으로 시작한다.
+- 의문문이 아니어도 되지만, 추상적인 정보 설명은 금지한다.
+- 예: ‘아침마다 손끝이 저려 컵을 잡는 일도 조심스러워질 수 있습니다.’"""
+    if first_sentence_type == "전문가 안내형":
+        return common + """
+- 첫 문장은 전문가가 차분히 기준을 안내하는 흐름으로 작성한다.
+- 감정을 과하게 키우지 말고, ‘먼저 확인해야 할 기준’을 앞에 둔다.
+- 단, 주제 정의문으로 시작하지 않는다."""
+    return common
+
 def _shorten_line(line, n=52):
     line = re.sub(r"^[-•·\d\.\)\s]+", "", str(line)).strip()
     line = re.sub(r"\s+", " ", line)
@@ -1009,24 +1158,33 @@ def _shorten_line(line, n=52):
 
 
 def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
-    """조사자료에서 나온 고민을 전 분야 감정 흐름으로 변환한다."""
+    """조사자료에서 나온 B등급 고민을 전 분야 감정 흐름으로 변환한다.
+    v5.3: 감정문장 후보마다 근거 고민을 함께 표시해 GPT가 임의 공감문을 만들지 않게 한다.
+    """
     topic = (topic or keyword or "이 주제").strip()
     kw = (keyword or topic).strip()
     worries = []
     for x in b_lines or []:
-        sx = _shorten_line(x, 70)
+        sx = _shorten_line(x, 90)
         if sx and sx not in worries:
             worries.append(sx)
-        if len(worries) >= 4:
+        if len(worries) >= 5:
             break
-    while len(worries) < 4:
-        defaults = [
-            f"{kw}을/를 알아보지만 내 상황에 맞는지 판단하기 어려운 고민",
-            "후기와 정보가 달라 무엇을 기준으로 봐야 할지 헷갈리는 상황",
-            "비용, 효과, 기간, 부작용 또는 결과 차이 때문에 망설이는 마음",
-            "혼자 결정하기보다 현재 상태를 먼저 확인해야 하는 상황",
+
+    has_grounded_worries = len(worries) > 0
+    if not has_grounded_worries:
+        worries = [
+            "B등급 고민자료가 부족해 구체적인 독자 상황을 확정하기 어려움",
+            "자료에 확인된 반복 질문이 부족하므로 일반적인 선택 기준 중심으로 접근 필요",
+            "효과·비용·기간·주의사항 등 실제 불안 포인트 추가 확인 필요",
+            "자료에 없는 생활 장면을 임의로 만들지 말아야 하는 상황",
+            "독자 상황을 단정하지 말고 현재 조건 확인으로 정리해야 하는 상황",
         ]
-        worries.append(defaults[len(worries)])
+    while len(worries) < 5:
+        worries.append(worries[-1])
+
+    def qmark(text):
+        return text if text.endswith("?") else text.rstrip(".다요") + "나요?"
 
     if voice_type == "일상 불편형":
         firsts = [
@@ -1043,37 +1201,37 @@ def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
     elif voice_type == "감정 직면형":
         firsts = [
             f"{worries[0]}을/를 마주한 순간, 마음이 쉽게 정리되지 않을 수 있습니다.",
-            f"갑작스러운 상황 앞에서 감정적으로 무너지는 느낌이 드는 것은 자연스러운 반응일 수 있습니다.",
+            f"{worries[0]} 때문에 감정적으로 크게 흔들리는 것은 자연스러운 반응일 수 있습니다.",
             f"지금은 감정도 크지만, 동시에 어떤 기준으로 대응해야 할지 확인해야 하는 시점입니다.",
         ]
     elif voice_type == "억울함 공감형":
         firsts = [
             f"{worries[0]} 때문에 억울하고 답답한 상황이 이어지고 계신가요?",
-            f"분명 내 입장에서는 납득하기 어려운데 상대방이 다른 말을 한다면 막막할 수밖에 없습니다.",
+            f"분명 내 입장에서는 납득하기 어려운데 {worries[0]}이/가 이어진다면 막막할 수밖에 없습니다.",
             f"감정적으로 대응하고 싶어지는 상황일수록, 먼저 확인해야 할 기준을 정리하는 것이 필요합니다.",
         ]
     elif voice_type == "비교 고민형":
         firsts = [
-            f"{worries[0]} 때문에 둘 중 무엇을 선택해야 할지 고민하고 계신가요?",
-            f"비슷해 보이는 선택지라도 내 상황에 맞는 기준은 다를 수 있습니다.",
+            f"{worries[0]} 때문에 무엇을 선택해야 할지 고민하고 계신가요?",
+            f"비슷해 보이는 선택지라도 {worries[0]}처럼 내 상황에 맞는 기준은 다를 수 있습니다.",
             f"후기만 보면 더 헷갈릴 수 있어, 먼저 비교 기준을 차분히 나눠볼 필요가 있습니다.",
         ]
     elif voice_type == "비용 불안형":
         firsts = [
             f"{worries[0]} 때문에 비용을 들여도 괜찮을지 망설이고 계신가요?",
-            f"가격 차이가 클수록 무엇을 기준으로 선택해야 할지 더 불안해질 수 있습니다.",
+            f"가격 차이가 클수록 {worries[0]}처럼 무엇을 기준으로 선택해야 할지 더 불안해질 수 있습니다.",
             f"비용만 먼저 비교하면 정작 중요한 조건을 놓칠 수 있습니다.",
         ]
     elif voice_type == "선택 불안형":
         firsts = [
             f"후기와 정보는 많은데 {worries[0]} 때문에 선택이 더 어려워지고 계신가요?",
-            f"정보가 많을수록 오히려 어디를 믿어야 할지 막막해질 수 있습니다.",
+            f"정보가 많을수록 {worries[0]}처럼 오히려 어디를 믿어야 할지 막막해질 수 있습니다.",
             f"선택 전에는 장점보다 내 상황에 맞는 확인 기준을 먼저 보는 것이 좋습니다.",
         ]
     elif voice_type == "후회 예방형":
         firsts = [
-            f"{topic}을/를 시작하기 전, 나중에 후회하지 않으려면 먼저 확인해야 할 기준이 있습니다.",
-            f"결정하고 난 뒤 알게 되면 아쉬운 부분들이 있어, 시작 전에 기준을 잡는 것이 중요합니다.",
+            f"{topic}을/를 시작하기 전, {worries[0]} 때문에 망설여진다면 먼저 확인해야 할 기준이 있습니다.",
+            f"결정하고 난 뒤 알게 되면 아쉬운 부분들이 있어, 시작 전에 {worries[0]}부터 기준을 잡는 것이 중요합니다.",
             f"후기만 보고 서두르기보다, 내 상황에 맞는지 먼저 확인해보는 것이 좋습니다.",
         ]
     elif voice_type == "질문 응답형":
@@ -1084,44 +1242,56 @@ def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
         ]
     else:  # 전문가 안내형
         firsts = [
-            f"{topic}은/는 단정하기보다 현재 상황을 기준에 따라 차분히 확인하는 것이 중요합니다.",
+            f"{topic}은/는 단정하기보다 {worries[0]}을/를 기준에 따라 차분히 확인하는 것이 중요합니다.",
             f"정보를 많이 보는 것보다 내 상황에 어떤 기준을 적용해야 하는지 살피는 과정이 먼저입니다.",
             f"개인 상태와 조건에 따라 접근이 달라질 수 있어, 핵심 기준을 순서대로 확인해보는 것이 좋습니다.",
         ]
 
     bridges = [
-        f"본문 브릿지 1: {worries[1]} — 이 고민을 먼저 짚고, 그 다음 A등급 팩트로 원리/정의/기준을 설명한다.",
-        f"본문 브릿지 2: {worries[2]} — 독자가 망설이는 이유를 짚은 뒤 효과/절차/비교/주의사항으로 연결한다.",
-        f"본문 브릿지 3: {worries[3]} — 선택 불안이나 후회 포인트를 짚고, 확인 기준 또는 상담 기준으로 정리한다.",
+        f"{worries[1]} — 이 고민을 먼저 짚고, 그 다음 A등급 팩트로 원리/정의/기준을 설명한다.",
+        f"{worries[2]} — 독자가 망설이는 이유를 짚은 뒤 효과/절차/비교/주의사항으로 연결한다.",
+        f"{worries[3]} — 선택 불안이나 후회 포인트를 짚고, 확인 기준 또는 상담 기준으로 정리한다.",
     ]
     endings = [
-        f"마무리 재연결 1: 결국 중요한 것은 {topic} 자체보다 내 상황에 맞는 기준을 확인하는 과정입니다.",
-        "마무리 재연결 2: 혼자 단정하기보다 현재 상태와 조건을 차분히 확인한 뒤 결정하는 흐름으로 마무리한다.",
+        f"결국 중요한 것은 {topic} 자체보다, {worries[4]}을/를 기준으로 내 상황에 맞는지 확인하는 과정입니다.",
+        "자료에 나온 고민을 기준으로 현재 상태와 조건을 차분히 확인한 뒤 결정하는 흐름으로 마무리한다.",
     ]
+
+    ground_notice = "B등급 고민자료 기반" if has_grounded_worries else "B등급 고민자료 부족: 구체 공감문 임의 생성 금지"
     return f"""[전 분야 감정 흐름 설계]
 선택 화법: {voice_type}
 화법 설명: {voice_style_instruction(voice_type)}
+감정문장 생성 기준: {ground_notice}
 
 감정 도입 첫문장 후보 3개:
-1. {firsts[0]}
-2. {firsts[1]}
-3. {firsts[2]}
+1. 문장: {firsts[0]}
+   근거 B등급 고민: {worries[0]}
+2. 문장: {firsts[1]}
+   근거 B등급 고민: {worries[0]}
+3. 문장: {firsts[2]}
+   근거 B등급 고민: {worries[0]}
 
 본문 고민 브릿지 후보 3개:
-- {bridges[0]}
-- {bridges[1]}
-- {bridges[2]}
+1. 문장: {bridges[0]}
+   근거 B등급 고민: {worries[1]}
+2. 문장: {bridges[1]}
+   근거 B등급 고민: {worries[2]}
+3. 문장: {bridges[2]}
+   근거 B등급 고민: {worries[3]}
 
 마무리 재연결 문장 후보 2개:
-- {endings[0]}
-- {endings[1]}
+1. 문장: {endings[0]}
+   근거 B등급 고민: {worries[4]}
+2. 문장: {endings[1]}
+   근거 B등급 고민: B등급 고민 전체 요약
 
 사용 규칙:
-- 도입부 첫 문장은 위 후보 중 1개를 사용하거나 같은 방향으로 더 자연스럽게 바꾼다.
+- 감정 도입, 본문 브릿지, 마무리 재연결은 반드시 B등급 잠재고객 고민패턴에서 확인된 내용으로 만든다.
+- 원문 문장을 그대로 복사하지 말고 상담형 문장으로 재구성한다.
+- 자료에 없는 증상, 불안, 가격 고민, 비교 대상을 임의로 추가하지 않는다.
 - 도입부에 강한 감정/상황 질문을 넣고, 본문에서는 같은 말을 반복하지 않는다.
 - 본문에는 브릿지를 2~3곳만 자연스럽게 배치한다. 1000~1500자 원고에서는 과하게 넣지 않는다.
 - 마무리는 홈페이지 정보가 없으면 업체/병원 철학을 만들지 말고, 독자가 확인할 기준으로 정리한다."""
-
 
 
 
@@ -1262,6 +1432,17 @@ def output_hygiene_block():
 - 현재 별도 홈페이지/업체 정보가 제공되지 않았다면 마무리에서 “저희 병원은”, “본원은”, “저희는”, “우리 병원은”, “대표원장은”, “환자 중심”, “정직한 진료”, “풍부한 경험”처럼 기관 철학·장점·운영방침을 절대 지어내지 않는다.
 - 홈페이지 정보가 없을 때의 마무리는 병원 홍보가 아니라 정보형 정리로 끝낸다."""
 
+
+def emotion_grounding_force_block():
+    return """[B등급 고민 기반 감정문장 필수 규칙]
+- 감정 도입 첫문장, 본문 고민 브릿지, 마무리 재연결 문장은 반드시 B등급 잠재고객 고민패턴에서 확인된 내용으로 만든다.
+- A등급 팩트는 원리/효과/주의사항 설명에 사용하고, 독자 감정·상황 문장은 B등급 고민에서 가져온다.
+- C등급은 말맛 참고만 가능하며, 가짜 후기나 개인 경험담으로 만들지 않는다.
+- 자료에 없는 증상, 감정, 비용 고민, 비교 대상, 생활 장면을 임의로 추가하지 않는다.
+- 원문 질문/후기 문장을 그대로 베끼지 말고, 같은 고민을 상담형 문장으로 재구성한다.
+- B등급 고민이 부족하면 구체적인 공감문을 억지로 만들지 말고, ‘내 상황에 맞는 기준 확인’ 정도로만 표현한다.
+- 첫 문장을 만들 때는 [전 분야 감정 흐름 설계]의 ‘근거 B등급 고민’을 확인하고 그 범위 안에서 작성한다."""
+
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
     topic = (topic or keyword or "이 주제").strip()
@@ -1308,7 +1489,7 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용"):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용", first_sentence_type="자동 추천"):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
@@ -1319,10 +1500,14 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
+    first_sentence_type = first_sentence_type or "자동 추천"
+    first_sentence_plan = first_sentence_instruction(first_sentence_type, intro_type)
     title_plan = title_style_instruction(title_type)
     intro_force = intro_force_block(intro_type)
+    first_sentence_force = first_sentence_force_block(first_sentence_type, keyword, intro_type)
     title_force = title_force_block(title_type, keyword)
     hygiene_force = output_hygiene_block()
+    emotion_grounding_force = emotion_grounding_force_block()
     if prompt_mode == "외부 GPTs용 강제 프롬프트":
         mode_notice = "외부 GPTs용입니다. 아래 조건은 추천이 아니라 필수 작성 조건입니다. 조건을 지키지 못하면 다시 작성해야 합니다."
     else:
@@ -1352,11 +1537,16 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {title_candidates}
 
 선택한 도입 화법: {voice_type}
+선택한 도입 첫문장 형태: {first_sentence_type}
+도입 첫문장 형태 세부 지시: {first_sentence_plan}
 선택한 달로썸 도입 방식: {intro_type}
 도입 방식 세부 지시: {intro_plan}
+{first_sentence_force}
 {intro_force}
 
 {hygiene_force}
+
+{emotion_grounding_force}
 
 [홈페이지/업체 정보 반영 규칙]
 - 이번 프롬프트에는 별도 홈페이지 철학/병원 강점/업체 장점 정보가 제공되지 않았다.
@@ -1382,14 +1572,15 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 
 작성 지시:
 0. {title_rule}
-1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
-1-1. [전 분야 감정 흐름 설계]의 감정 도입 첫문장 후보 중 1개를 첫 문장으로 사용하거나, 같은 방향의 생활 장면/판단 혼란/비용 불안/선택 불안을 먼저 짚어줘.
+1. 도입부는 반드시 “{voice_type}” 화법, “{first_sentence_type}” 첫문장 형태, “{intro_type}” 방식을 함께 반영해 작성해줘.
+1-1. 첫 문장은 반드시 위 [도입 첫문장 형태 필수 규칙]을 따른다.
+1-1-1. [전 분야 감정 흐름 설계]의 감정 도입 첫문장 후보 중 1개를 첫 문장으로 사용하거나, 같은 근거 B등급 고민 범위 안에서 자연스럽게 재구성해줘.
 1-2. 첫 문장을 “{keyword}은/는 무엇입니다” 같은 정보 설명으로 시작하지 마.
 2. 선택한 달로썸 도입 방식은 추천이 아니라 필수 구조다. 도입부 첫 5문장 안에서 눈에 보이게 반영해줘.
 2-1. 비교표 방식이면 마크다운 표와 `|---|---|---|` 구분선을 반드시 넣어줘.
 2-2. 제목 후보 3개를 먼저 제시한 뒤 최종 제목 1개를 선택하고, 그 제목으로 원고를 작성해줘.
 2-3. 출력은 반드시 “제목 후보:”, “최종 제목:”, “본문:” 라벨을 분리해서 보여줘. 제목을 본문 첫 줄에 붙여서 애매하게 출력하지 마.
-3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘.
+3. B등급 고민패턴을 제목, 도입부, 소제목뿐 아니라 본문 주요 문단의 시작/전환부에도 자연스럽게 반영해줘. 단, 반드시 제공된 B등급 고민 안에서만 변환하고 자료에 없는 고민은 만들지 마.
 3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
@@ -1399,7 +1590,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
 10. 마무리는 강한 구매/상담 유도보다 독자가 자기 상황을 확인하게 만드는 방향으로 작성해줘.
 11. 각 주요 문단의 첫 문장 또는 전환부에는 가능한 범위에서 독자가 실제로 헷갈리는 지점/불편한 상황/망설이는 이유를 배치해줘. 단, 1000~1500자 원고에서는 억지로 많이 넣지 말고 2~3곳만 자연스럽게 넣어줘.
-12. 공감은 “힘드셨나요?”, “불안하시죠?” 같은 빈 위로가 아니라 실제 고민 상황을 짚는 방식으로 작성해줘.
+12. 공감은 “힘드셨나요?”, “불안하시죠?” 같은 빈 위로가 아니라 실제 B등급 고민 상황을 짚는 방식으로 작성해줘.
 
 피해야 할 표현:
 - 100%
@@ -1416,7 +1607,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {extra_rules.strip() if extra_rules.strip() else '- 없음'}
 """
 
-def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text=""):
+def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text="", first_sentence_type="자동 추천"):
     if title_type == "선택 안함":
         title_guard = "특정 제목 유형은 선택하지 않았다. 제목 유형을 억지로 맞추지 말고, 키워드 앞 배치와 30자 이내 권장, 어그로 금지 기준만 유지해줘."
         title_touch_rule = "0. 제목은 키워드 앞 배치와 기본 기준만 유지. 특정 제목 유형 강제 금지"
@@ -1431,12 +1622,14 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 
 {title_guard}
 이 원고의 도입 화법은 “{voice_type}”이다.
+이 원고의 도입 첫문장 형태는 “{first_sentence_type}”이다.
 이 원고의 달로썸 도입 방식은 “{intro_type}”이다.
 {title_keep_sentence}
 
 건드리면 안 되는 것:
 {title_touch_rule}
 1. 도입부의 “{voice_type}” 흐름
+1-1. 도입 첫문장 형태 “{first_sentence_type}”
 2. 도입부의 “{intro_type}” 방식
 3. 핵심 키워드 “{keyword}”
 3. {field} 분야에 맞는 신중한 톤
@@ -1454,6 +1647,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 
 중요:
 - 도입부 첫 2~3문장은 감정 도입 보호 문장으로 보고, 정보 설명형 문장으로 바꾸지 말 것.
+- 첫문장 형태가 “의문문 강제”라면 첫 문장 끝의 물음표(?)를 없애지 말 것.
+- 첫문장 형태가 체크리스트/FAQ/대화체/장면형이면 해당 형식을 일반 정보문으로 바꾸지 말 것.
 - 정보 설명만 남기고 감정/고민 문장을 삭제하지 말 것.
 - B등급 고민패턴에서 나온 공감 포인트를 살려둘 것.
 - “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화하지 말 것.
@@ -1466,6 +1661,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 {title_change_rule}
 - 제목에서 키워드 위치 변경 금지
 - 도입화법 변경 금지
+- 도입 첫문장 형태 변경 금지
 - 달로썸 도입 방식 변경 금지
 - 본문을 팩트 설명문처럼 딱딱하게 바꾸기 금지
 - `+1`, `[1]`, `[2]`, `cite`, `source`, `reference`, `�` 같은 복사 찌꺼기 남기기 금지
@@ -1481,8 +1677,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.0")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.0에서는 화법 선택을 조사/설계/검수 화면에 모두 표시합니다.")
+st.title("📝 달로썸 원고 검수기 v5.3")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.3에서는 화법·첫문장 형태뿐 아니라 감정 도입/본문 브릿지/마무리 재연결 문장을 반드시 B등급 고민자료에서 끌어와 재구성하도록 강화했습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1497,6 +1693,8 @@ with tab_research:
         r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
         r_voice_choice = st.selectbox("희망 도입 화법", VOICE_TYPE_OPTIONS, index=0, key="r_voice_choice")
         st.caption("자동 추천을 두면 GPT가 조사자료 기준으로 화법을 추천합니다. 직접 선택하면 해당 화법을 우선 고려하게 합니다.")
+        r_first_sentence_type = st.selectbox("희망 도입 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="r_first_sentence_type")
+        st.caption("의문문으로 시작해야 하면 '의문문 강제'를 선택하세요. 체크리스트/FAQ/대화체도 따로 고를 수 있습니다.")
         r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
     with col2:
         r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
@@ -1511,7 +1709,7 @@ with tab_research:
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -1566,6 +1764,9 @@ with tab_design:
     d_intro_type = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPES, index=intro_index, key="d_intro_type")
     st.caption(f"자동 추천 도입 방식: {recommended_intro} / 필요하면 직접 바꾸면 됩니다.")
 
+    d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
+    st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
+
     st.write("### 제목 후보")
     title_candidates = generate_title_candidates(d_keyword, d_topic, d_title_type, b_lines, d_field)
     for cand in title_candidates:
@@ -1606,8 +1807,8 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode)
-    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type)
+    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type)
 
     st.write("## GPTs용 초안 프롬프트")
     st.text_area("GPTs에 복붙", value=draft_prompt, height=520)
@@ -1631,6 +1832,7 @@ with tab_check:
         selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)
         selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
         selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type")
+        selected_first_sentence_type = st.selectbox("현재 원고 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="check_first_sentence_type")
         st.caption("검수 참고용입니다. 점수에는 크게 반영하지 않고 도입 리라이트/Claude 지시 방향 확인용입니다.")
         ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
         include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
@@ -1680,7 +1882,7 @@ with tab_check:
             philosophy_source_label = "철학 문구 입력됨 / 현재 마무리 방식은 정보형"
         else:
             philosophy_source_label = "철학 미반영"
-        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 화법: {selected_voice_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 상태: {philosophy_source_label}")
+        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 화법: {selected_voice_type} / 첫문장 형태: {selected_first_sentence_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 상태: {philosophy_source_label}")
 
         st.write("## 점수")
         st.metric("총점", f"{total}점", price_estimate(total))

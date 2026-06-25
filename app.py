@@ -1733,12 +1733,34 @@ def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
 
 
 def recommend_intro_style(field, topic, keyword, research_text, voice_type=""):
-    """주제/자료/화법을 보고 달로썸 도입 8가지 중 기본 추천안을 고른다. 사용자는 언제든 바꿀 수 있다."""
+    """주제/자료/화법을 보고 달로썸 도입 8가지 중 기본 추천안을 고른다. 사용자는 언제든 바꿀 수 있다.
+    v6.1: '확인할 점/체크/주의/선택 전' 주제는 비교어가 섞여 있어도 체크리스트를 우선 추천한다.
+    """
+    topic_text = " ".join([topic or "", keyword or ""])
     text = " ".join([field or "", topic or "", keyword or "", research_text or "", voice_type or ""])
-    if any(w in text for w in ["차이", "비교", "vs", "VS", "울쎄라", "인모드", "슈링크", "써마지", "전기면도기", "날면도기", "가격 비교"]):
-        return "2. 비교 표 활용"
-    if any(w in text for w in ["체크리스트", "확인", "자가", "증상", "냄새", "얼룩", "따갑", "저림", "통증", "관리법"]):
+
+    # 1) 제목/주제가 '확인할 점, 체크할 것, 주의사항, 선택 전'이면 체크리스트가 우선.
+    #    조사자료 안에 '가격 비교', 'A/B 비교' 같은 단어가 있어도 도입 방식은 체크리스트가 더 자연스럽다.
+    checklist_priority_words = [
+        "확인할 점", "확인할것", "확인할 것", "체크할", "체크리스트", "주의사항", "주의할", "알아둘", "선택 전", "시술 전", "수술 전", "소송 전", "계약 전", "구매 전", "받기 전", "하기 전", "전 확인", "기준", "놓치기 쉬운", "후회", "업체 선택", "병원 선택", "고르기 전"
+    ]
+    if any(w in topic_text for w in checklist_priority_words):
         return "1. 독자의 상황을 찔러주는 체크리스트 활용"
+
+    # 2) 본문/조사자료에 명확한 체크 성격이 강하면 체크리스트 추천.
+    if any(w in text for w in ["체크리스트", "확인 기준", "확인해야", "점검", "자가", "증상", "냄새", "얼룩", "따갑", "저림", "통증", "관리법", "A/S", "추가요금", "작업 범위", "계약 조건"]):
+        return "1. 독자의 상황을 찔러주는 체크리스트 활용"
+
+    # 3) 명확히 A vs B, 차이점, 비교 주제일 때만 비교표 우선.
+    compare_topic_words = ["차이", "차이점", "비교", "vs", "VS", "장단점", "무엇이 더", "뭐가 더", "A와 B", "둘 중", "울쎄라", "인모드", "슈링크", "써마지와", "전기면도기", "날면도기"]
+    if any(w in topic_text for w in compare_topic_words):
+        return "2. 비교 표 활용"
+
+    # 4) 조사자료에 비교어가 있어도 주제 자체가 비교글이 아니면 섣불리 비교표로 가지 않는다.
+    if any(w in text for w in ["차이", "비교", "vs", "VS", "가격 비교"]):
+        if any(w in text for w in ["무엇이 다른", "뭐가 다른", "장단점", "둘 중", "A와 B", "VS"]):
+            return "2. 비교 표 활용"
+
     if any(w in text for w in ["자주 묻", "많이 묻", "FAQ", "질문", "하이닥", "닥터나우", "지식iN", "로톡", "상담 사례"]):
         return "6. 많이 묻는 질문 인용"
     if any(w in text for w in ["뉴스", "기사", "최근", "보도", "통계", "자료에 따르면"]):
@@ -2179,7 +2201,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 
 
 st.title("📝 달로썸 원고 검수기 v6.0")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.0에서는 자동 추천값은 화면에 “자동 추천”으로 유지하고, ③ 원고 검수 모드도 ①/② 입력값을 그대로 불러와 다시 입력하는 일을 줄였습니다.")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.1에서는 자동 추천값은 화면에 “자동 추천”으로 유지하고, ③ 원고 검수 모드도 ①/② 입력값을 그대로 불러옵니다. 또한 “확인할 점/체크/주의/선택 전” 주제는 비교어가 섞여 있어도 체크리스트 도입을 우선 추천하도록 조정했습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 

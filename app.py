@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.8", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.9", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -630,14 +630,18 @@ RESEARCH_FIELDS = [
 ]
 CONTENT_TYPES = ["정보성", "바이럴", "업체 홍보", "후기형", "전문가 설명형"]
 VOICE_TYPES = [
-    "질문형",
     "일상 불편형",
     "판단 혼란형",
     "감정 직면형",
     "억울함 공감형",
     "비교 고민형",
+    "비용 불안형",
+    "선택 불안형",
+    "후회 예방형",
     "전문가 안내형",
+    "질문 응답형",
 ]
+VOICE_TYPE_OPTIONS = ["자동 추천"] + VOICE_TYPES
 
 LENGTH_PRESETS = ["1000자", "1500자", "2000자", "3000자", "직접 입력"]
 SPACING_TYPES = ["공백 제외", "공백 포함"]
@@ -845,13 +849,16 @@ D등급: 참고만 가능
 
 [6] 추천 도입 화법 + 달로썸 도입 8가지 방식
 아래 중 가장 어울리는 도입 화법을 추천하고 이유를 설명해줘.
-- 질문형
 - 일상 불편형
 - 판단 혼란형
 - 감정 직면형
 - 억울함 공감형
 - 비교 고민형
+- 비용 불안형
+- 선택 불안형
+- 후회 예방형
 - 전문가 안내형
+- 질문 응답형
 
 그리고 아래 달로썸 도입 8가지 중 어떤 방식이 가장 적합한지도 추천해줘.
 사용자가 희망 도입 방식을 지정했다면 그 방식이 이 주제에 맞는지 판단하고, 맞지 않으면 이유와 대체안을 함께 말해줘.
@@ -950,20 +957,165 @@ def analyze_research_text(text):
 
 
 def recommend_voice_type(field, topic, keyword, research_text):
+    """조사자료를 바탕으로 전 분야 공통 화법을 추천한다."""
     text = " ".join([field or "", topic or "", keyword or "", research_text or ""])
-    if any(w in text for w in ["외도", "상간", "이혼", "배신", "폭행", "사기", "형사"]):
+    if any(w in text for w in ["외도", "상간", "배우자", "이혼", "배신", "폭행", "형사", "사망", "유산"]):
         return "감정 직면형"
-    if any(w in text for w in ["억울", "책임", "누수", "대여금", "돈", "소송", "민원", "손해"]):
+    if any(w in text for w in ["억울", "책임", "누수", "대여금", "돈", "소송", "민원", "손해", "거짓말", "말을 바꾸"]):
         return "억울함 공감형"
-    if any(w in text for w in ["차이", "비교", "추천", "울쎄라", "인모드", "슈링크", "전기면도기", "날면도기", "가격"]):
+    if any(w in text for w in ["비용", "가격", "견적", "수임료", "샷 수", "추가 비용", "환급", "보험료", "비싸"]):
+        return "비용 불안형"
+    if any(w in text for w in ["선택", "어디", "업체", "병원 선택", "학원 선택", "후기", "리뷰", "고르", "믿어도"]):
+        return "선택 불안형"
+    if any(w in text for w in ["차이", "비교", "추천", "vs", "VS", "울쎄라", "인모드", "슈링크", "전기면도기", "날면도기", "무엇이 더"]):
         return "비교 고민형"
-    if any(w in text for w in ["부작용", "정상", "염증", "회복", "헷갈", "괜찮", "문제", "신호"]):
+    if any(w in text for w in ["전", "시작", "계약", "시술 전", "수술 전", "소송 전", "구매 전", "받기 전", "놓치", "후회"]):
+        return "후회 예방형"
+    if any(w in text for w in ["부작용", "정상", "염증", "회복", "헷갈", "괜찮", "문제", "신호", "구분", "판단"]):
         return "판단 혼란형"
-    if any(w in text for w in ["통증", "아프", "냄새", "얼룩", "불편", "붓기", "따갑", "가려움", "일상"]):
+    if any(w in text for w in ["통증", "아프", "냄새", "얼룩", "불편", "붓기", "따갑", "가려움", "일상", "옷", "잠"]):
         return "일상 불편형"
+    if any(w in text for w in ["많이 묻", "자주 묻", "FAQ", "질문", "상담", "궁금"]):
+        return "질문 응답형"
     if field in ["병원 / 의료", "법률", "보험 / 금융 / 부동산"]:
         return "전문가 안내형"
-    return "질문형"
+    return "일상 불편형"
+
+def voice_style_instruction(voice_type):
+    mapping = {
+        "일상 불편형": "독자가 일상에서 겪는 불편한 장면을 먼저 짚고 정보로 연결한다.",
+        "판단 혼란형": "정상인지 문제 신호인지, A인지 B인지 구분하기 어려운 지점을 먼저 짚는다.",
+        "감정 직면형": "강한 충격, 배신감, 두려움처럼 감정 강도가 높은 상황을 먼저 인정하고 현실 기준으로 전환한다.",
+        "억울함 공감형": "내 잘못이 아닌 것 같은데 책임이나 손해를 떠안는 상황의 억울함을 먼저 짚는다.",
+        "비교 고민형": "둘 중 뭐가 더 좋은지보다 내 상황에 맞는 기준이 무엇인지로 전환한다.",
+        "비용 불안형": "가격, 추가비용, 수임료, 샷 수, 견적 차이 때문에 망설이는 마음을 먼저 짚는다.",
+        "선택 불안형": "후기와 정보는 많은데 어디를 골라야 할지 막막한 상황을 먼저 짚는다.",
+        "후회 예방형": "시작 후 후회하지 않기 위해 사전에 확인해야 할 기준을 강조한다.",
+        "전문가 안내형": "감정을 과하게 끌지 않고 전문가가 차분히 기준을 안내하는 흐름으로 간다.",
+        "질문 응답형": "실제 상담에서 자주 나올 법한 질문을 먼저 던지고 하나씩 답하는 흐름으로 간다.",
+    }
+    return mapping.get(voice_type, "선택한 화법을 유지한다.")
+
+
+def _shorten_line(line, n=52):
+    line = re.sub(r"^[-•·\d\.\)\s]+", "", str(line)).strip()
+    line = re.sub(r"\s+", " ", line)
+    return line[:n].rstrip() + ("..." if len(line) > n else "")
+
+
+def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
+    """조사자료에서 나온 고민을 전 분야 감정 흐름으로 변환한다."""
+    topic = (topic or keyword or "이 주제").strip()
+    kw = (keyword or topic).strip()
+    worries = []
+    for x in b_lines or []:
+        sx = _shorten_line(x, 70)
+        if sx and sx not in worries:
+            worries.append(sx)
+        if len(worries) >= 4:
+            break
+    while len(worries) < 4:
+        defaults = [
+            f"{kw}을/를 알아보지만 내 상황에 맞는지 판단하기 어려운 고민",
+            "후기와 정보가 달라 무엇을 기준으로 봐야 할지 헷갈리는 상황",
+            "비용, 효과, 기간, 부작용 또는 결과 차이 때문에 망설이는 마음",
+            "혼자 결정하기보다 현재 상태를 먼저 확인해야 하는 상황",
+        ]
+        worries.append(defaults[len(worries)])
+
+    if voice_type == "일상 불편형":
+        firsts = [
+            f"{worries[0]} 때문에 일상에서 계속 신경 쓰이고 계신가요?",
+            f"처음에는 대수롭지 않게 넘겼지만 {worries[0]}이/가 반복되면 고민이 깊어질 수 있습니다.",
+            f"작은 불편처럼 보여도 {worries[0]}이/가 이어지면 어디서부터 확인해야 할지 막막할 수 있습니다.",
+        ]
+    elif voice_type == "판단 혼란형":
+        firsts = [
+            f"{worries[0]}이/가 정상적인 범위인지, 확인이 필요한 신호인지 헷갈리고 계신가요?",
+            f"{worries[0]} 때문에 단순한 문제인지 다른 원인이 있는지 구분하기 어려울 수 있습니다.",
+            f"검색해도 답이 다르게 느껴지는 이유는 {worries[0]}처럼 상황마다 판단 기준이 달라질 수 있기 때문입니다.",
+        ]
+    elif voice_type == "감정 직면형":
+        firsts = [
+            f"{worries[0]}을/를 마주한 순간, 마음이 쉽게 정리되지 않을 수 있습니다.",
+            f"갑작스러운 상황 앞에서 감정적으로 무너지는 느낌이 드는 것은 자연스러운 반응일 수 있습니다.",
+            f"지금은 감정도 크지만, 동시에 어떤 기준으로 대응해야 할지 확인해야 하는 시점입니다.",
+        ]
+    elif voice_type == "억울함 공감형":
+        firsts = [
+            f"{worries[0]} 때문에 억울하고 답답한 상황이 이어지고 계신가요?",
+            f"분명 내 입장에서는 납득하기 어려운데 상대방이 다른 말을 한다면 막막할 수밖에 없습니다.",
+            f"감정적으로 대응하고 싶어지는 상황일수록, 먼저 확인해야 할 기준을 정리하는 것이 필요합니다.",
+        ]
+    elif voice_type == "비교 고민형":
+        firsts = [
+            f"{worries[0]} 때문에 둘 중 무엇을 선택해야 할지 고민하고 계신가요?",
+            f"비슷해 보이는 선택지라도 내 상황에 맞는 기준은 다를 수 있습니다.",
+            f"후기만 보면 더 헷갈릴 수 있어, 먼저 비교 기준을 차분히 나눠볼 필요가 있습니다.",
+        ]
+    elif voice_type == "비용 불안형":
+        firsts = [
+            f"{worries[0]} 때문에 비용을 들여도 괜찮을지 망설이고 계신가요?",
+            f"가격 차이가 클수록 무엇을 기준으로 선택해야 할지 더 불안해질 수 있습니다.",
+            f"비용만 먼저 비교하면 정작 중요한 조건을 놓칠 수 있습니다.",
+        ]
+    elif voice_type == "선택 불안형":
+        firsts = [
+            f"후기와 정보는 많은데 {worries[0]} 때문에 선택이 더 어려워지고 계신가요?",
+            f"정보가 많을수록 오히려 어디를 믿어야 할지 막막해질 수 있습니다.",
+            f"선택 전에는 장점보다 내 상황에 맞는 확인 기준을 먼저 보는 것이 좋습니다.",
+        ]
+    elif voice_type == "후회 예방형":
+        firsts = [
+            f"{topic}을/를 시작하기 전, 나중에 후회하지 않으려면 먼저 확인해야 할 기준이 있습니다.",
+            f"결정하고 난 뒤 알게 되면 아쉬운 부분들이 있어, 시작 전에 기준을 잡는 것이 중요합니다.",
+            f"후기만 보고 서두르기보다, 내 상황에 맞는지 먼저 확인해보는 것이 좋습니다.",
+        ]
+    elif voice_type == "질문 응답형":
+        firsts = [
+            f"“{worries[0]}”처럼 궁금해하는 분들이 많습니다.",
+            f"상담이나 검색에서 자주 나오는 질문은 결국 ‘내 상황에도 맞을까?’라는 고민으로 이어집니다.",
+            f"많이 묻는 질문부터 하나씩 정리하면 선택 기준을 더 쉽게 잡을 수 있습니다.",
+        ]
+    else:  # 전문가 안내형
+        firsts = [
+            f"{topic}은/는 단정하기보다 현재 상황을 기준에 따라 차분히 확인하는 것이 중요합니다.",
+            f"정보를 많이 보는 것보다 내 상황에 어떤 기준을 적용해야 하는지 살피는 과정이 먼저입니다.",
+            f"개인 상태와 조건에 따라 접근이 달라질 수 있어, 핵심 기준을 순서대로 확인해보는 것이 좋습니다.",
+        ]
+
+    bridges = [
+        f"본문 브릿지 1: {worries[1]} — 이 고민을 먼저 짚고, 그 다음 A등급 팩트로 원리/정의/기준을 설명한다.",
+        f"본문 브릿지 2: {worries[2]} — 독자가 망설이는 이유를 짚은 뒤 효과/절차/비교/주의사항으로 연결한다.",
+        f"본문 브릿지 3: {worries[3]} — 선택 불안이나 후회 포인트를 짚고, 확인 기준 또는 상담 기준으로 정리한다.",
+    ]
+    endings = [
+        f"마무리 재연결 1: 결국 중요한 것은 {topic} 자체보다 내 상황에 맞는 기준을 확인하는 과정입니다.",
+        "마무리 재연결 2: 혼자 단정하기보다 현재 상태와 조건을 차분히 확인한 뒤 결정하는 흐름으로 마무리한다.",
+    ]
+    return f"""[전 분야 감정 흐름 설계]
+선택 화법: {voice_type}
+화법 설명: {voice_style_instruction(voice_type)}
+
+감정 도입 첫문장 후보 3개:
+1. {firsts[0]}
+2. {firsts[1]}
+3. {firsts[2]}
+
+본문 고민 브릿지 후보 3개:
+- {bridges[0]}
+- {bridges[1]}
+- {bridges[2]}
+
+마무리 재연결 문장 후보 2개:
+- {endings[0]}
+- {endings[1]}
+
+사용 규칙:
+- 도입부 첫 문장은 위 후보 중 1개를 사용하거나 같은 방향으로 더 자연스럽게 바꾼다.
+- 도입부에 강한 감정/상황 질문을 넣고, 본문에서는 같은 말을 반복하지 않는다.
+- 본문에는 브릿지를 2~3곳만 자연스럽게 배치한다. 1000~1500자 원고에서는 과하게 넣지 않는다.
+- 마무리는 홈페이지 정보가 없으면 업체/병원 철학을 만들지 말고, 독자가 확인할 기준으로 정리한다."""
 
 
 
@@ -1156,6 +1308,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
+    emotion_flow_plan = build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
     keyword_plan = keyword_count_instruction(keyword, target_len)
     intro_type = intro_type or "자동 추천"
@@ -1218,11 +1371,15 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {length_plan}
 {keyword_plan}
 
+{emotion_flow_plan}
+
 {bridge_plan}
 
 작성 지시:
 0. {title_rule}
 1. 도입부는 반드시 “{voice_type}” 화법과 “{intro_type}” 방식을 함께 반영해 작성해줘.
+1-1. [전 분야 감정 흐름 설계]의 감정 도입 첫문장 후보 중 1개를 첫 문장으로 사용하거나, 같은 방향의 생활 장면/판단 혼란/비용 불안/선택 불안을 먼저 짚어줘.
+1-2. 첫 문장을 “{keyword}은/는 무엇입니다” 같은 정보 설명으로 시작하지 마.
 2. 선택한 달로썸 도입 방식은 추천이 아니라 필수 구조다. 도입부 첫 5문장 안에서 눈에 보이게 반영해줘.
 2-1. 비교표 방식이면 마크다운 표와 `|---|---|---|` 구분선을 반드시 넣어줘.
 2-2. 제목 후보 3개를 먼저 제시한 뒤 최종 제목 1개를 선택하고, 그 제목으로 원고를 작성해줘.
@@ -1291,6 +1448,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 - 너무 반복되는 표현 정리
 
 중요:
+- 도입부 첫 2~3문장은 감정 도입 보호 문장으로 보고, 정보 설명형 문장으로 바꾸지 말 것.
 - 정보 설명만 남기고 감정/고민 문장을 삭제하지 말 것.
 - B등급 고민패턴에서 나온 공감 포인트를 살려둘 것.
 - “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화하지 말 것.
@@ -1319,7 +1477,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 
 
 st.title("📝 달로썸 원고 검수기 v4.8")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형/도입화법/도입8가지 → 달로썸 GPTs용·외부 GPTs용 강제 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1386,9 +1544,9 @@ with tab_design:
 
     counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
     recommended_voice = recommend_voice_type(d_field, d_topic, d_keyword, research_text)
-    voice_index = VOICE_TYPES.index(recommended_voice) if recommended_voice in VOICE_TYPES else 0
-    d_voice = st.selectbox("도입 화법 선택", VOICE_TYPES, index=voice_index, key="d_voice")
-    st.caption(f"자동 추천 화법: {recommended_voice}")
+    d_voice_choice = st.selectbox("화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
+    d_voice = recommended_voice if d_voice_choice == "자동 추천" else d_voice_choice
+    st.caption(f"자동 추천 화법: {recommended_voice} / 최종 적용 화법: {d_voice}")
 
     recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
     title_index = TITLE_TYPE_OPTIONS.index(recommended_title) if recommended_title in TITLE_TYPE_OPTIONS else 0
@@ -1431,6 +1589,10 @@ with tab_design:
                 st.success(x)
         else:
             st.info("C등급 말맛 참고는 없어도 됩니다. 단, 후기형 원고라면 있으면 좋습니다.")
+
+    st.write("## 전 분야 감정 흐름 설계")
+    emotion_flow_plan = build_emotion_flow_plan(d_topic, d_keyword, d_voice, b_lines, d_field)
+    st.text_area("도입 첫문장 후보 / 본문 브릿지 / 마무리 재연결", value=emotion_flow_plan, height=420)
 
     st.write("## 문단별 고민 배치안")
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)

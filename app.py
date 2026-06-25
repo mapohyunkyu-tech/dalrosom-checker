@@ -1,9 +1,10 @@
 
 import re
+import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v6.2", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v6.4", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -53,6 +54,13 @@ GLOSSARY_TERMS = {
     "병원 / 의료": ["진피", "표피", "염증", "색소침착", "회복기간", "부작용"],
     "법률": ["소멸시효", "지급명령", "가압류", "집행권원", "입증", "내용증명"],
 }
+
+
+def dynamic_widget_key(prefix, *parts):
+    """입력값이 바뀌면 복붙용 텍스트 영역도 새로 갱신되도록 하는 위젯 키."""
+    raw = "||".join(str(x) for x in parts)
+    digest = hashlib.md5(raw.encode("utf-8")).hexdigest()[:10]
+    return f"{prefix}_{digest}"
 
 
 def _has_jongseong(word):
@@ -1010,9 +1018,12 @@ def usecase_style_block(usecase_mode, field=""):
 [카페 정보성 글투]
 - 네이버 카페 회원이 정보를 정리해 공유하는 느낌으로 쓴다.
 - 지나치게 전문가 블로그처럼 딱딱한 어미를 줄이고, 자연스러운 정보공유 말투를 쓴다.
+- 문장 어미는 ‘~습니다’만 반복하지 말고 ‘~해요’, ‘~좋습니다’, ‘~확인해보는 게 좋습니다’를 자연스럽게 섞는다. 단, 과한 반말이나 친목 말투는 피한다.
 - 단, 실제 경험이 없으면 ‘제가 해봤는데’, ‘직접 이용해보니’ 같은 후기인 척하는 문장은 금지한다.
 - 특정 업체 추천, 신청 유도, 과한 장점 나열을 피한다.
 - 마무리는 ‘어디를 고르라’가 아니라 확인 기준 정리로 끝낸다.
+- 소제목은 [대괄호] 라벨보다 카페글에 어울리는 자연스러운 소제목을 기본으로 쓴다.
+- 네이버 계정, 플랫폼 정책, 개인정보 관련 문장은 법률문처럼 단정하지 말고 ‘본인 사용을 전제로 보기 때문에’, ‘피하는 편이 안전합니다’처럼 완화해 쓴다.
 - 예: ‘알아볼 때는 가격만 보기보다 추가요금 조건도 같이 확인하는 게 좋습니다.’"""
     elif mode == "커뮤니티/바이럴":
         body = """
@@ -2213,11 +2224,47 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
         title_keep_sentence = "제목 유형, 화법, 도입 방식은 절대 바꾸지 말고 유지해줘."
     homepage_guard = homepage_info_force_block(homepage_mode, homepage_info)
     usecase_guard = usecase_style_block(usecase_mode, field)
+    usecase_claude_extra = ""
+    if usecase_mode == "카페 정보성":
+        usecase_claude_extra = """
+
+[카페 정보성 윤문 추가 규칙]
+- 대괄호 소제목([시작 전 체크할 상황] 등)은 가능하면 자연스러운 소제목으로 바꾼다. 단, 구조와 순서는 유지한다.
+- 네이버 계정/플랫폼 정책 관련 문장은 법률문처럼 단정하지 말고, ‘본인 사용을 전제로 보기 때문에’, ‘피하는 편이 안전합니다’처럼 부드럽게 완화한다.
+- ‘추천합니다’가 특정 업체나 행동을 강하게 유도하는 느낌이면 ‘좋습니다’, ‘확인해보는 게 좋습니다’ 정도로 낮춘다.
+- 카페 회원이 정보 정리해 공유하는 느낌은 살리되, 실제 경험 없는 ‘제가 해봤는데’ 표현은 넣지 않는다.
+"""
+    elif usecase_mode == "커뮤니티/바이럴":
+        usecase_claude_extra = """
+
+[커뮤니티/바이럴 윤문 추가 규칙]
+- 문장을 조금 더 짧고 리듬 있게 다듬되 낚시성, 과장, 허위정보는 넣지 않는다.
+- 댓글 유도 느낌은 가능하지만 특정 업체 홍보처럼 보이게 만들지 않는다.
+"""
+    elif usecase_mode == "후기/리뷰":
+        usecase_claude_extra = """
+
+[후기/리뷰 윤문 추가 규칙]
+- 실제 경험 자료가 없으면 후기처럼 보이는 1인칭 경험담을 만들지 않는다.
+- 경험 자료가 있더라도 과한 칭찬, 별점 조작 느낌, 무조건 추천 표현은 줄인다.
+"""
     return f"""아래 원고를 다듬어줘.
+
+[이번 검수/설계 화면에서 새로 불러온 최신 조건]
+- 원고 사용처: {usecase_mode}
+- 도입 화법: {voice_type}
+- 도입 첫문장 형태: {first_sentence_type}
+- 달로썸 도입 방식: {intro_type}
+- 제목 유형: {title_type}
+- 핵심 키워드: {keyword}
+- 분야: {field}
+
+아래 최신 조건이 이전 대화나 이전 템플릿보다 우선이다. 바꾼 부분 요약에서도 화법명과 사용처명을 위 값 그대로 사용해줘.
 
 {title_guard}
 이 원고의 사용처는 “{usecase_mode}”이다.
 {usecase_guard}
+{usecase_claude_extra}
 
 이 원고의 도입 화법은 “{voice_type}”이다.
 이 원고의 도입 첫문장 형태는 “{first_sentence_type}”이다.
@@ -2271,6 +2318,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 수정 후 아래 형식으로 답해줘.
 1. 예상 점수
 2. 바꾼 부분 요약
+   - 바꾼 부분 요약에서 화법명을 언급해야 한다면 반드시 “{voice_type}”이라고 그대로 표기하고, 억울함 공감형/전문가형 등 다른 화법명으로 바꿔 부르지 마.
 3. 최종 수정 원고
 
 [원고]
@@ -2278,8 +2326,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v6.2")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.2에서는 원고 사용처를 4개 모드(블로그 정보성/카페 정보성/커뮤니티·바이럴/후기·리뷰)로 선택하고, 문단 뼈대는 유지하되 말투·홍보 허용도·가짜 경험담 금지·마무리 방식을 자동으로 조정합니다.")
+st.title("📝 달로썸 원고 검수기 v6.4")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.4에서는 Claude 복붙 지시문이 최신 검수값으로 강제 갱신되도록 수정했습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
@@ -2423,6 +2471,16 @@ with tab_design:
     d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
     st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
     st.session_state["applied_first_sentence_type"] = d_first_sentence_type
+    st.session_state["applied_topic"] = d_topic
+    st.session_state["applied_keyword"] = d_keyword
+    st.session_state["applied_field"] = d_field
+    st.session_state["applied_content_type"] = d_content_type
+    st.session_state["applied_usecase_mode"] = d_usecase_mode
+    st.session_state["applied_target_len"] = d_target_len
+    st.session_state["applied_spacing_type"] = d_spacing_type
+    st.session_state["applied_homepage_mode"] = d_homepage_mode
+    st.session_state["applied_homepage_info"] = d_homepage_info
+    st.session_state["applied_keyword_settings"] = d_kw_settings
 
     d_keyword_delivery_text = keyword_delivery_setting_text(d_keyword, d_target_len, d_kw_settings)
     d_keyword_placement_text = keyword_placement_plan_text(d_keyword, d_target_len, d_kw_settings)
@@ -2482,12 +2540,23 @@ with tab_design:
     claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info, usecase_mode=d_usecase_mode)
 
     st.write("## GPTs용 초안 프롬프트")
-    st.text_area("GPTs에 복붙", value=draft_prompt, height=520)
-    st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt")
+    st.text_area(
+        "GPTs에 복붙",
+        value=draft_prompt,
+        height=520,
+        key=dynamic_widget_key("draft_prompt_live", d_topic, d_keyword, d_field, d_usecase_mode, d_voice, d_intro_type, d_first_sentence_type, d_title_type, d_target_len, research_text)
+    )
+    st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
 
     st.write("## Claude용 윤문 지시문 기본형")
-    st.text_area("Claude에 보낼 때 원고와 함께 복붙", value=claude_prompt_empty, height=420)
-    st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt")
+    st.caption("설계값이 바뀌면 이 칸도 자동으로 새 키로 갱신됩니다. 예전 화법명이나 사용처가 남으면 새로고침하지 말고 ②값을 한 번 다시 선택하세요.")
+    st.text_area(
+        "Claude에 보낼 때 원고와 함께 복붙",
+        value=claude_prompt_empty,
+        height=420,
+        key=dynamic_widget_key("claude_design_live", d_voice, d_intro_type, d_title_type, d_keyword, d_field, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_usecase_mode)
+    )
+    st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt", key=dynamic_widget_key("claude_design_download", claude_prompt_empty))
 
 with tab_check:
     st.title("📝 원고 검수 모드")
@@ -2500,11 +2569,11 @@ with tab_check:
 
         if use_flow_check:
             purpose = "마케팅 회사 테스트 원고"
-            field = st.session_state.get("r_field", "병원 / 의료")
+            field = st.session_state.get("applied_field", st.session_state.get("r_field", "병원 / 의료"))
             if field not in FIELDS:
                 field = "기타 전문업종"
             writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
-            keyword = st.session_state.get("r_keyword", "") or st.session_state.get("d_keyword", "") or "핵심 키워드"
+            keyword = st.session_state.get("applied_keyword", "") or st.session_state.get("r_keyword", "") or st.session_state.get("d_keyword", "") or "핵심 키워드"
             title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
 
             selected_title_type = st.session_state.get("applied_title_type", st.session_state.get("r_title_type", "선택 안함"))
@@ -2517,7 +2586,7 @@ with tab_check:
                     selected_intro_type = "5. 독자에게 질문 던지기"
             selected_voice_type = st.session_state.get("applied_voice_type", st.session_state.get("r_voice_choice", "자동 추천"))
             selected_first_sentence_type = st.session_state.get("applied_first_sentence_type", st.session_state.get("r_first_sentence_type", "자동 추천"))
-            selected_usecase_mode = st.session_state.get("r_usecase_mode", "블로그 정보성")
+            selected_usecase_mode = st.session_state.get("applied_usecase_mode", st.session_state.get("r_usecase_mode", "블로그 정보성"))
 
             auto_b_source = "\n".join(b_lines) if 'b_lines' in globals() and b_lines else section_after(st.session_state.get("research_text", ""), ["B등급 잠재고객 고민패턴", "잠재고객 고민 요약", "감정 도입 첫문장 근거 고민"], ["C등급", "추천 제목", "[4]"], 1600)
             check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", value=auto_b_source, placeholder="조사 결과의 잠재고객 고민 요약이 자동으로 들어옵니다. 부족하면 보충하세요.", height=120)
@@ -2534,18 +2603,19 @@ with tab_check:
             generate_intro = st.checkbox("도입 리라이트 생성", value=False)
             rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=INTRO_TYPES.index(selected_intro_type) if selected_intro_type in INTRO_TYPES else 5)
             generate_ending = st.checkbox("마무리 문단 생성", value=False)
-            homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
-            homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
+            auto_homepage_mode = st.session_state.get("applied_homepage_mode", "홈페이지 정보 없음")
+            homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0 if auto_homepage_mode == "홈페이지 정보 없음" else 1)
+            homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", value=st.session_state.get("applied_homepage_info", "") if auto_homepage_mode == "홈페이지 정보 있음" else "", placeholder="실제 확인된 정보만 입력", height=90)
 
             st.divider()
             st.subheader("분량 검수")
-            check_target_len = d_target_len if 'd_target_len' in globals() else resolve_target_length(st.session_state.get("r_length_preset", "1500자"), st.session_state.get("r_custom_length", 1500))
+            check_target_len = st.session_state.get("applied_target_len", d_target_len if 'd_target_len' in globals() else resolve_target_length(st.session_state.get("r_length_preset", "1500자"), st.session_state.get("r_custom_length", 1500)))
             st.caption(f"①/② 분량 기준 자동 적용: 공백 제외 기준 {check_target_len}자 내외")
             default_min = max(500, int(check_target_len * 0.85))
             default_max = int(check_target_len * 1.15)
             min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
             max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
-            check_kw_settings = d_kw_settings if 'd_kw_settings' in globals() else auto_keyword_defaults(check_target_len)
+            check_kw_settings = st.session_state.get("applied_keyword_settings", d_kw_settings if 'd_kw_settings' in globals() else auto_keyword_defaults(check_target_len))
             st.caption("키워드 납품 기준도 ①/② 설정값을 자동 적용합니다. 수정이 필요하면 위 체크를 끄고 수동 검수하세요.")
         else:
             purpose = st.selectbox("원고 목적", PURPOSES, index=0)
@@ -2693,6 +2763,29 @@ with tab_check:
 
         if generate_intro and rewrite_intro_type == "8. 간단한 웹툰 만들어 넣기":
             st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
+
+        st.write("## Claude용 윤문 지시문 · 현재 검수값 자동 갱신")
+        current_body_for_claude = f"최종 제목: {title}\n\n본문:\n{body}".strip()
+        claude_prompt_current = build_claude_prompt(
+            selected_voice_type,
+            selected_intro_type,
+            selected_title_type,
+            keyword,
+            field,
+            body_text=current_body_for_claude,
+            first_sentence_type=selected_first_sentence_type,
+            homepage_mode=homepage_mode,
+            homepage_info=homepage_info,
+            usecase_mode=selected_usecase_mode
+        )
+        st.caption("검수 화면의 최신 사용처·화법·도입방식·키워드 기준으로 매번 새로 생성됩니다. Claude에는 이 칸을 복붙하세요.")
+        st.text_area(
+            "Claude에 바로 복붙",
+            value=claude_prompt_current,
+            height=520,
+            key=dynamic_widget_key("claude_check_live", selected_usecase_mode, selected_voice_type, selected_intro_type, selected_first_sentence_type, selected_title_type, keyword, field, homepage_mode, homepage_info, title, body[:500])
+        )
+        st.download_button("현재 검수값 Claude 지시문 txt 다운로드", claude_prompt_current, file_name="dalrosom_claude_prompt_current.txt", key=dynamic_widget_key("claude_check_download", claude_prompt_current))
 
         st.write("## 제출 판단")
         if total >= 92:

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v5.9", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v6.0", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -14,7 +14,7 @@ PURPOSES = [
     "일반 정보성 원고",
 ]
 
-FIELDS = ["에스테틱 / 피부관리", "병원 / 의료", "법률", "기타 전문업종"]
+FIELDS = ["에스테틱 / 피부관리", "병원 / 의료", "법률", "청소 / 홈케어", "생활용품", "학원 / 교육", "인테리어 / 리모델링", "보험 / 금융 / 부동산", "맛집 / 여행 / 숙박", "기타 전문업종"]
 WRITER_PERSPECTIVES = ["에스테틱 원장", "피부과 원장/전문의", "변호사", "전문업종 대표", "정보성 블로그 작성자"]
 
 INTRO_TYPES = [
@@ -2178,8 +2178,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.9")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.9에서는 ① 조사 입력값을 ② 설계 모드에서 그대로 불러오고, 희망 분량/직접 입력 글자수 혼란을 줄였습니다.")
+st.title("📝 달로썸 원고 검수기 v6.0")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.0에서는 자동 추천값은 화면에 “자동 추천”으로 유지하고, ③ 원고 검수 모드도 ①/② 입력값을 그대로 불러와 다시 입력하는 일을 줄였습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
@@ -2299,19 +2299,23 @@ with tab_design:
     d_voice_choice = st.selectbox("메인 화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
     d_voice = recommended_voice if d_voice_choice == "자동 추천" else d_voice_choice
     st.caption(f"자동 추천 화법: {recommended_voice} / 최종 적용 화법: {d_voice}")
+    st.session_state["applied_voice_type"] = d_voice
 
     recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
-    title_index = TITLE_TYPE_OPTIONS.index(recommended_title) if recommended_title in TITLE_TYPE_OPTIONS else 0
-    d_title_type = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=title_index, key="d_title_type")
-    st.caption(f"자동 추천 제목 유형: {recommended_title} / 필요하면 직접 바꾸거나 '선택 안함'으로 둘 수 있습니다.")
+    d_title_choice = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=TITLE_TYPE_OPTIONS.index("자동 추천"), key="d_title_type_choice")
+    d_title_type = recommended_title if d_title_choice == "자동 추천" else d_title_choice
+    st.caption(f"자동 추천 제목 유형: {recommended_title} / 최종 적용 제목 유형: {d_title_type}")
+    st.session_state["applied_title_type"] = d_title_type
 
     recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
-    intro_index = INTRO_TYPES.index(recommended_intro) if recommended_intro in INTRO_TYPES else 4
-    d_intro_type = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPES, index=intro_index, key="d_intro_type")
-    st.caption(f"자동 추천 도입 방식: {recommended_intro} / 필요하면 직접 바꾸면 됩니다.")
+    d_intro_choice = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPE_OPTIONS, index=0, key="d_intro_type_choice")
+    d_intro_type = recommended_intro if d_intro_choice == "자동 추천" else d_intro_choice
+    st.caption(f"자동 추천 도입 방식: {recommended_intro} / 최종 적용 도입 방식: {d_intro_type}")
+    st.session_state["applied_intro_type"] = d_intro_type
 
     d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
     st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
+    st.session_state["applied_first_sentence_type"] = d_first_sentence_type
 
     d_keyword_delivery_text = keyword_delivery_setting_text(d_keyword, d_target_len, d_kw_settings)
     d_keyword_placement_text = keyword_placement_plan_text(d_keyword, d_target_len, d_kw_settings)
@@ -2384,42 +2388,93 @@ with tab_check:
 
     with st.sidebar:
         st.header("원고 조건")
-        purpose = st.selectbox("원고 목적", PURPOSES, index=0)
-        field = st.selectbox("분야", FIELDS, index=0)
-        writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
-        keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
-        title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
-        selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)
-        selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
-        selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type")
-        selected_first_sentence_type = st.selectbox("현재 원고 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="check_first_sentence_type")
-        check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", placeholder="조사 결과의 잠재고객 고민 요약, 감정 도입 근거 고민, B등급 고민패턴을 붙여넣으세요.", height=120)
-        st.caption("첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
-        ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
-        include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
-        philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
-        st.divider()
-        st.subheader("검수 후 생성 옵션")
-        generate_intro = st.checkbox("도입 리라이트 생성", value=False)
-        rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
-        generate_ending = st.checkbox("마무리 문단 생성", value=False)
-        homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
-        homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
-        st.divider()
-        st.subheader("분량 검수")
-        check_length_preset = st.selectbox("검수 분량 기준", LENGTH_PRESETS, index=1, key="check_length_preset")
-        if check_length_preset == "직접 입력":
-            check_custom_length = st.number_input("직접 입력 검수 글자수", min_value=500, max_value=6000, value=1500, step=100, key="check_custom_length")
-        else:
-            check_custom_length = int(re.sub(r"[^0-9]", "", check_length_preset) or 1500)
-            st.caption("직접 입력 글자수는 ‘검수 분량 기준’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
-        check_target_len = resolve_target_length(check_length_preset, check_custom_length)
-        default_min = max(500, int(check_target_len * 0.85))
-        default_max = int(check_target_len * 1.15)
-        min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
-        max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
-        check_kw_settings = render_keyword_delivery_settings("check", keyword, check_target_len, expanded=False)
+        use_flow_check = st.checkbox("①/② 입력값으로 검수 조건 자동 적용", value=True, key="check_use_flow")
+        st.caption("켜두면 주제·분야·키워드·화법·도입방식·분량·키워드 기준을 다시 입력하지 않습니다.")
 
+        if use_flow_check:
+            purpose = "마케팅 회사 테스트 원고"
+            field = st.session_state.get("r_field", "병원 / 의료")
+            if field not in FIELDS:
+                field = "기타 전문업종"
+            writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
+            keyword = st.session_state.get("r_keyword", "") or st.session_state.get("d_keyword", "") or "핵심 키워드"
+            title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
+
+            selected_title_type = st.session_state.get("applied_title_type", st.session_state.get("r_title_type", "선택 안함"))
+            if selected_title_type == "자동 추천":
+                selected_title_type = st.session_state.get("applied_title_type", "선택 안함")
+            selected_intro_type = st.session_state.get("applied_intro_type", None)
+            if not selected_intro_type or selected_intro_type == "자동 추천":
+                selected_intro_type = st.session_state.get("r_intro_type", "5. 독자에게 질문 던지기")
+                if selected_intro_type == "자동 추천":
+                    selected_intro_type = "5. 독자에게 질문 던지기"
+            selected_voice_type = st.session_state.get("applied_voice_type", st.session_state.get("r_voice_choice", "자동 추천"))
+            selected_first_sentence_type = st.session_state.get("applied_first_sentence_type", st.session_state.get("r_first_sentence_type", "자동 추천"))
+
+            auto_b_source = "\n".join(b_lines) if 'b_lines' in globals() and b_lines else section_after(st.session_state.get("research_text", ""), ["B등급 잠재고객 고민패턴", "잠재고객 고민 요약", "감정 도입 첫문장 근거 고민"], ["C등급", "추천 제목", "[4]"], 1600)
+            check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", value=auto_b_source, placeholder="조사 결과의 잠재고객 고민 요약이 자동으로 들어옵니다. 부족하면 보충하세요.", height=120)
+            st.caption("첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
+
+            st.info(f"자동 적용: 분야={field} / 키워드={keyword} / 제목유형={selected_title_type} / 화법={selected_voice_type} / 도입방식={selected_intro_type} / 첫문장={selected_first_sentence_type}")
+
+            ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
+            include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=False)
+            philosophy_text = st.text_area("철학/강점 문구", value="", height=80, placeholder="홈페이지 정보가 있을 때만 입력")
+
+            st.divider()
+            st.subheader("검수 후 생성 옵션")
+            generate_intro = st.checkbox("도입 리라이트 생성", value=False)
+            rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=INTRO_TYPES.index(selected_intro_type) if selected_intro_type in INTRO_TYPES else 5)
+            generate_ending = st.checkbox("마무리 문단 생성", value=False)
+            homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
+            homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
+
+            st.divider()
+            st.subheader("분량 검수")
+            check_target_len = d_target_len if 'd_target_len' in globals() else resolve_target_length(st.session_state.get("r_length_preset", "1500자"), st.session_state.get("r_custom_length", 1500))
+            st.caption(f"①/② 분량 기준 자동 적용: 공백 제외 기준 {check_target_len}자 내외")
+            default_min = max(500, int(check_target_len * 0.85))
+            default_max = int(check_target_len * 1.15)
+            min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
+            max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
+            check_kw_settings = d_kw_settings if 'd_kw_settings' in globals() else auto_keyword_defaults(check_target_len)
+            st.caption("키워드 납품 기준도 ①/② 설정값을 자동 적용합니다. 수정이 필요하면 위 체크를 끄고 수동 검수하세요.")
+        else:
+            purpose = st.selectbox("원고 목적", PURPOSES, index=0)
+            field = st.selectbox("분야", FIELDS, index=0)
+            writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=0)
+            keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
+            title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
+            selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)
+            selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
+            selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type_manual")
+            selected_first_sentence_type = st.selectbox("현재 원고 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="check_first_sentence_type_manual")
+            check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", placeholder="조사 결과의 잠재고객 고민 요약, 감정 도입 근거 고민, B등급 고민패턴을 붙여넣으세요.", height=120)
+            st.caption("첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
+            ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
+            include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
+            philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
+            st.divider()
+            st.subheader("검수 후 생성 옵션")
+            generate_intro = st.checkbox("도입 리라이트 생성", value=False)
+            rewrite_intro_type = st.selectbox("도입 리라이트 방식", INTRO_TYPES, index=5)
+            generate_ending = st.checkbox("마무리 문단 생성", value=False)
+            homepage_mode = st.radio("마지막 문단 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0)
+            homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
+            st.divider()
+            st.subheader("분량 검수")
+            check_length_preset = st.selectbox("검수 분량 기준", LENGTH_PRESETS, index=1, key="check_length_preset")
+            if check_length_preset == "직접 입력":
+                check_custom_length = st.number_input("직접 입력 검수 글자수", min_value=500, max_value=6000, value=1500, step=100, key="check_custom_length")
+            else:
+                check_custom_length = int(re.sub(r"[^0-9]", "", check_length_preset) or 1500)
+                st.caption("직접 입력 글자수는 ‘검수 분량 기준’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
+            check_target_len = resolve_target_length(check_length_preset, check_custom_length)
+            default_min = max(500, int(check_target_len * 0.85))
+            default_max = int(check_target_len * 1.15)
+            min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
+            max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
+            check_kw_settings = render_keyword_delivery_settings("check", keyword, check_target_len, expanded=False)
     draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
     if st.button("검수 시작", type="primary"):

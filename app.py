@@ -681,7 +681,8 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천"):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천"):
+
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
     field = field.strip() or "병원 / 의료"
@@ -691,6 +692,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     keyword_plan = keyword_count_instruction(keyword, target_len)
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
+    voice_type = voice_type or "자동 추천"
+    voice_instruction = "도입 화법은 자료를 보고 가장 적합한 화법을 추천해줘." if voice_type == "자동 추천" else f"도입 화법은 반드시 '{voice_type}' 흐름을 우선 고려해줘."
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
     if title_type == "선택 안함":
         title_instruction = "제목 유형은 따로 선택하지 않는다. 6가지 유형을 강제하지 말고 키워드 앞 배치, 30자 이내, 어그로 금지 등 제목 기본 기준만 지켜줘."
@@ -705,6 +708,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 원고 목적: {content_goal}
 {length_plan}
 {keyword_plan}
+희망 도입 화법: {voice_type}
+도입 화법 지시: {voice_instruction}
 희망 도입 방식: {intro_type}
 도입 방식 지시: {intro_instruction}
 희망 제목 유형: {title_type}
@@ -1476,8 +1481,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.9")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
+st.title("📝 달로썸 원고 검수기 v5.0")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.0에서는 화법 선택을 조사/설계/검수 화면에 모두 표시합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1490,6 +1495,8 @@ with tab_research:
         r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
         r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
         r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
+        r_voice_choice = st.selectbox("희망 도입 화법", VOICE_TYPE_OPTIONS, index=0, key="r_voice_choice")
+        st.caption("자동 추천을 두면 GPT가 조사자료 기준으로 화법을 추천합니다. 직접 선택하면 해당 화법을 우선 고려하게 합니다.")
         r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
     with col2:
         r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
@@ -1504,7 +1511,7 @@ with tab_research:
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -1543,8 +1550,9 @@ with tab_design:
     research_text = st.text_area("GPT 조사 결과 / 직접 확인한 자료 요약 붙여넣기", height=360, placeholder="GPT가 조사해준 자료 중 링크를 직접 확인한 내용만 붙여넣으세요.", key="research_text")
 
     counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
+    st.write("### 화법 선택")
     recommended_voice = recommend_voice_type(d_field, d_topic, d_keyword, research_text)
-    d_voice_choice = st.selectbox("화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
+    d_voice_choice = st.selectbox("메인 화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
     d_voice = recommended_voice if d_voice_choice == "자동 추천" else d_voice_choice
     st.caption(f"자동 추천 화법: {recommended_voice} / 최종 적용 화법: {d_voice}")
 
@@ -1622,6 +1630,8 @@ with tab_check:
         title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
         selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)
         selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
+        selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type")
+        st.caption("검수 참고용입니다. 점수에는 크게 반영하지 않고 도입 리라이트/Claude 지시 방향 확인용입니다.")
         ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
         include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
         philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
@@ -1670,7 +1680,7 @@ with tab_check:
             philosophy_source_label = "철학 문구 입력됨 / 현재 마무리 방식은 정보형"
         else:
             philosophy_source_label = "철학 미반영"
-        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 상태: {philosophy_source_label}")
+        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 화법: {selected_voice_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 상태: {philosophy_source_label}")
 
         st.write("## 점수")
         st.metric("총점", f"{total}점", price_estimate(total))

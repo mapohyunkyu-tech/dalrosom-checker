@@ -1565,6 +1565,65 @@ def emotion_grounding_force_block():
 - 첫 문장에는 B등급 고민의 핵심어를 최소 1~2개 이상 직접 반영한다. 예: 효과 없음, 부작용 걱정, 비용 부담, 기저질환, 비교 혼란, 선택 불안.
 - 첫 문장이 물음표로 끝나더라도 B등급 고민 핵심어가 빠져 있으면 감정 도입으로 보지 않는다."""
 
+
+
+def homepage_info_force_block(homepage_mode="홈페이지 정보 없음", homepage_info=""):
+    """홈페이지/업체 정보가 있을 때만 마무리 홍보 문구를 허용하되, 입력 정보 밖으로 확장하지 않게 하는 규칙."""
+    info = (homepage_info or "").strip()
+    if homepage_mode == "홈페이지 정보 있음" and info:
+        return f"""[홈페이지/업체 정보 반영 규칙]
+- 아래 정보는 사용자가 직접 확인해 입력한 홈페이지/업체 정보다.
+- 이 정보 안에서만 원장/대표 소개, 진료·운영 철학, 병원/업체 장점, 상담 기준을 정리한다.
+- 정보에 없는 경력, 수상, 장비, 전문센터, 누적 건수, 원장명, 진료 철학, 장점을 새로 만들지 않는다.
+- 홈페이지 원문을 길게 복사하지 말고, 원고 주제와 관련 있는 내용만 1~2문장으로 압축해 마무리에 자연스럽게 연결한다.
+- 마무리에서 ‘저희 병원은/본원은/저희 법무법인은’ 문구를 사용할 수는 있지만, 반드시 아래 확인 정보에 근거해야 한다.
+- 병원/법률/금융 분야에서는 ‘최고’, ‘유일’, ‘100%’, ‘보장’, ‘반드시 해결’ 같은 과장 표현을 쓰지 않는다.
+- 홈페이지 정보가 원고 주제와 관련이 약하면 억지로 홍보하지 말고, 상담 기준 또는 확인 기준 수준으로만 연결한다.
+
+[사용자가 입력한 홈페이지/업체 정보]
+{info}
+
+[마무리에 반영할 때 정리할 항목]
+1. 원장/대표 소개: 입력 정보에 실제로 있는 경우에만 1문장 이내로 반영
+2. 진료/운영 철학: 입력 정보에 실제로 있는 표현만 부드럽게 재구성
+3. 병원/업체 장점: 장비, 검사, 상담, 관리, 접근성 등 입력 정보에 있는 장점만 반영
+4. 주제와 연결: 이번 글의 핵심 고민 해결 흐름과 자연스럽게 연결
+5. 분량: 마무리 전체에서 홈페이지 정보 반영은 1~2문장 정도로 제한"""
+    return """[홈페이지/업체 정보 반영 규칙]
+- 이번 프롬프트에는 별도 홈페이지 철학/병원 강점/업체 장점 정보가 제공되지 않았다.
+- 따라서 마무리에서 “본원은”, “저희 병원은”, “저희는”, “대표원장은”, “저희 법무법인은”으로 시작하는 홍보성 문장을 만들지 않는다.
+- 마지막 문단은 독자가 자기 상태를 확인하고 상담 전 체크할 기준을 정리하는 정보형 마무리로 작성한다.
+- 사용자가 별도 홈페이지 정보를 제공하지 않았다면 병원 철학, 진료 철학, 장점, 경력, 전문성 문구를 임의로 만들지 않는다."""
+
+
+def homepage_summary_guide(homepage_info):
+    """입력된 홈페이지 정보를 사람이 확인하기 쉽게 후보 항목별로 간단히 분류한다."""
+    info = (homepage_info or "").strip()
+    if not info:
+        return "홈페이지 정보가 비어 있습니다. 이 상태에서는 원장 소개, 철학, 병원 장점을 임의로 만들지 않습니다."
+    lines = [re.sub(r"\s+", " ", x.strip(" -•·\t")) for x in re.split(r"[\n\r]+", info) if x.strip()]
+    def pick(keys, max_n=5):
+        out=[]
+        for line in lines:
+            if any(k in line for k in keys) and line not in out:
+                out.append(line)
+            if len(out)>=max_n:
+                break
+        return out
+    director = pick(["원장", "대표", "전문의", "의사", "변호사", "대표변호사", "경력", "약력", "학회", "전담", "전문"])
+    philosophy = pick(["철학", "원칙", "지향", "중심", "정직", "충분", "꼼꼼", "세심", "맞춤", "소통", "설명", "안전", "신뢰"])
+    strengths = pick(["장비", "검사", "시스템", "센터", "야간", "주차", "예약", "관리", "사후", "정품", "개인별", "맞춤", "상담", "진료", "시술", "소송", "가압류", "강제집행"])
+    def fmt(title, arr):
+        if not arr:
+            return f"{title}: 확인된 문구 없음"
+        return title + ":\n" + "\n".join([f"- {x}" for x in arr])
+    return "\n\n".join([
+        fmt("원장/대표 소개 후보", director),
+        fmt("철학/상담 기준 후보", philosophy),
+        fmt("병원/업체 장점 후보", strengths),
+        "마무리 반영 원칙:\n- 위 후보 중 주제와 직접 연결되는 것만 1~2문장으로 압축\n- 없는 장점·경력·철학은 추가 금지\n- 과장 대신 확인된 정보 기반의 담백한 상담 유도"
+    ])
+
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
     topic = (topic or keyword or "이 주제").strip()
@@ -1611,7 +1670,7 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용", first_sentence_type="자동 추천"):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info=""):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
@@ -1630,6 +1689,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     title_force = title_force_block(title_type, keyword)
     hygiene_force = output_hygiene_block()
     emotion_grounding_force = emotion_grounding_force_block()
+    homepage_force = homepage_info_force_block(homepage_mode, homepage_info)
     if prompt_mode == "외부 GPTs용 강제 프롬프트":
         mode_notice = "외부 GPTs용입니다. 아래 조건은 추천이 아니라 필수 작성 조건입니다. 조건을 지키지 못하면 다시 작성해야 합니다."
     else:
@@ -1670,11 +1730,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 
 {emotion_grounding_force}
 
-[홈페이지/업체 정보 반영 규칙]
-- 이번 프롬프트에는 별도 홈페이지 철학/병원 강점/업체 장점 정보가 제공되지 않았다.
-- 따라서 마무리에서 “본원은”, “저희 병원은”, “저희는”, “대표원장은”으로 시작하는 홍보성 문장을 만들지 않는다.
-- 마지막 문단은 독자가 자기 상태를 확인하고 상담 전 체크할 기준을 정리하는 정보형 마무리로 작성한다.
-- 만약 사용자가 별도 홈페이지 정보를 제공하지 않았다면 병원 철학, 진료 철학, 장점, 경력, 전문성 문구를 임의로 만들지 않는다.
+{homepage_force}
 
 [A등급 공통 핵심정보 - 본문 팩트용]
 {a_text}
@@ -1730,7 +1786,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {extra_rules.strip() if extra_rules.strip() else '- 없음'}
 """
 
-def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text="", first_sentence_type="자동 추천"):
+def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body_text="", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info=""):
     if title_type == "선택 안함":
         title_guard = "특정 제목 유형은 선택하지 않았다. 제목 유형을 억지로 맞추지 말고, 키워드 앞 배치와 30자 이내 권장, 어그로 금지 기준만 유지해줘."
         title_touch_rule = "0. 제목은 키워드 앞 배치와 기본 기준만 유지. 특정 제목 유형 강제 금지"
@@ -1741,6 +1797,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
         title_touch_rule = f"0. 제목의 핵심 키워드 앞 배치와 “{title_type}” 유형"
         title_change_rule = "- 제목 유형 변경 금지"
         title_keep_sentence = "제목 유형, 화법, 도입 방식은 절대 바꾸지 말고 유지해줘."
+    homepage_guard = homepage_info_force_block(homepage_mode, homepage_info)
     return f"""아래 원고를 다듬어줘.
 
 {title_guard}
@@ -1777,6 +1834,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 - “힘드셨나요?”, “불안하시죠?” 같은 흔한 위로문장으로 단순화하지 말 것.
 - 공감 문장은 실제 상황, 판단 혼란, 생활 불편을 짚는 방식으로 유지할 것.
 
+{homepage_guard}
+
 금지:
 - 새로운 사례나 경험담 추가 금지
 - 없는 병원/업체 장점 만들기 금지
@@ -1800,8 +1859,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.4")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.4에서는 첫문장이 실제 B등급 고민을 담고 있는지까지 검수합니다.")
+st.title("📝 달로썸 원고 검수기 v5.5")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.5에서는 홈페이지 정보가 있을 때 원장/철학/장점을 정리해 마무리에 반영할 수 있습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1867,6 +1926,11 @@ with tab_design:
         d_target_len = resolve_target_length(d_length_preset, d_custom_length)
         st.caption(f"적용될 분량 조건: {d_spacing_type} {d_target_len}자 내외 / {d_paragraph_option}")
         d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
+        st.divider()
+        st.subheader("홈페이지 정보 반영")
+        d_homepage_mode = st.radio("홈페이지/업체 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="d_homepage_mode")
+        d_homepage_info = st.text_area("홈페이지에서 확인한 원장/대표 소개·철학·장점", placeholder="예: 원장 약력, 진료 철학, 정품 장비, 상담 방식, 사후관리, 접근성 등 실제 홈페이지에서 확인한 내용만 붙여넣기", height=120, key="d_homepage_info")
+        st.caption("입력한 정보 안에서만 마무리에 반영합니다. 없는 경력·장점·철학은 만들지 않게 합니다.")
 
     research_text = st.text_area("GPT 조사 결과 / 직접 확인한 자료 요약 붙여넣기", height=360, placeholder="GPT가 조사해준 자료 중 링크를 직접 확인한 내용만 붙여넣으세요.", key="research_text")
 
@@ -1930,8 +1994,17 @@ with tab_design:
     bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
     st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type)
-    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type)
+    st.write("## 홈페이지 정보 정리 / 마무리 반영")
+    if d_homepage_mode == "홈페이지 정보 있음" and d_homepage_info.strip():
+        homepage_guide = homepage_summary_guide(d_homepage_info)
+        st.text_area("원장/대표 소개·철학·장점 정리 후보", value=homepage_guide, height=300)
+    elif d_homepage_mode == "홈페이지 정보 있음":
+        st.warning("홈페이지 정보 있음으로 선택했지만 입력 내용이 없습니다. 이 상태에서는 마무리 홍보 문구를 만들지 않습니다.")
+    else:
+        st.info("홈페이지 정보 없음: 마무리에서 본원/저희/철학/장점 문구를 임의 생성하지 않습니다.")
+
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info)
+    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info)
 
     st.write("## GPTs용 초안 프롬프트")
     st.text_area("GPTs에 복붙", value=draft_prompt, height=520)
@@ -1957,7 +2030,7 @@ with tab_check:
         selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type")
         selected_first_sentence_type = st.selectbox("현재 원고 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="check_first_sentence_type")
         check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", placeholder="조사 결과의 잠재고객 고민 요약, 감정 도입 근거 고민, B등급 고민패턴을 붙여넣으세요.", height=120)
-        st.caption("v5.4: 이 칸을 넣으면 첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
+        st.caption("첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
         ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
         include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
         philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)

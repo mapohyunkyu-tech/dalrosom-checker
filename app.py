@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v5.8", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v5.9", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -2178,13 +2178,13 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.8")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.8에서는 기본 납품 설정, 키워드 횟수·위치 배치표, 누락 문단 키워드 삽입 요청문까지 함께 생성합니다.")
+st.title("📝 달로썸 원고 검수기 v5.9")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.9에서는 ① 조사 입력값을 ② 설계 모드에서 그대로 불러오고, 희망 분량/직접 입력 글자수 혼란을 줄였습니다.")
 
-tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
+tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
 with tab_research:
-    st.header("① GPT에게 붙여넣을 조사 프롬프트")
+    st.header("① 의뢰 조건 입력 · GPT 조사 프롬프트")
     st.write("GPT가 먼저 조사하고, 너는 링크를 직접 확인한 뒤 확인된 자료를 ② 원고 설계 모드에 붙여넣는 흐름입니다.")
     col1, col2 = st.columns(2)
     with col1:
@@ -2204,7 +2204,11 @@ with tab_research:
             r_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="r_length_preset")
             r_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="r_spacing_type")
         with r_len_col2:
-            r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
+            if r_length_preset == "직접 입력":
+                r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
+            else:
+                r_custom_length = int(re.sub(r"[^0-9]", "", r_length_preset) or 1500)
+                st.caption("직접 입력 글자수는 ‘희망 분량’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
             r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
         r_target_len = resolve_target_length(r_length_preset, r_custom_length)
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
@@ -2233,35 +2237,61 @@ with tab_research:
 """)
 
 with tab_design:
-    st.header("② 원고 설계 모드")
-    st.write("확인한 조사 결과를 붙여넣으면 A등급 공통정보, B등급 고민패턴, 도입화법, GPTs용 초안 프롬프트를 정리합니다.")
-    d_col1, d_col2 = st.columns(2)
-    with d_col1:
-        d_topic = st.text_input("주제", value="써마지 시술", key="d_topic")
-        d_keyword = st.text_input("핵심 키워드", value="써마지", key="d_keyword")
-        d_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="d_field")
-    with d_col2:
-        d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
-        d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
-        st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
-        length_col1, length_col2 = st.columns(2)
-        with length_col1:
-            d_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="d_length_preset")
-            d_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="d_spacing_type")
-        with length_col2:
-            d_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="d_custom_length")
-            d_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="d_paragraph_option")
-        d_target_len = resolve_target_length(d_length_preset, d_custom_length)
-        st.caption(f"적용될 분량 조건: {d_spacing_type} {d_target_len}자 내외 / {d_paragraph_option}")
-        d_kw_settings = render_keyword_delivery_settings("design", d_keyword, d_target_len, expanded=False)
-        d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
-        st.divider()
-        st.subheader("홈페이지 정보 반영")
-        d_homepage_mode = st.radio("홈페이지/업체 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="d_homepage_mode")
-        d_homepage_info = st.text_area("홈페이지에서 확인한 원장/대표 소개·철학·장점", placeholder="예: 원장 약력, 진료 철학, 정품 장비, 상담 방식, 사후관리, 접근성 등 실제 홈페이지에서 확인한 내용만 붙여넣기", height=120, key="d_homepage_info")
-        st.caption("입력한 정보 안에서만 마무리에 반영합니다. 없는 경력·장점·철학은 만들지 않게 합니다.")
+    st.header("② 조사 결과 붙여넣기 · 원고 설계")
+    st.write("①에서 만든 조사 프롬프트로 받은 결과만 붙여넣으면, 원고 설계와 GPTs용 초안 프롬프트를 정리합니다.")
+    d_use_research_inputs = st.checkbox("① 의뢰 조건 입력값 그대로 사용", value=True, key="d_use_research_inputs")
+    st.caption("켜두면 ①에서 입력한 주제·키워드·분야·분량·키워드 납품 설정을 ②에서 다시 쓰지 않아도 됩니다.")
 
-    research_text = st.text_area("GPT 조사 결과 / 직접 확인한 자료 요약 붙여넣기", height=360, placeholder="GPT가 조사해준 자료 중 링크를 직접 확인한 내용만 붙여넣으세요.", key="research_text")
+    d_col1, d_col2 = st.columns(2)
+    if d_use_research_inputs:
+        d_topic = st.session_state.get("r_topic", "써마지 시술")
+        d_keyword = st.session_state.get("r_keyword", "써마지")
+        d_field = st.session_state.get("r_field", "병원 / 의료")
+        d_length_preset = st.session_state.get("r_length_preset", "1500자")
+        d_spacing_type = st.session_state.get("r_spacing_type", "공백 제외")
+        d_custom_length = st.session_state.get("r_custom_length", 1500)
+        d_paragraph_option = st.session_state.get("r_paragraph_option", "분량 우선, 문단 수 자연 조절")
+        d_target_len = resolve_target_length(d_length_preset, d_custom_length)
+        d_kw_settings = r_kw_settings
+        st.info(f"① 입력값 적용: 주제={d_topic} / 키워드={d_keyword} / 분야={d_field} / 분량={d_spacing_type} {d_target_len}자 내외")
+        with d_col1:
+            d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
+            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
+            st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
+        with d_col2:
+            d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 추가 금지어, 클라이언트 요청사항, 특정 문체", height=100, key="d_extra_rules")
+    else:
+        with d_col1:
+            d_topic = st.text_input("주제", value="써마지 시술", key="d_topic")
+            d_keyword = st.text_input("핵심 키워드", value="써마지", key="d_keyword")
+            d_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="d_field")
+        with d_col2:
+            d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
+            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
+            st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
+            length_col1, length_col2 = st.columns(2)
+            with length_col1:
+                d_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="d_length_preset")
+                d_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="d_spacing_type")
+            with length_col2:
+                if d_length_preset == "직접 입력":
+                    d_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="d_custom_length")
+                else:
+                    d_custom_length = int(re.sub(r"[^0-9]", "", d_length_preset) or 1500)
+                    st.caption("직접 입력 글자수는 ‘희망 분량’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
+                d_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="d_paragraph_option")
+            d_target_len = resolve_target_length(d_length_preset, d_custom_length)
+            st.caption(f"적용될 분량 조건: {d_spacing_type} {d_target_len}자 내외 / {d_paragraph_option}")
+            d_kw_settings = render_keyword_delivery_settings("design", d_keyword, d_target_len, expanded=False)
+            d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
+
+    st.divider()
+    st.subheader("홈페이지 정보 반영")
+    d_homepage_mode = st.radio("홈페이지/업체 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="d_homepage_mode")
+    d_homepage_info = st.text_area("홈페이지에서 확인한 원장/대표 소개·철학·장점", placeholder="예: 원장 약력, 진료 철학, 정품 장비, 상담 방식, 사후관리, 접근성 등 실제 홈페이지에서 확인한 내용만 붙여넣기", height=100, key="d_homepage_info")
+    st.caption("입력한 정보 안에서만 마무리에 반영합니다. 없는 경력·장점·철학은 만들지 않게 합니다.")
+
+    research_text = st.text_area("GPT 조사 결과 붙여넣기", height=360, placeholder="①에서 만든 조사 프롬프트를 GPT에 붙여넣고, GPT가 정리해준 조사 결과를 여기에 붙여넣으세요. 주제·키워드·분량은 다시 안 써도 됩니다.", key="research_text")
 
     counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
     st.write("### 화법 선택")
@@ -2377,8 +2407,12 @@ with tab_check:
         homepage_info = st.text_area("홈페이지에서 가져온 철학/강점/특징", placeholder="실제 확인된 정보만 입력", height=90)
         st.divider()
         st.subheader("분량 검수")
-        check_length_preset = st.selectbox("테스트 분량 기준", LENGTH_PRESETS, index=1, key="check_length_preset")
-        check_custom_length = st.number_input("직접 입력 검수 글자수", min_value=500, max_value=6000, value=1500, step=100, key="check_custom_length")
+        check_length_preset = st.selectbox("검수 분량 기준", LENGTH_PRESETS, index=1, key="check_length_preset")
+        if check_length_preset == "직접 입력":
+            check_custom_length = st.number_input("직접 입력 검수 글자수", min_value=500, max_value=6000, value=1500, step=100, key="check_custom_length")
+        else:
+            check_custom_length = int(re.sub(r"[^0-9]", "", check_length_preset) or 1500)
+            st.caption("직접 입력 글자수는 ‘검수 분량 기준’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
         check_target_len = resolve_target_length(check_length_preset, check_custom_length)
         default_min = max(500, int(check_target_len * 0.85))
         default_max = int(check_target_len * 1.15)

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v5.3", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v5.4", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -325,7 +325,108 @@ def is_safe_risk_context(body, phrase):
     return False
 
 
-def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text, min_len, max_len):
+
+def extract_first_content_sentence(body):
+    """마크다운 제목/소제목을 건너뛰고 실제 본문 첫 문장을 추출한다."""
+    body = body or ""
+    lines = []
+    for raw in body.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        # 제목/소제목/라벨/표 구분선은 첫 문장 후보에서 제외
+        if line.startswith("#"):
+            continue
+        if re.match(r"^[-*|:\s]+$", line):
+            continue
+        if re.match(r"^(제목 후보|최종 제목|본문)\s*[:：]?\s*$", line):
+            continue
+        # 너무 짧은 소제목성 문장은 건너뜀
+        if len(line) <= 34 and not line.endswith(("다.", "요.", "죠.", "까?", "나요?", "세요?", "습니까?", "?", "!")):
+            continue
+        lines.append(line)
+        if len(" ".join(lines)) > 250:
+            break
+    text = " ".join(lines).strip()
+    text = re.sub(r"[*_`>#]", "", text).strip()
+    text = re.sub(r"\s+", " ", text)
+    if not text:
+        return ""
+    m = re.search(r"(.{8,180}?(?:\?|!|다\.|요\.|죠\.|니다\.|까요\?|나요\?|세요\?|습니까\?))", text)
+    if m:
+        return m.group(1).strip()
+    return text[:120].strip()
+
+B_CONCERN_STOPWORDS = set("""
+독자 사람들이 실제 반복 질문 불안 포인트 판단 어려운 지점 비용 효과 부작용 기간 선택 고민 요약 경우 자료 내용 원고 제목 도입 본문 마무리 설명 확인 필요 중요 과정 방식 방향 상담 의료진 병원 주제 핵심 관련 중심 가능 정도 여러 같은 먼저 이후 현재 이런 저런 하면 하기 대한 대해 있다 없다 있는 없는 된다 됩니다 합니다 합니다 궁금해한다 궁금해하는
+""".split())
+B_CONCERN_KEEP = {
+    "효과", "효과없", "효과 없음", "반응", "반응 없음", "약", "복용", "부작용", "통증", "붓기", "열감", "비용", "가격", "차이", "비교", "기간", "실패", "불안", "걱정", "헷갈", "망설", "기저질환", "당뇨", "고혈압", "심장", "협심증", "저혈압", "복용약", "정상", "부담", "한번", "한 번", "유지", "아침발기", "성욕", "스트레스"
+}
+
+def extract_b_concern_terms(text, keyword=""):
+    """B등급 고민 요약에서 첫문장에 들어가야 할 핵심 고민어를 뽑는다."""
+    text = (text or "").strip()
+    if not text:
+        return []
+    terms = []
+    # 띄어쓰기 있는 핵심 구문 먼저 보존
+    phrase_patterns = [
+        r"효과\s*(?:가\s*)?(?:없|안\s*나|안\s*보|부족|약하|기대)",
+        r"약\s*(?:을\s*)?(?:먹|복용).{0,12}(?:효과|반응|부작용|걱정|불안)",
+        r"부작용.{0,8}(?:걱정|불안|우려)",
+        r"비용.{0,8}(?:부담|불안|걱정|대비)",
+        r"가격.{0,8}(?:차이|부담|불안)",
+        r"기저질환|당뇨|고혈압|심장질환|협심증|저혈압|복용약",
+        r"통증|붓기|열감|볼패임|흉터|색소|감각",
+        r"차이|비교|무엇이\s*다른|뭐가\s*다른",
+        r"한\s*번|1회|언제부터|기간|유지기간",
+    ]
+    for pat in phrase_patterns:
+        for m in re.finditer(pat, text):
+            t = re.sub(r"\s+", " ", m.group(0)).strip()
+            if 2 <= len(t) <= 28 and t not in terms:
+                terms.append(t)
+    # 단어 단위 보강
+    for tok in re.findall(r"[가-힣A-Za-z0-9]{2,}", text):
+        if tok in B_CONCERN_STOPWORDS:
+            continue
+        if keyword and tok == keyword:
+            continue
+        keep = tok in B_CONCERN_KEEP or any(k in tok for k in ["효과", "부작용", "통증", "붓", "비용", "가격", "차이", "비교", "불안", "걱정", "헷갈", "망설", "당뇨", "고혈압", "심장", "복용", "반응", "실패", "유지"])
+        if keep and tok not in terms:
+            terms.append(tok)
+        if len(terms) >= 18:
+            break
+    return terms[:18]
+
+def evaluate_first_sentence_grounding(first_sentence, b_concern_text, keyword=""):
+    """첫문장이 B등급 고민어를 실제로 담는지 간단 평가한다."""
+    first_sentence = first_sentence or ""
+    terms = extract_b_concern_terms(b_concern_text, keyword)
+    if not terms:
+        return {"status": "no_source", "terms": [], "hits": [], "message": "B등급 고민 요약이 없어 첫문장 근거 검수를 건너뜁니다."}
+    compact_first = re.sub(r"\s+", "", first_sentence)
+    hits = []
+    for t in terms:
+        tt = re.sub(r"\s+", "", t)
+        if tt and (tt in compact_first or t in first_sentence):
+            hits.append(t)
+    strong_hits = [h for h in hits if len(re.sub(r"\s+", "", h)) >= 3 or h in {"효과", "부작용", "비용", "가격", "통증", "붓기", "불안", "걱정", "당뇨", "고혈압"}]
+    # 단순히 '약' 하나만 들어간 수준은 약함으로 본다.
+    only_weak = hits and all(h in {"약", "치료", "상담"} for h in hits)
+    if len(strong_hits) >= 2 or (len(strong_hits) >= 1 and ("?" in first_sentence or "계신가요" in first_sentence or "걱정" in first_sentence)):
+        status = "ok"
+        msg = f"첫문장이 B등급 고민어를 반영했습니다: {', '.join(hits[:5])}"
+    elif hits and not only_weak:
+        status = "weak"
+        msg = f"첫문장에 B등급 고민어가 일부만 보입니다: {', '.join(hits[:5])}. 핵심 고민을 1개 더 넣으면 좋습니다."
+    else:
+        status = "missing"
+        msg = f"첫문장에 B등급 고민 핵심어가 약합니다. 후보 고민어: {', '.join(terms[:8])}"
+    return {"status": status, "terms": terms, "hits": hits, "message": msg}
+
+def check_all(title, body, keyword, field, purpose, writer_perspective, selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text, min_len, max_len, first_sentence_type="자동 추천", b_concern_text=""):
     issues = {"제목": [], "본문": [], "도입": [], "AI티": [], "복사찌꺼기": [], "위험표현": [], "작성자 관점": [], "마무리": []}
     scores = {}
     no_space_len = len(re.sub(r"\s+", "", body))
@@ -386,7 +487,19 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     # 도입
     intro_score = 15
     intro = body[:900]
-    if not any(w in intro for w in ["당기", "번들", "헷갈", "속상", "고민", "푸석", "예민", "답답", "불안", "막막"]):
+    first_sentence = extract_first_content_sentence(body)
+    first_ground = evaluate_first_sentence_grounding(first_sentence, b_concern_text, keyword)
+    if b_concern_text.strip():
+        if first_ground["status"] == "missing":
+            issues["도입"].append(("첫문장 B등급 고민 약함", first_ground["message"]))
+            intro_score -= 4
+        elif first_ground["status"] == "weak":
+            issues["도입"].append(("첫문장 고민 반영 약함", first_ground["message"]))
+            intro_score -= 2
+    if first_sentence_type == "의문문 강제" and first_sentence and "?" not in first_sentence:
+        issues["도입"].append(("첫문장 의문문 아님", "첫문장 형태를 의문문 강제로 선택했지만 실제 첫 문장에 물음표(?)가 없습니다."))
+        intro_score -= 3
+    if not any(w in intro for w in ["당기", "번들", "헷갈", "속상", "고민", "푸석", "예민", "답답", "불안", "막막", "걱정", "망설", "효과", "부작용", "비용", "가격", "통증", "붓기", "약", "반응"]):
         issues["도입"].append(("공감 부족", "도입부에서 독자의 실제 고민이 약합니다."))
         intro_score -= 3
     if selected_intro_type not in detected_intro:
@@ -479,6 +592,9 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     if no_space_len < min_len:
         total = min(total, 94)
         cap_reasons.append(f"공백 제외 {min_len}자 미만이라 분량 조건 미달 상한 제한")
+    if b_concern_text.strip() and first_ground.get("status") == "missing":
+        total = min(total, 88)
+        cap_reasons.append("첫문장이 B등급 고민 핵심어를 제대로 담지 못해 도입 화법 상한 88점 적용")
 
     return scores, issues, total, cap_reasons, {
         "no_space_len": no_space_len,
@@ -487,6 +603,8 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         "subheads": len(subheads),
         "detected_intro": detected_intro,
         "detected_title": detected_title,
+        "first_sentence": first_sentence,
+        "first_sentence_grounding": first_ground,
     }
 
 
@@ -948,6 +1066,8 @@ D등급: 참고만 가능
 - 장면 묘사형이라면 독자가 겪는 구체적인 생활 장면으로 시작한다.
 - 전문가 안내형이라면 감정을 과하게 키우지 않고 확인 기준을 먼저 제시한다.
 - 어떤 형태든 첫 문장을 정보 정의문으로 시작하지 않는다.
+- 첫문장 예시는 반드시 B등급 고민 핵심어를 직접 포함한다.
+- 단순히 물음표를 붙인 넓은 질문이 아니라, 효과 없음/부작용/비용/기저질환/비교 혼란/선택 불안 등 조사된 고민을 한 문장 안에 넣는다.
 
 첫문장 예시 3개:
 1.
@@ -1441,7 +1561,9 @@ def emotion_grounding_force_block():
 - 자료에 없는 증상, 감정, 비용 고민, 비교 대상, 생활 장면을 임의로 추가하지 않는다.
 - 원문 질문/후기 문장을 그대로 베끼지 말고, 같은 고민을 상담형 문장으로 재구성한다.
 - B등급 고민이 부족하면 구체적인 공감문을 억지로 만들지 말고, ‘내 상황에 맞는 기준 확인’ 정도로만 표현한다.
-- 첫 문장을 만들 때는 [전 분야 감정 흐름 설계]의 ‘근거 B등급 고민’을 확인하고 그 범위 안에서 작성한다."""
+- 첫 문장을 만들 때는 [전 분야 감정 흐름 설계]의 ‘근거 B등급 고민’을 확인하고 그 범위 안에서 작성한다.
+- 첫 문장에는 B등급 고민의 핵심어를 최소 1~2개 이상 직접 반영한다. 예: 효과 없음, 부작용 걱정, 비용 부담, 기저질환, 비교 혼란, 선택 불안.
+- 첫 문장이 물음표로 끝나더라도 B등급 고민 핵심어가 빠져 있으면 감정 도입으로 보지 않는다."""
 
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
@@ -1575,6 +1697,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 1. 도입부는 반드시 “{voice_type}” 화법, “{first_sentence_type}” 첫문장 형태, “{intro_type}” 방식을 함께 반영해 작성해줘.
 1-1. 첫 문장은 반드시 위 [도입 첫문장 형태 필수 규칙]을 따른다.
 1-1-1. [전 분야 감정 흐름 설계]의 감정 도입 첫문장 후보 중 1개를 첫 문장으로 사용하거나, 같은 근거 B등급 고민 범위 안에서 자연스럽게 재구성해줘.
+1-1-2. 첫 문장에는 B등급 고민 핵심어를 최소 1~2개 직접 넣어줘. 물음표만 붙이고 고민어가 빠진 넓은 질문은 금지해줘.
 1-2. 첫 문장을 “{keyword}은/는 무엇입니다” 같은 정보 설명으로 시작하지 마.
 2. 선택한 달로썸 도입 방식은 추천이 아니라 필수 구조다. 도입부 첫 5문장 안에서 눈에 보이게 반영해줘.
 2-1. 비교표 방식이면 마크다운 표와 `|---|---|---|` 구분선을 반드시 넣어줘.
@@ -1677,8 +1800,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.3")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.3에서는 화법·첫문장 형태뿐 아니라 감정 도입/본문 브릿지/마무리 재연결 문장을 반드시 B등급 고민자료에서 끌어와 재구성하도록 강화했습니다.")
+st.title("📝 달로썸 원고 검수기 v5.4")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.4에서는 첫문장이 실제 B등급 고민을 담고 있는지까지 검수합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1833,7 +1956,8 @@ with tab_check:
         selected_intro_type = st.selectbox("현재 원고 도입 방식", INTRO_TYPES, index=5)
         selected_voice_type = st.selectbox("현재 원고 화법", VOICE_TYPE_OPTIONS, index=0, key="check_voice_type")
         selected_first_sentence_type = st.selectbox("현재 원고 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="check_first_sentence_type")
-        st.caption("검수 참고용입니다. 점수에는 크게 반영하지 않고 도입 리라이트/Claude 지시 방향 확인용입니다.")
+        check_b_concern_text = st.text_area("B등급 고민 요약 / 첫문장 근거", placeholder="조사 결과의 잠재고객 고민 요약, 감정 도입 근거 고민, B등급 고민패턴을 붙여넣으세요.", height=120)
+        st.caption("v5.4: 이 칸을 넣으면 첫문장이 실제 B등급 고민을 담았는지 검수합니다.")
         ending_type = st.selectbox("현재 원고 마무리 방식", ENDING_TYPES, index=0)
         include_philosophy = st.checkbox("마지막 문단에 철학/강점 반영", value=True)
         philosophy_text = st.text_area("철학/강점 문구", value=default_philosophy_by_field(field, writer_perspective), height=90)
@@ -1865,7 +1989,7 @@ with tab_check:
         scores, issues, total, cap_reasons, meta = check_all(
             title, body, keyword, field, purpose, writer_perspective,
             selected_intro_type, selected_title_type, ending_type, include_philosophy, philosophy_text,
-            min_len, max_len
+            min_len, max_len, selected_first_sentence_type, check_b_concern_text
         )
 
         st.write("## 추출 결과")
@@ -1874,6 +1998,18 @@ with tab_check:
         c2.metric("제목 출처", title_source)
         c3.metric("제목 글자수", len(title) if title else 0)
         st.info(f"인식된 제목: {title if title else '없음'}")
+        first_sentence_preview = extract_first_content_sentence(body)
+        if first_sentence_preview:
+            st.caption(f"감지된 실제 첫문장: {first_sentence_preview}")
+            if check_b_concern_text.strip():
+                fg = evaluate_first_sentence_grounding(first_sentence_preview, check_b_concern_text, keyword)
+                if fg["status"] == "ok":
+                    st.success(fg["message"])
+                elif fg["status"] == "weak":
+                    st.warning(fg["message"])
+                elif fg["status"] == "missing":
+                    st.error(fg["message"])
+
         if homepage_mode == "홈페이지 정보 있음" and homepage_info.strip():
             philosophy_source_label = "홈페이지 확인 정보 반영"
         elif include_philosophy and philosophy_text.strip() and ending_type != "철학 없이 정보 마무리":

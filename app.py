@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v4.6", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v4.8", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -55,6 +55,36 @@ GLOSSARY_TERMS = {
 }
 
 
+def _has_jongseong(word):
+    """한글 마지막 글자 받침 여부를 간단히 확인한다."""
+    word = (word or "").strip()
+    for ch in reversed(word):
+        code = ord(ch)
+        if 0xAC00 <= code <= 0xD7A3:
+            return (code - 0xAC00) % 28 != 0
+    return False
+
+
+def _josa(word, with_jong, without_jong):
+    return with_jong if _has_jongseong(word) else without_jong
+
+
+def fix_topic_josa(text, topic):
+    """리라이트 생성문에서 '써마지을' 같은 조사 오류를 줄인다."""
+    topic = (topic or "").strip()
+    if not topic:
+        return text
+    repl = {
+        f"{topic}은": f"{topic}{_josa(topic, '은', '는')}",
+        f"{topic}을": f"{topic}{_josa(topic, '을', '를')}",
+        f"{topic}이": f"{topic}{_josa(topic, '이', '가')}",
+        f"{topic}과": f"{topic}{_josa(topic, '과', '와')}",
+    }
+    for a, b in repl.items():
+        text = text.replace(a, b)
+    return text
+
+
 def default_philosophy_by_field(field, writer_perspective):
     if writer_perspective == "에스테틱 원장":
         return "피부를 무리하게 바꾸기보다, 지금 피부가 편안하게 받아들일 수 있는 균형을 찾는 것을 중요하게 생각합니다."
@@ -90,6 +120,34 @@ def count_keyword(text, keyword):
     return text.count(keyword) if keyword else 0
 
 
+def keyword_count_range_by_length(target_len):
+    """Return recommended total/body keyword count ranges by target length.
+    The goal is to avoid obvious repetition in short test manuscripts.
+    """
+    try:
+        n = int(target_len)
+    except Exception:
+        n = 1500
+    if n <= 1200:
+        return (3, 5, 2, 4)  # total min/max, body min/max
+    if n <= 1800:
+        return (4, 6, 3, 5)
+    if n <= 2400:
+        return (5, 7, 4, 6)
+    return (6, 9, 5, 8)
+
+
+def keyword_count_instruction(keyword, target_len):
+    kw = keyword or "핵심 키워드"
+    tmin, tmax, bmin, bmax = keyword_count_range_by_length(target_len)
+    return f"""[키워드 반복 제한]
+- 핵심 키워드 “{kw}”는 제목에 1회만 넣는다.
+- 본문에서는 “{kw}”를 {bmin}~{bmax}회 정도만 자연스럽게 사용한다.
+- 제목 포함 전체 키워드 횟수는 {tmin}~{tmax}회 안팎을 목표로 한다.
+- 같은 문단에서 키워드를 반복하지 말고, 대명사나 자연스러운 표현으로 풀어쓴다.
+- 분량을 맞추기 위해 키워드를 반복하지 않는다."""
+
+
 def detect_intro_types(body):
     intro = body.strip()[:900]
     detected = []
@@ -110,7 +168,12 @@ def detect_intro_types(body):
     if "?" in intro or "않으신가요" in intro or "적 있으" in intro or "궁금" in intro:
         detected.append("5. 독자에게 질문 던지기")
 
-    if any(w in intro for w in ["많이 받는 질문", "자주 받는 질문", "많이 묻는", "자주 묻는", "FAQ", "질문 중 하나"]):
+    quoted_questions = re.findall(r'["“][^"”]{2,90}\?[^"”]*["”]', intro)
+    faq_markers = [
+        "많이 받는 질문", "자주 받는 질문", "많이 묻는", "자주 묻는", "FAQ", "질문 중 하나",
+        "질문을 많이", "질문을 정말 많이", "질문도 많이", "많이 듣", "자주 듣", "물어보시는 분", "궁금해하시는 분"
+    ]
+    if any(w in intro for w in faq_markers) or len(quoted_questions) >= 2:
         detected.append("6. 많이 묻는 질문 인용")
 
     if any(w in intro for w in ["검색만으로", "잘 알려지지", "알짜", "놓치기 쉬운", "이 부분을 모르면", "여기서 알 수"]):
@@ -242,10 +305,22 @@ def generate_title_candidates(keyword, topic, title_type, b_lines=None, field=""
     return cleaned[:5]
 
 def is_safe_risk_context(body, phrase):
-    safe_markers = ["아니", "않", "없", "피하", "보다", "있지 않습니다", "권하지", "주의", "무조건 없애", "무조건 두껍"]
+    """위험 단어가 부정/주의 문맥에서 쓰인 경우는 오탐으로 보지 않는다."""
+    common_safe_markers = [
+        "아니", "않", "없", "피하", "주의", "권하지", "권하기보다", "단정", "어렵", "어려",
+        "볼 수는 없습니다", "볼 수 없습니다", "말하기 어렵", "말하기는 어렵", "무조건 없애", "무조건 두껍"
+    ]
     for match in re.finditer(re.escape(phrase), body):
-        window = body[max(0, match.start() - 20): min(len(body), match.end() + 40)]
-        if any(marker in window for marker in safe_markers):
+        window = body[max(0, match.start() - 35): min(len(body), match.end() + 55)]
+        if phrase == "무조건":
+            safe_phrases = [
+                "무조건 더 좋다고 말하기", "무조건 더 좋다고", "무조건 좋은", "무조건 권", "무조건 선택",
+                "무조건 효과", "무조건 개선", "무조건 좋아"  # 아래에서 위험 문맥과 구분
+            ]
+            # 위험 문맥: 무조건 효과/개선/좋아짐 등은 그대로 위험 처리
+            if any(x in window for x in ["무조건 효과", "무조건 개선", "무조건 좋아", "무조건 낫", "무조건 받을", "무조건 승소"]):
+                return False
+        if any(marker in window for marker in common_safe_markers):
             return True
     return False
 
@@ -290,12 +365,17 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     elif no_space_len > max_len:
         issues["본문"].append(("본문이 김", f"공백 제외 {no_space_len}자입니다. 권장 최대 {max_len}자를 넘습니다."))
         body_score -= 4
-    if keyword and total_kw < 5:
-        issues["본문"].append(("키워드 부족", f"제목 포함 키워드가 {total_kw}회입니다. 총 5회 안팎을 권장합니다."))
-        body_score -= 4
-    elif keyword and total_kw > 9:
-        issues["본문"].append(("키워드 과다", f"제목 포함 키워드가 {total_kw}회입니다. 반복 티가 날 수 있습니다."))
+    target_for_kw = (min_len + max_len) // 2 if min_len and max_len else no_space_len
+    kw_min, kw_max, body_kw_min, body_kw_max = keyword_count_range_by_length(target_for_kw)
+    if keyword and total_kw < kw_min:
+        issues["본문"].append(("키워드 부족", f"제목 포함 키워드가 {total_kw}회입니다. 이 분량에서는 {kw_min}~{kw_max}회 안팎을 권장합니다."))
         body_score -= 3
+    elif keyword and total_kw > kw_max + 3:
+        issues["본문"].append(("키워드 과다", f"제목 포함 키워드가 {total_kw}회입니다. 이 분량에서는 {kw_min}~{kw_max}회 안팎이 자연스럽습니다."))
+        body_score -= 3
+    elif keyword and total_kw > kw_max:
+        issues["본문"].append(("키워드 많음", f"제목 포함 키워드가 {total_kw}회입니다. 권장 {kw_min}~{kw_max}회보다 많아 1~2회 줄이면 더 자연스럽습니다."))
+        body_score -= 1
     lines = [l.strip() for l in body.splitlines() if l.strip()]
     subheads = [l for l in lines if len(l) <= 38 and not l.endswith(("다.", "요.", "니다.", "죠.", "?")) and not l.startswith("☑")]
     if len(subheads) < 3:
@@ -480,7 +560,7 @@ def generate_intro_rewrite(intro_type, keyword, title, field, writer_perspective
 웹툰 아래 본문 도입:
 아침에는 당기고 오후에는 번들거리는 피부라면 한 가지 타입으로 단정하기 어렵습니다. {topic}은 T존과 U존의 차이를 살피고, 부위별로 관리 강도를 조절하는 데서 시작됩니다."""
         }
-        return examples[intro_type]
+        return fix_topic_josa(examples[intro_type], topic)
 
     common = {
         "1. 독자의 상황을 찔러주는 체크리스트 활용": f"""☑ {topic}을 검색해도 내 상황에 맞는 기준이 잘 보이지 않는다
@@ -511,7 +591,7 @@ def generate_intro_rewrite(intro_type, keyword, title, field, writer_perspective
 웹툰 아래 본문 도입:
 정보가 많을수록 오히려 판단은 어려워질 수 있습니다. {topic}은 내 상황에 맞는 기준을 먼저 잡는 것이 중요합니다."""
     }
-    return common[intro_type]
+    return fix_topic_josa(common[intro_type], topic)
 
 
 def generate_final_paragraph(keyword, field, writer_perspective, homepage_mode, homepage_info, philosophy_text):
@@ -593,7 +673,8 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 권장 문단 구성: {suggested}
 - 기본 흐름은 도입 → 본문1 → 본문2 → 본문3 → 마무리를 유지하되, 분량이 짧으면 본문을 압축한다.
 - 각 문단의 문장 수를 억지로 늘리지 말고, 중복 설명을 줄인다.
-- 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다."""
+- 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다.
+- 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
 
 
 def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천"):
@@ -603,6 +684,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
     extra_focus = extra_focus.strip()
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    keyword_plan = keyword_count_instruction(keyword, target_len)
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
@@ -618,6 +700,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 분야: {field}
 원고 목적: {content_goal}
 {length_plan}
+{keyword_plan}
 희망 도입 방식: {intro_type}
 도입 방식 지시: {intro_instruction}
 희망 제목 유형: {title_type}
@@ -1074,6 +1157,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    keyword_plan = keyword_count_instruction(keyword, target_len)
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
@@ -1132,6 +1216,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 {c_text}
 
 {length_plan}
+{keyword_plan}
 
 {bridge_plan}
 
@@ -1146,7 +1231,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
-6. 키워드 “{keyword}”를 제목에 1회, 본문에 자연스럽게 여러 번 넣어줘.
+6. 키워드 “{keyword}”는 제목에 1회만 넣고, 본문 키워드 횟수는 위 [키워드 반복 제한] 범위 안에서만 자연스럽게 사용해줘.
 7. 단정·과장 표현은 피하고, 개인 상태나 상황에 따라 달라질 수 있다는 신중한 표현을 사용해줘.
 8. 소제목을 포함하되, 문단 수는 위 분량 조건을 우선해 자연스럽게 조절해줘.
 9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
@@ -1233,7 +1318,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v4.6")
+st.title("📝 달로썸 원고 검수기 v4.8")
 st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/제목유형/도입화법/도입8가지 → 달로썸 GPTs용·외부 GPTs용 강제 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
@@ -1415,7 +1500,15 @@ with tab_check:
         c2.metric("제목 출처", title_source)
         c3.metric("제목 글자수", len(title) if title else 0)
         st.info(f"인식된 제목: {title if title else '없음'}")
-        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 반영: {'예' if include_philosophy else '아니오'}")
+        if homepage_mode == "홈페이지 정보 있음" and homepage_info.strip():
+            philosophy_source_label = "홈페이지 확인 정보 반영"
+        elif include_philosophy and philosophy_text.strip() and ending_type != "철학 없이 정보 마무리":
+            philosophy_source_label = "사용자 입력 철학 반영"
+        elif include_philosophy and philosophy_text.strip() and ending_type == "철학 없이 정보 마무리":
+            philosophy_source_label = "철학 문구 입력됨 / 현재 마무리 방식은 정보형"
+        else:
+            philosophy_source_label = "철학 미반영"
+        st.caption(f"선택한 현재 제목 유형: {selected_title_type} / 도입 방식: {selected_intro_type} / 마무리 방식: {ending_type} / 철학 상태: {philosophy_source_label}")
 
         st.write("## 점수")
         st.metric("총점", f"{total}점", price_estimate(total))

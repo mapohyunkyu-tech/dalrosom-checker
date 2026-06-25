@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v5.4", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v5.8", layout="wide")
 
 PURPOSES = [
     "마케팅 회사 테스트 원고",
@@ -146,6 +146,254 @@ def keyword_count_instruction(keyword, target_len):
 - 제목 포함 전체 키워드 횟수는 {tmin}~{tmax}회 안팎을 목표로 한다.
 - 같은 문단에서 키워드를 반복하지 말고, 대명사나 자연스러운 표현으로 풀어쓴다.
 - 분량을 맞추기 위해 키워드를 반복하지 않는다."""
+
+
+DELIVERY_MODES = ["테스트 원고", "실제 업로드 원고", "카페 업로드 알바", "병원 블로그", "법률 블로그", "일반 정보글"]
+COUNT_MODE_OPTIONS = ["제목 포함 전체 기준", "본문만 기준", "제목+본문 별도 기준"]
+KEYWORD_FORM_OPTIONS = ["정확히 일치", "띄어쓰기 차이 인정", "변형 키워드 허용"]
+SUBTITLE_COUNT_OPTIONS = ["소제목 제외", "소제목 포함"]
+ENDING_KEYWORD_OPTIONS = ["권장", "필수", "상관없음"]
+
+
+def auto_keyword_defaults(target_len):
+    tmin, tmax, bmin, bmax = keyword_count_range_by_length(target_len)
+    return {"total_min": tmin, "total_max": tmax, "body_min": bmin, "body_max": bmax}
+
+
+def render_keyword_delivery_settings(prefix, keyword, target_len, expanded=False):
+    defaults = auto_keyword_defaults(target_len)
+    with st.expander("0. 기본 납품 설정 / 키워드 배치 기준", expanded=expanded):
+        mode = st.selectbox("작업 모드", DELIVERY_MODES, index=0, key=f"{prefix}_delivery_mode")
+        use_custom = st.checkbox("키워드 요구사항 직접 설정", value=True, key=f"{prefix}_kw_custom")
+        c1, c2 = st.columns(2)
+        with c1:
+            count_mode = st.selectbox("키워드 카운트 기준", COUNT_MODE_OPTIONS, index=0, key=f"{prefix}_count_mode")
+            title_required = st.checkbox("제목에 핵심 키워드 1회 필수", value=True, key=f"{prefix}_title_required")
+            first_required = st.checkbox("첫 문단에 키워드 1회 필수", value=True, key=f"{prefix}_first_required")
+            ending_policy = st.selectbox("마지막 문단 키워드", ENDING_KEYWORD_OPTIONS, index=0, key=f"{prefix}_ending_policy")
+        with c2:
+            subtitle_policy = st.selectbox("소제목 키워드 카운트", SUBTITLE_COUNT_OPTIONS, index=0, key=f"{prefix}_subtitle_policy")
+            keyword_form = st.selectbox("키워드 형태", KEYWORD_FORM_OPTIONS, index=0, key=f"{prefix}_keyword_form")
+            paragraph_max = st.number_input("한 문단 키워드 최대 횟수", min_value=1, max_value=5, value=1, step=1, key=f"{prefix}_paragraph_max")
+        c3, c4, c5, c6 = st.columns(4)
+        with c3:
+            body_min = st.number_input("본문 최소", min_value=0, max_value=30, value=defaults["body_min"], step=1, key=f"{prefix}_body_min")
+        with c4:
+            body_max = st.number_input("본문 최대", min_value=0, max_value=30, value=defaults["body_max"], step=1, key=f"{prefix}_body_max")
+        with c5:
+            total_min = st.number_input("전체 최소", min_value=0, max_value=40, value=defaults["total_min"], step=1, key=f"{prefix}_total_min")
+        with c6:
+            total_max = st.number_input("전체 최대", min_value=0, max_value=40, value=defaults["total_max"], step=1, key=f"{prefix}_total_max")
+        st.caption("외주/테스트 요구가 있으면 여기 숫자를 그대로 맞추세요. 요구가 없으면 자동값을 써도 됩니다.")
+    return {
+        "mode": mode,
+        "use_custom": use_custom,
+        "count_mode": count_mode,
+        "title_required": title_required,
+        "first_required": first_required,
+        "ending_policy": ending_policy,
+        "subtitle_policy": subtitle_policy,
+        "keyword_form": keyword_form,
+        "paragraph_max": int(paragraph_max),
+        "body_min": int(body_min),
+        "body_max": int(body_max),
+        "total_min": int(total_min),
+        "total_max": int(total_max),
+    }
+
+
+def keyword_delivery_setting_text(keyword, target_len, settings=None):
+    kw = keyword or "핵심 키워드"
+    if not settings or not settings.get("use_custom", True):
+        return keyword_count_instruction(kw, target_len)
+    return f"""[기본 납품 설정 / 키워드 요구사항]
+- 작업 모드: {settings.get('mode', '테스트 원고')}
+- 핵심 키워드: “{kw}”
+- 카운트 기준: {settings.get('count_mode', '제목 포함 전체 기준')}
+- 제목 키워드: {'제목에 1회 필수' if settings.get('title_required') else '제목 필수 아님'}
+- 본문 키워드 횟수: {settings.get('body_min')}~{settings.get('body_max')}회
+- 전체 키워드 횟수: {settings.get('total_min')}~{settings.get('total_max')}회
+- 첫 문단 키워드: {'1회 필수' if settings.get('first_required') else '필수 아님'}
+- 마지막 문단 키워드: {settings.get('ending_policy', '권장')}
+- 소제목 카운트: {settings.get('subtitle_policy', '소제목 제외')}
+- 키워드 형태: {settings.get('keyword_form', '정확히 일치')}
+- 한 문단 키워드 최대 횟수: {settings.get('paragraph_max', 1)}회
+- 같은 문단에서 키워드를 반복하지 말고, 필요한 경우 ‘이 절차’, ‘해당 시술’, ‘진료 과정’, ‘상담 과정’, ‘이 방법’처럼 자연스럽게 대체한다.
+- 키워드가 빠진 문단이 있으면 전체를 다시 쓰지 말고, 해당 문단 안의 기존 문장 1개에 키워드 1회만 자연스럽게 연결한다."""
+
+
+def keyword_placement_plan_text(keyword, target_len, settings=None):
+    kw = keyword or "핵심 키워드"
+    if not settings:
+        tmin, tmax, bmin, bmax = keyword_count_range_by_length(target_len)
+        settings = {"body_min": bmin, "body_max": bmax, "total_min": tmin, "total_max": tmax, "title_required": True, "first_required": True, "ending_policy": "권장", "paragraph_max": 1}
+    return f"""[키워드 배치 지도]
+- 제목: “{kw}” 1회 배치 {'필수' if settings.get('title_required') else '권장'}
+- 도입/첫 문단: “{kw}” 1회 배치 {'필수' if settings.get('first_required') else '권장'}
+- 본문 중간 문단: 문단별 0~1회로 분산 배치
+- 마무리: “{kw}” 1회 배치 {settings.get('ending_policy', '권장')}
+- 본문 총량: {settings.get('body_min')}~{settings.get('body_max')}회
+- 제목 포함 전체 총량: {settings.get('total_min')}~{settings.get('total_max')}회
+- 한 문단에 “{kw}”가 {settings.get('paragraph_max', 1)}회를 넘으면 반복으로 보일 수 있으므로 대체어를 사용한다.
+
+권장 위치 예시:
+1) 제목 1회
+2) 도입 마지막 문장 또는 도입 중반 1회
+3) 본문1 중간 1회
+4) 본문2 또는 본문3 중간 1회
+5) 마무리 첫 문장 또는 마지막 문장 0~1회"""
+
+
+def is_heading_block(block):
+    block = (block or "").strip()
+    if not block:
+        return False
+    if block.startswith("#"):
+        return True
+    lines = [l.strip() for l in block.splitlines() if l.strip()]
+    if len(lines) != 1:
+        return False
+    line = re.sub(r"^#+\s*", "", lines[0]).strip()
+    if len(line) > 42:
+        return False
+    if line.endswith(("다.", "요.", "니다.", "죠.", "습니다.", ".")):
+        return False
+    return True
+
+
+def split_keyword_sections(body):
+    blocks = [b.strip() for b in re.split(r"\n\s*\n", body or "") if b.strip()]
+    sections = []
+    current = None
+    for b in blocks:
+        if is_heading_block(b):
+            if current:
+                sections.append(current)
+            current = {"heading": re.sub(r"^#+\s*", "", b).strip(), "text": ""}
+        else:
+            if current is None:
+                current = {"heading": "도입", "text": b}
+            else:
+                current["text"] = (current["text"] + "\n" + b).strip() if current["text"] else b
+    if current:
+        sections.append(current)
+    if not sections and body.strip():
+        sections = [{"heading": "도입", "text": body.strip()}]
+    n = len(sections)
+    for i, sec in enumerate(sections):
+        if i == 0:
+            sec["role"] = "도입"
+        elif i == n - 1 and n >= 3:
+            sec["role"] = "마무리"
+        else:
+            sec["role"] = f"본문{i}"
+    return sections
+
+
+def keyword_count_loose(text, keyword, form_policy="정확히 일치"):
+    if not keyword:
+        return 0
+    text = text or ""
+    if form_policy == "띄어쓰기 차이 인정":
+        return re.sub(r"\s+", "", text).count(re.sub(r"\s+", "", keyword))
+    return text.count(keyword)
+
+
+def build_keyword_insertion_prompt(keyword, missing_sections):
+    if not keyword or not missing_sections:
+        return ""
+    blocks = []
+    for sec in missing_sections:
+        text = (sec.get("text") or "").strip()
+        if len(text) > 1200:
+            text = text[:1200] + "..."
+        blocks.append(f"""[{sec.get('role')} / {sec.get('heading')}]
+{text}""")
+    joined = "\n\n".join(blocks)
+    return f"""아래 원고에서 키워드가 빠진 문단만 부분 수정해줘.
+
+핵심 키워드: “{keyword}”
+
+수정 조건:
+1. 아래 표시된 문단 안에만 핵심 키워드 “{keyword}”를 정확히 1회 추가해줘.
+2. 문단 전체를 다시 쓰지 말고, 기존 문장 1개에 자연스럽게 연결해줘.
+3. 새 문단을 만들지 마.
+4. 키워드 추가 외에는 말투와 구조를 크게 바꾸지 마.
+5. 같은 문단에 키워드를 2회 이상 넣지 마.
+6. 키워드가 들어간 수정 문장만 먼저 보여주고, 필요하면 수정된 문단도 함께 보여줘.
+
+수정할 문단:
+{joined}"""
+
+
+def keyword_placement_report(title, body, keyword, settings=None):
+    if not keyword:
+        return "키워드가 없어 배치 검수를 건너뜁니다.", ""
+    settings = settings or {}
+    form_policy = settings.get("keyword_form", "정확히 일치")
+    subtitle_included = settings.get("subtitle_policy", "소제목 제외") == "소제목 포함"
+    title_count = keyword_count_loose(title, keyword, form_policy)
+    sections = split_keyword_sections(body)
+    rows = []
+    body_count = 0
+    missing_sections = []
+    over_sections = []
+    max_per = int(settings.get("paragraph_max", 1) or 1)
+    for idx, sec in enumerate(sections):
+        hcnt = keyword_count_loose(sec.get("heading", ""), keyword, form_policy)
+        tcnt = keyword_count_loose(sec.get("text", ""), keyword, form_policy)
+        effective = hcnt + tcnt if subtitle_included else tcnt
+        body_count += effective
+        rows.append({"구간": sec.get("role"), "소제목": sec.get("heading"), "소제목 횟수": hcnt, "본문 횟수": tcnt, "판정용 횟수": effective})
+        if tcnt == 0 and sec.get("text", "").strip():
+            if idx == 0 and settings.get("first_required"):
+                missing_sections.append(sec)
+            elif sec.get("role") == "마무리" and settings.get("ending_policy") == "필수":
+                missing_sections.append(sec)
+            elif sec.get("role", "").startswith("본문"):
+                missing_sections.append(sec)
+        if effective > max_per:
+            over_sections.append(sec)
+    total_count = title_count + body_count
+    no_space_len = len(re.sub(r"\s+", "", body or ""))
+    tmin, tmax, bmin, bmax = keyword_count_range_by_length(no_space_len)
+    body_min = int(settings.get("body_min", bmin))
+    body_max = int(settings.get("body_max", bmax))
+    total_min = int(settings.get("total_min", tmin))
+    total_max = int(settings.get("total_max", tmax))
+    lines = []
+    lines.append("### 키워드 배치 결과")
+    lines.append(f"- 제목: {title_count}회 {'✅' if (not settings.get('title_required', True) or title_count == 1) else '⚠️'}")
+    lines.append(f"- 본문 기준: {body_count}회 / 요구 {body_min}~{body_max}회")
+    lines.append(f"- 제목 포함 전체: {total_count}회 / 요구 {total_min}~{total_max}회")
+    lines.append(f"- 소제목 카운트 기준: {settings.get('subtitle_policy', '소제목 제외')}")
+    lines.append("")
+    lines.append("|구간|소제목|소제목 횟수|본문 횟수|판정용 횟수|")
+    lines.append("|---|---|---:|---:|---:|")
+    for r in rows:
+        safe_heading = str(r['소제목']).replace('|', '/')
+        lines.append(f"|{r['구간']}|{safe_heading}|{r['소제목 횟수']}|{r['본문 횟수']}|{r['판정용 횟수']}|")
+    lines.append("")
+    verdict = []
+    if settings.get("title_required", True) and title_count != 1:
+        verdict.append("제목에 키워드가 정확히 1회 들어가야 합니다.")
+    if body_count < body_min:
+        verdict.append(f"본문 키워드가 {body_min - body_count}회 부족합니다.")
+    if body_count > body_max:
+        verdict.append(f"본문 키워드가 {body_count - body_max}회 많습니다.")
+    if total_count < total_min:
+        verdict.append(f"전체 키워드가 {total_min - total_count}회 부족합니다.")
+    if total_count > total_max:
+        verdict.append(f"전체 키워드가 {total_count - total_max}회 많습니다.")
+    if missing_sections:
+        verdict.append("키워드가 빠진 문단이 있습니다: " + ", ".join([m.get("role", "문단") for m in missing_sections[:5]]))
+    if over_sections:
+        verdict.append("키워드가 한 문단에 몰린 구간이 있습니다: " + ", ".join([m.get("role", "문단") for m in over_sections[:5]]))
+    if not verdict:
+        verdict.append("키워드 횟수와 위치가 대체로 안정적입니다.")
+    lines.append("판정: " + " / ".join(verdict))
+    insertion_prompt = build_keyword_insertion_prompt(keyword, missing_sections[:3])
+    return "\n".join(lines), insertion_prompt
 
 
 def detect_intro_types(body):
@@ -809,7 +1057,7 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info=""):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info="", homepage_url="", keyword_delivery_text="", keyword_placement_text=""):
 
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
@@ -817,7 +1065,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
     extra_focus = extra_focus.strip()
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
-    keyword_plan = keyword_count_instruction(keyword, target_len)
+    keyword_plan = keyword_delivery_text.strip() if keyword_delivery_text and keyword_delivery_text.strip() else keyword_count_instruction(keyword, target_len)
+    keyword_placement_text = keyword_placement_text.strip() if keyword_placement_text else ""
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     voice_type = voice_type or "자동 추천"
@@ -825,9 +1074,26 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     first_sentence_plan = first_sentence_instruction(first_sentence_type, intro_type)
     homepage_mode = homepage_mode or "홈페이지 정보 없음"
     homepage_info = homepage_info.strip() if homepage_info else ""
+    homepage_url = homepage_url.strip() if homepage_url else ""
     homepage_block = homepage_info_force_block(homepage_mode, homepage_info)
     homepage_research_section = ""
-    if homepage_mode == "홈페이지 정보 있음" and homepage_info:
+    if homepage_mode == "홈페이지 정보 있음" and homepage_url:
+        homepage_research_section = f"""
+[공식 홈페이지 자료 조사]
+아래 홈페이지 URL 또는 병원/업체명/법무법인명을 함께 확인해줘.
+GPT가 직접 공식 홈페이지를 열람하거나 검색 가능한 경우에만 원장/대표 소개, 진료·상담 철학, 장비, 시스템, 사후관리, 접근성, 병원/업체 장점을 추출한다.
+
+홈페이지/업체 단서:
+{homepage_url}
+
+조사 규칙:
+- 반드시 공식 홈페이지 또는 공식 채널에서 확인되는 내용만 사용한다.
+- 블로그 후기, 광고대행사 글, 플레이스 리뷰만 보고 원장 경력·철학·장점을 확정하지 않는다.
+- 홈페이지를 확인할 수 없으면 “공식 홈페이지 확인 불가”라고 표시하고, 철학·장점을 임의로 만들지 않는다.
+- 홈페이지 원문을 길게 베끼지 말고, 원장/대표 소개·철학·장점·장비/시스템·사후관리로 짧게 분류한다.
+- 마무리 반영 후보는 이번 주제와 실제로 연결되는 내용만 1~2문장으로 만든다.
+"""
+    elif homepage_mode == "홈페이지 정보 있음" and homepage_info:
         homepage_research_section = f"""
 [홈페이지/업체 정보 조사 반영]
 아래 정보는 사용자가 홈페이지에서 확인해 입력한 내용이다. 조사 결과를 정리할 때 원장/대표 소개, 철학, 장점, 장비, 상담 방식, 사후관리 등으로 분류해줘.
@@ -838,8 +1104,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 """
     elif homepage_mode == "홈페이지 정보 있음":
         homepage_research_section = """
-[홈페이지/업체 정보 조사 반영]
-홈페이지 정보 있음으로 선택되어 있지만 실제 입력 내용이 없다. 이 경우 원장/대표 소개, 철학, 장점, 장비, 사후관리 문구를 임의로 만들지 말 것.
+[공식 홈페이지 자료 조사]
+홈페이지 정보 있음으로 선택되어 있지만 URL/업체명 또는 입력 내용이 없다. 이 경우 원장/대표 소개, 철학, 장점, 장비, 사후관리 문구를 임의로 만들지 말 것.
 """
     else:
         homepage_research_section = """
@@ -861,6 +1127,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 원고 목적: {content_goal}
 {length_plan}
 {keyword_plan}
+{keyword_placement_text}
 희망 도입 화법: {voice_type}
 도입 화법 지시: {voice_instruction}
 희망 도입 첫문장 형태: {first_sentence_type}
@@ -1100,9 +1367,11 @@ D등급: 참고만 가능
 3.
 
 [6-3] 홈페이지/업체 정보 반영 설계
-중요: 홈페이지 정보가 제공된 경우에만 마무리에서 병원/업체/법무법인 소개를 허용한다.
+중요: 공식 홈페이지에서 확인된 경우에만 마무리에서 병원/업체/법무법인 소개를 허용한다.
 
 홈페이지 정보 제공 여부:
+확인한 공식 홈페이지/공식 채널:
+공식 홈페이지 확인 가능 여부:
 홈페이지 정보 요약:
 - 원장/대표 소개:
 - 진료/상담/운영 철학:
@@ -1137,6 +1406,8 @@ D등급: 참고만 가능
 마무리 재연결 문장 후보:
 마무리 재연결 근거 고민:
 홈페이지 정보 제공 여부:
+확인한 공식 홈페이지/공식 채널:
+공식 홈페이지 확인 가능 여부:
 홈페이지 정보 요약:
 마무리 반영 가능한 홈페이지 문장 후보:
 추천 달로썸 도입 방식:
@@ -1716,14 +1987,15 @@ def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
 - 모든 문단에 “힘드셨나요/불안하시죠”를 반복하지 말 것.
 - 공감문장을 많이 넣는 것이 아니라, 고민을 설명의 입구로 사용할 것."""
 
-def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info=""):
+def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_type, title_type, a_lines, b_lines, c_lines, extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", prompt_mode="달로썸 GPTs용", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info="", keyword_delivery_text="", keyword_placement_text=""):
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
     bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
     emotion_flow_plan = build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
-    keyword_plan = keyword_count_instruction(keyword, target_len)
+    keyword_plan = keyword_delivery_text.strip() if keyword_delivery_text and keyword_delivery_text.strip() else keyword_count_instruction(keyword, target_len)
+    keyword_placement_text = keyword_placement_text.strip() if keyword_placement_text else ""
     intro_type = intro_type or "자동 추천"
     title_type = title_type or "자동 추천"
     intro_plan = intro_style_instruction(intro_type)
@@ -1789,6 +2061,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 
 {length_plan}
 {keyword_plan}
+{keyword_placement_text}
 
 {emotion_flow_plan}
 
@@ -1809,7 +2082,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 3. A등급 공통 핵심정보는 본문 설명의 뼈대로 사용하되, 팩트만 나열하지 말고 B등급 고민에 답하는 방식으로 설명해줘.
 4. C등급은 말투 참고만 하고, 가짜 후기처럼 쓰지 마.
 5. 실제 Q&A나 후기 문장을 그대로 복사하지 마.
-6. 키워드 “{keyword}”는 제목에 1회만 넣고, 본문 키워드 횟수는 위 [키워드 반복 제한] 범위 안에서만 자연스럽게 사용해줘.
+6. 키워드 “{keyword}”는 위 [기본 납품 설정 / 키워드 요구사항]과 [키워드 배치 지도]를 우선해서 배치해줘. 빠진 문단이 생기지 않게 분산하고, 한 문단에 몰아넣지 마.
 7. 단정·과장 표현은 피하고, 개인 상태나 상황에 따라 달라질 수 있다는 신중한 표현을 사용해줘.
 8. 소제목을 포함하되, 문단 수는 위 분량 조건을 우선해 자연스럽게 조절해줘.
 9. 첫 문장은 “오늘은”, “이번 글에서는”, “알아보겠습니다”로 시작하지 마.
@@ -1905,8 +2178,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.6")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.6에서는 ① 조사 프롬프트 단계부터 홈페이지 정보를 입력해 원장/철학/장점을 조사 결과와 초안 프롬프트에 함께 반영할 수 있습니다.")
+st.title("📝 달로썸 원고 검수기 v5.8")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.8에서는 기본 납품 설정, 키워드 횟수·위치 배치표, 누락 문단 키워드 삽입 요청문까지 함께 생성합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1935,14 +2208,18 @@ with tab_research:
             r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
         r_target_len = resolve_target_length(r_length_preset, r_custom_length)
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
+        r_kw_settings = render_keyword_delivery_settings("research", r_keyword, r_target_len, expanded=False)
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
         st.divider()
-        st.subheader("홈페이지 정보 반영")
-        r_homepage_mode = st.radio("조사 단계 홈페이지/업체 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="r_homepage_mode")
-        r_homepage_info = st.text_area("홈페이지에서 확인한 원장/대표 소개·철학·장점", placeholder="예: 원장 약력, 진료 철학, 정품 장비, 상담 방식, 사후관리, 접근성 등 실제 홈페이지에서 확인한 내용만 붙여넣기", height=120, key="r_homepage_info")
-        st.caption("① 조사 프롬프트에도 이 정보가 들어갑니다. 입력한 정보 안에서만 원장 소개·철학·장점을 정리하게 합니다.")
+        st.subheader("홈페이지 자료 조사")
+        r_homepage_mode = st.radio("조사 단계 홈페이지/업체 자료", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="r_homepage_mode")
+        r_homepage_url = st.text_input("공식 홈페이지 URL 또는 병원/업체명", placeholder="예: https://... 또는 ○○비뇨기과 / ○○법무법인", key="r_homepage_url")
+        r_homepage_info = st.text_area("직접 확인한 홈페이지 내용이 있으면 추가 입력", placeholder="선택사항: 원장 약력, 진료 철학, 장비, 상담 방식 등. 비워두면 GPT가 위 URL/업체명으로 공식 홈페이지를 확인하도록 지시합니다.", height=100, key="r_homepage_info")
+        st.caption("① 조사 프롬프트에서 GPT가 공식 홈페이지를 함께 확인해 원장 소개·철학·장점을 뽑도록 지시합니다. 확인 불가 시 임의 생성 금지.")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type, r_homepage_mode, r_homepage_info)
+    r_keyword_delivery_text = keyword_delivery_setting_text(r_keyword, r_target_len, r_kw_settings)
+    r_keyword_placement_text = keyword_placement_plan_text(r_keyword, r_target_len, r_kw_settings)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type, r_homepage_mode, r_homepage_info, r_homepage_url, r_keyword_delivery_text, r_keyword_placement_text)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -1976,6 +2253,7 @@ with tab_design:
             d_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="d_paragraph_option")
         d_target_len = resolve_target_length(d_length_preset, d_custom_length)
         st.caption(f"적용될 분량 조건: {d_spacing_type} {d_target_len}자 내외 / {d_paragraph_option}")
+        d_kw_settings = render_keyword_delivery_settings("design", d_keyword, d_target_len, expanded=False)
         d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 제목에 키워드 1회, 본문 키워드 5회, 의료광고 위험표현 금지", height=100, key="d_extra_rules")
         st.divider()
         st.subheader("홈페이지 정보 반영")
@@ -2004,6 +2282,11 @@ with tab_design:
 
     d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
     st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
+
+    d_keyword_delivery_text = keyword_delivery_setting_text(d_keyword, d_target_len, d_kw_settings)
+    d_keyword_placement_text = keyword_placement_plan_text(d_keyword, d_target_len, d_kw_settings)
+    st.write("### 키워드 배치 지도")
+    st.text_area("초안 작성에 적용할 키워드 위치/횟수 기준", value=d_keyword_delivery_text + "\n\n" + d_keyword_placement_text, height=300)
 
     st.write("### 제목 후보")
     title_candidates = generate_title_candidates(d_keyword, d_topic, d_title_type, b_lines, d_field)
@@ -2054,7 +2337,7 @@ with tab_design:
     else:
         st.info("홈페이지 정보 없음: 마무리에서 본원/저희/철학/장점 문구를 임의 생성하지 않습니다.")
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info)
+    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_keyword_delivery_text, d_keyword_placement_text)
     claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info)
 
     st.write("## GPTs용 초안 프롬프트")
@@ -2101,6 +2384,7 @@ with tab_check:
         default_max = int(check_target_len * 1.15)
         min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
         max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
+        check_kw_settings = render_keyword_delivery_settings("check", keyword, check_target_len, expanded=False)
 
     draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
@@ -2133,6 +2417,13 @@ with tab_check:
                     st.warning(fg["message"])
                 elif fg["status"] == "missing":
                     st.error(fg["message"])
+
+        kw_report, kw_insert_prompt = keyword_placement_report(title, body, keyword, check_kw_settings)
+        st.write("## 키워드 배치 검수")
+        st.markdown(kw_report)
+        if kw_insert_prompt:
+            st.text_area("누락 문단 키워드 삽입 요청문", value=kw_insert_prompt, height=360)
+            st.download_button("키워드 삽입 요청문 txt 다운로드", kw_insert_prompt, file_name="dalrosom_keyword_insert_prompt.txt")
 
         if homepage_mode == "홈페이지 정보 있음" and homepage_info.strip():
             philosophy_source_label = "홈페이지 확인 정보 반영"

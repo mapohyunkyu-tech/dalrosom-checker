@@ -809,7 +809,7 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
 
 
-def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천"):
+def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info=""):
 
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
@@ -823,6 +823,29 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     voice_type = voice_type or "자동 추천"
     first_sentence_type = first_sentence_type or "자동 추천"
     first_sentence_plan = first_sentence_instruction(first_sentence_type, intro_type)
+    homepage_mode = homepage_mode or "홈페이지 정보 없음"
+    homepage_info = homepage_info.strip() if homepage_info else ""
+    homepage_block = homepage_info_force_block(homepage_mode, homepage_info)
+    homepage_research_section = ""
+    if homepage_mode == "홈페이지 정보 있음" and homepage_info:
+        homepage_research_section = f"""
+[홈페이지/업체 정보 조사 반영]
+아래 정보는 사용자가 홈페이지에서 확인해 입력한 내용이다. 조사 결과를 정리할 때 원장/대표 소개, 철학, 장점, 장비, 상담 방식, 사후관리 등으로 분류해줘.
+단, 아래 입력 내용에 없는 경력·장점·철학은 임의로 만들지 말 것.
+
+사용자 입력 홈페이지/업체 정보:
+{homepage_info}
+"""
+    elif homepage_mode == "홈페이지 정보 있음":
+        homepage_research_section = """
+[홈페이지/업체 정보 조사 반영]
+홈페이지 정보 있음으로 선택되어 있지만 실제 입력 내용이 없다. 이 경우 원장/대표 소개, 철학, 장점, 장비, 사후관리 문구를 임의로 만들지 말 것.
+"""
+    else:
+        homepage_research_section = """
+[홈페이지/업체 정보 조사 반영]
+별도 홈페이지/업체 정보가 제공되지 않았다. 마무리에서 ‘본원은’, ‘저희 병원은’, ‘저희 법무법인은’, ‘환자 중심’, ‘정직한 진료’, ‘풍부한 경험’, ‘신뢰’ 같은 철학·장점 문구를 임의로 만들지 말 것.
+"""
     voice_instruction = "도입 화법은 자료를 보고 가장 적합한 화법을 추천해줘." if voice_type == "자동 추천" else f"도입 화법은 반드시 '{voice_type}' 흐름을 우선 고려해줘."
     intro_instruction = "도입 8가지 방식은 자료를 보고 가장 적합한 유형을 추천해줘." if intro_type == "자동 추천" else f"도입 8가지 방식은 반드시 '{intro_type}' 방향을 우선 고려해줘."
     if title_type == "선택 안함":
@@ -846,6 +869,8 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
 도입 방식 지시: {intro_instruction}
 희망 제목 유형: {title_type}
 제목 유형 지시: {title_instruction}
+{homepage_research_section}
+{homepage_block}
 
 제목 기본 기준:
 - 제목에는 핵심 키워드 "{keyword}"를 맨 앞에 1회 넣는 것을 우선한다.
@@ -1074,6 +1099,24 @@ D등급: 참고만 가능
 2.
 3.
 
+[6-3] 홈페이지/업체 정보 반영 설계
+중요: 홈페이지 정보가 제공된 경우에만 마무리에서 병원/업체/법무법인 소개를 허용한다.
+
+홈페이지 정보 제공 여부:
+홈페이지 정보 요약:
+- 원장/대표 소개:
+- 진료/상담/운영 철학:
+- 장비/시스템/사후관리/접근성 등 장점:
+- 이번 주제와 연결 가능한 내용:
+마무리 반영 문장 후보 2개:
+1.
+2.
+주의:
+- 입력된 홈페이지 정보 안에서만 정리한다.
+- 없는 경력, 전문성, 장점, 철학을 만들지 않는다.
+- 마무리 반영은 1~2문장 정도로 제한한다.
+- 홈페이지 정보가 주제와 관련이 약하면 억지 홍보하지 않는다.
+
 [7] GPTs 초안 작성용 요약
 내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
 
@@ -1093,6 +1136,9 @@ D등급: 참고만 가능
 본문 고민 브릿지 근거 고민:
 마무리 재연결 문장 후보:
 마무리 재연결 근거 고민:
+홈페이지 정보 제공 여부:
+홈페이지 정보 요약:
+마무리 반영 가능한 홈페이지 문장 후보:
 추천 달로썸 도입 방식:
 제목 방향:
 도입부 방향:
@@ -1859,8 +1905,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v5.5")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.5에서는 홈페이지 정보가 있을 때 원장/철학/장점을 정리해 마무리에 반영할 수 있습니다.")
+st.title("📝 달로썸 원고 검수기 v5.6")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v5.6에서는 ① 조사 프롬프트 단계부터 홈페이지 정보를 입력해 원장/철학/장점을 조사 결과와 초안 프롬프트에 함께 반영할 수 있습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① GPT 조사 프롬프트", "② 원고 설계 모드", "③ 원고 검수 모드"])
 
@@ -1890,8 +1936,13 @@ with tab_research:
         r_target_len = resolve_target_length(r_length_preset, r_custom_length)
         st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
         r_extra = st.text_area("추가로 중점 조사할 내용", value="통증, 효과 시점, 유지기간, 울쎄라와 차이, 볼패임/얼굴살 빠짐 걱정, 부작용, 시술 후 관리", height=110, key="r_extra")
+        st.divider()
+        st.subheader("홈페이지 정보 반영")
+        r_homepage_mode = st.radio("조사 단계 홈페이지/업체 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="r_homepage_mode")
+        r_homepage_info = st.text_area("홈페이지에서 확인한 원장/대표 소개·철학·장점", placeholder="예: 원장 약력, 진료 철학, 정품 장비, 상담 방식, 사후관리, 접근성 등 실제 홈페이지에서 확인한 내용만 붙여넣기", height=120, key="r_homepage_info")
+        st.caption("① 조사 프롬프트에도 이 정보가 들어갑니다. 입력한 정보 안에서만 원장 소개·철학·장점을 정리하게 합니다.")
 
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type)
+    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type, r_homepage_mode, r_homepage_info)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 

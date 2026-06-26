@@ -4,9 +4,10 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v6.6", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v6.7", layout="wide")
 
 PURPOSES = [
+    "",
     "마케팅 회사 테스트 원고",
     "포트폴리오용 샘플 원고",
     "실제 에스테틱 광고 원고",
@@ -52,6 +53,22 @@ def default_tone_by_article_style(article_style="일반 정보성", writer_persp
     if style == "홈판 후킹형":
         return "제목과 첫문장은 멈추게 하는 말맛을 살리되, 본문은 낚시 없이 실제 확인 기준을 주는 정보성 문체"
     return "제3자가 기준을 정리해주는 담백한 정보성 문체"
+
+
+def tone_detail_text_area(label, article_style, writer_perspective="정보성 블로그 작성자", base_key="tone_detail", height=78):
+    """글 성격/작성자 관점이 바뀌면 기본 말투 문구도 같이 바뀌도록 동적 키를 쓴다."""
+    article_style = article_style or "일반 정보성"
+    writer_perspective = writer_perspective or "정보성 블로그 작성자"
+    digest = hashlib.md5(f"{base_key}|{article_style}|{writer_perspective}".encode("utf-8")).hexdigest()[:10]
+    widget_key = f"{base_key}_{digest}"
+    value = st.text_area(
+        label,
+        value=default_tone_by_article_style(article_style, writer_perspective),
+        height=height,
+        key=widget_key,
+    )
+    st.session_state[base_key] = value
+    return value
 
 def brand_voice_block(article_style="일반 정보성", sub_keywords="", brand_name="", conversion_goal="", brand_intensity="업체명 없음", tone_detail=""):
     article_style = article_style or "일반 정보성"
@@ -1200,7 +1217,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     topic = topic.strip() or "써마지 시술"
     keyword = keyword.strip() or topic
     field = field.strip() or "병원 / 의료"
-    content_goal = content_goal.strip() or "병원 블로그 원고 작성을 위한 사전 자료조사"
+    content_goal = (content_goal or "").strip()
     usecase_mode = usecase_mode or "블로그 정보성"
     usecase_block = usecase_style_block(usecase_mode, field)
     brand_block = brand_voice_block(article_style, sub_keywords, brand_name, conversion_goal, brand_intensity, tone_detail)
@@ -2420,7 +2437,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 
 
 st.title("📝 달로썸 원고 검수기 v6.5")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.6에서는 보조키워드·업체명·전환목표·글 성격·말투 세부지시를 ①/② 앞단에 추가했습니다.")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v6.7에서는 글 성격 변경 시 말투 세부 지시가 자동 갱신되고, 원고 목적 기본값을 빈칸으로 조정했습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
@@ -2437,7 +2454,7 @@ with tab_research:
         r_writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=writer_index(r_field, r_usecase_mode), key="r_writer_perspective")
         st.caption("분야에 맞게 앞에서 선택합니다. 에스테틱 원장으로 고정되지 않게 검수/초안까지 이어집니다.")
         r_article_style = st.selectbox("글 성격", ARTICLE_STYLES, index=0, key="r_article_style")
-        r_tone_detail = st.text_area("말투 세부 지시", value=default_tone_by_article_style(r_article_style, r_writer_perspective), height=78, key="r_tone_detail")
+        r_tone_detail = tone_detail_text_area("말투 세부 지시", r_article_style, r_writer_perspective, base_key="r_tone_detail")
         r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
         r_voice_choice = st.selectbox("희망 도입 화법", VOICE_TYPE_OPTIONS, index=0, key="r_voice_choice")
         st.caption("자동 추천을 두면 GPT가 조사자료 기준으로 화법을 추천합니다. 직접 선택하면 해당 화법을 우선 고려하게 합니다.")
@@ -2445,7 +2462,7 @@ with tab_research:
         st.caption("의문문으로 시작해야 하면 '의문문 강제'를 선택하세요. 체크리스트/FAQ/대화체도 따로 고를 수 있습니다.")
         r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
     with col2:
-        r_goal = st.text_input("원고 목적", value="병원 블로그 원고 작성을 위한 사전 자료조사", key="r_goal")
+        r_goal = st.text_input("원고 목적", value="", placeholder="예: 블로그 포트폴리오 및 지역 정보성 원고 / 체험수업 문의 유도", key="r_goal")
         st.subheader("브랜드·전환 설정")
         r_sub_keywords = st.text_input("보조 키워드", placeholder="예: 아행스어린이수영장, 덕이동 어린이 수영장, 어린이 수영 체험수업", key="r_sub_keywords")
         r_brand_name = st.text_input("업체명/브랜드명", placeholder="예: 아행스어린이수영장", key="r_brand_name")
@@ -2538,7 +2555,7 @@ with tab_design:
             d_writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=writer_index(d_field, d_usecase_mode), key="d_writer_perspective")
             st.caption("이 값이 초안 프롬프트와 검수 모드까지 이어집니다.")
             d_article_style = st.selectbox("글 성격", ARTICLE_STYLES, index=0, key="d_article_style")
-            d_tone_detail = st.text_area("말투 세부 지시", value=default_tone_by_article_style(d_article_style, d_writer_perspective), height=78, key="d_tone_detail")
+            d_tone_detail = tone_detail_text_area("말투 세부 지시", d_article_style, d_writer_perspective, base_key="d_tone_detail")
             d_sub_keywords = st.text_input("보조 키워드", placeholder="예: 아행스어린이수영장, 덕이동 어린이 수영장", key="d_sub_keywords")
             d_brand_name = st.text_input("업체명/브랜드명", placeholder="예: 아행스어린이수영장", key="d_brand_name")
             d_conversion_goal = st.text_input("전환 목표", placeholder="예: 무료 체험수업 문의 유도", key="d_conversion_goal")
@@ -2757,7 +2774,7 @@ with tab_check:
             brand_name = st.text_input("업체명/브랜드명", placeholder="예: 아행스어린이수영장", key="check_brand_name_manual")
             conversion_goal = st.text_input("전환 목표", placeholder="예: 무료 체험수업 문의 유도", key="check_conversion_goal_manual")
             brand_intensity = st.selectbox("업체명 반영 강도", BRAND_INTENSITY_OPTIONS, index=0, key="check_brand_intensity_manual")
-            tone_detail = st.text_area("말투 세부 지시", value=default_tone_by_article_style(article_style, writer_perspective), height=78, key="check_tone_detail_manual")
+            tone_detail = tone_detail_text_area("말투 세부 지시", article_style, writer_perspective, base_key="check_tone_detail_manual")
             keyword = st.text_input("키워드", value="복합성 피부 좋아지는 방법")
             title_input = st.text_input("제목", placeholder="제목을 따로 넣거나, 본문 첫 줄에 넣어도 됩니다.")
             selected_title_type = st.selectbox("현재 제목 유형", TITLE_TYPE_OPTIONS, index=0)

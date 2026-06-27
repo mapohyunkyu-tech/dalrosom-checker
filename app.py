@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v9.4.1", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v9.4.3", layout="wide")
 
 PURPOSES = [
     "",
@@ -5730,6 +5730,213 @@ def mined_db_snippet(mined_rows):
 
 
 
+def classify_stress_candidate(issue_type="", text="", count=1, high_count=0, products=None, reason=""):
+    """v9.4.3: 대량 샘플 이슈를 금지/주의/반복감점/보류로 자동 분류한다."""
+    issue_type = str(issue_type or "")
+    text = str(text or "")
+    reason = str(reason or "")
+    products = products or []
+    hay = " ".join([issue_type, text, reason, " ".join(products)])
+
+    action = "보류"
+    risk = "중간"
+    approve = "검토"
+    db_target = "보류 DB"
+    why = "문맥에 따라 달라질 수 있어 바로 금지하지 않고 보류합니다."
+    priority = 0
+
+    if count >= 3:
+        priority += 25
+    if count >= 5:
+        priority += 20
+    if high_count > 0:
+        priority += 30
+    if high_count >= 3:
+        priority += 20
+
+    hard_terms = [
+        "체험 위장", "체험한 척", "사진 제공형 몸반응", "후기 위장",
+        "100%", "무조건", "효과 확실", "승소", "완벽하게 복원", "완전 제거",
+        "제가 직접 받아보니", "방문해보니", "먹어보니", "써보니", "직접 치료받아보니",
+    ]
+    if any(t in hay for t in hard_terms):
+        action = "완전 금지"
+        risk = "높음"
+        approve = "승인 추천"
+        db_target = "완전 금지 DB"
+        why = "사진 제공형 체험 위장, 보장/과장, 의료·법률 단정처럼 납품 리스크가 큰 표현입니다."
+        priority += 60
+    elif any(t in hay for t in ["과장 보장", "보장", "새것처럼", "최고의", "확신이 들었습니다", "믿고 맡겨도"]):
+        action = "완전 금지" if high_count else "주의"
+        risk = "높음" if high_count else "중간"
+        approve = "승인 추천" if high_count or count >= 3 else "검토"
+        db_target = "완전 금지 DB" if high_count else "주의 DB"
+        why = "과장·보장처럼 보일 수 있어 업종에 따라 강하게 막거나 주의 처리해야 합니다."
+        priority += 45
+    elif any(t in hay for t in ["AI 안내문", "알아보겠습니다", "도움이 될 수 있습니다", "확인하는 것이 필요", "만족감을 느낄 수"]):
+        action = "반복 감점"
+        risk = "중간"
+        approve = "승인 추천" if count >= 3 else "검토"
+        db_target = "반복 감점 DB"
+        why = "한 번은 지나갈 수 있지만 반복되면 AI 안내문처럼 보이는 표현입니다."
+        priority += 35
+    elif any(t in hay for t in ["사진분석 과잉", "작업한 모습이 확인", "확인한 흐름", "사진상으로는 전체적으로", "따로 잡아둔 게", "겉만 훑고"]):
+        action = "반복 감점"
+        risk = "중간"
+        approve = "승인 추천" if count >= 3 else "검토"
+        db_target = "반복 감점 DB"
+        why = "사진 제공형 기자단에서 보고서 말투처럼 보입니다. 반복되면 AI 느낌이 강해집니다."
+        priority += 40
+    elif any(t in hay for t in ["토큰 과다", "말투 토큰", "ㅋㅋㅋㅋ", "ㅎㅎㅎㅎ", "!!!!", "군더더기 반복"]):
+        action = "반복 감점"
+        risk = "중간"
+        approve = "승인 추천" if count >= 3 else "검토"
+        db_target = "반복 감점 DB"
+        why = "말투 토큰은 무조건 금지보다 반복 감점이 맞습니다."
+        priority += 30
+    elif any(t in hay for t in ["문학 과잉", "과한 사람화", "마음속에서", "천천히 내려앉", "손바닥으로 얼굴"]):
+        action = "주의"
+        risk = "중간"
+        approve = "검토" if count < 3 else "승인 추천"
+        db_target = "주의 DB"
+        why = "상황에 따라 쓸 수는 있지만 과하면 작위적인 사람화처럼 보입니다."
+        priority += 25
+    elif any(t in hay for t in ["국어선생님", "문장 덜컹", "주어", "서술어", "번역체", "결론 도망"]):
+        action = "주의"
+        risk = "낮음" if high_count == 0 else "중간"
+        approve = "검토"
+        db_target = "주의 DB"
+        why = "문장론 문제는 문맥 판단이 필요하므로 자동 금지보다 주의로 모아둡니다."
+        priority += 15
+
+    # 반복이 적고 위험도도 낮으면 자동 승인 대상에서 내린다.
+    if count < 3 and high_count == 0 and action in {"주의", "반복 감점", "보류"}:
+        approve = "보류"
+        priority = max(priority - 15, 0)
+
+    return {
+        "추천처리": action,
+        "추천DB": db_target,
+        "추천위험도": risk,
+        "승인권장": approve,
+        "자동분류이유": why,
+        "우선순위": int(priority),
+    }
+
+
+def build_stress_auto_recommendations(issue_rows, top_n=30):
+    """전체 이슈에서 사용자가 볼 필요 있는 상위 DB 후보만 자동 추천한다."""
+    bucket = {}
+    for row in issue_rows or []:
+        text = str(row.get("내용", "")).strip()
+        issue_type = str(row.get("구분", "")).strip() or "기타"
+        if not text:
+            text = issue_type
+        key = (issue_type, text[:90])
+        if key not in bucket:
+            bucket[key] = {
+                "후보표현/패턴": text[:90],
+                "구분": issue_type,
+                "감지횟수": 0,
+                "높음횟수": 0,
+                "상품": set(),
+                "예시샘플": str(row.get("샘플", ""))[:180],
+                "이유": str(row.get("이유", "")),
+                "권장수정": str(row.get("수정", "")),
+            }
+        b = bucket[key]
+        b["감지횟수"] += 1
+        if str(row.get("위험등급", "")) == "높음":
+            b["높음횟수"] += 1
+        if row.get("상품"):
+            b["상품"].add(str(row.get("상품")))
+        if not b.get("권장수정") and row.get("수정"):
+            b["권장수정"] = str(row.get("수정", ""))
+        if not b.get("이유") and row.get("이유"):
+            b["이유"] = str(row.get("이유", ""))
+
+    recs = []
+    for b in bucket.values():
+        products = sorted(b.get("상품", []))
+        cls = classify_stress_candidate(
+            issue_type=b.get("구분", ""),
+            text=b.get("후보표현/패턴", ""),
+            count=b.get("감지횟수", 0),
+            high_count=b.get("높음횟수", 0),
+            products=products,
+            reason=b.get("이유", ""),
+        )
+        recs.append({
+            "선택": cls.get("승인권장") == "승인 추천",
+            "승인권장": cls.get("승인권장"),
+            "추천처리": cls.get("추천처리"),
+            "추천DB": cls.get("추천DB"),
+            "추천위험도": cls.get("추천위험도"),
+            "우선순위": cls.get("우선순위"),
+            "감지횟수": b.get("감지횟수"),
+            "높음횟수": b.get("높음횟수"),
+            "상품": ", ".join(products),
+            "구분": b.get("구분"),
+            "후보표현/패턴": b.get("후보표현/패턴"),
+            "이유": b.get("이유"),
+            "자동분류이유": cls.get("자동분류이유"),
+            "권장수정": b.get("권장수정"),
+            "예시샘플": b.get("예시샘플"),
+        })
+    recs.sort(key=lambda r: (r.get("우선순위", 0), r.get("감지횟수", 0), r.get("높음횟수", 0)), reverse=True)
+    return recs[:top_n]
+
+
+def recommendation_to_weird_row(row, field=""):
+    return {
+        "등록일": str(pd.Timestamp.now().date()),
+        "상품": str(row.get("상품", "")) or "대량 샘플",
+        "분야": field,
+        "문제유형": str(row.get("구분", row.get("추천처리", "기타"))),
+        "위험도": str(row.get("추천위험도", "중간")),
+        "원문": str(row.get("후보표현/패턴", "")),
+        "수정": str(row.get("권장수정", "")),
+        "메모": f"[{row.get('추천처리', '')}] {row.get('자동분류이유', '')} / 감지 {row.get('감지횟수', 0)}회",
+        "승격": row.get("추천처리") == "완전 금지",
+    }
+
+
+def recommendation_to_pattern_row(row, field=""):
+    return {
+        "등록일": str(pd.Timestamp.now().date()),
+        "상품": str(row.get("상품", "")) or "대량 샘플",
+        "분야": field,
+        "문제유형": str(row.get("구분", row.get("추천처리", "기타"))),
+        "위험도": str(row.get("추천위험도", "중간")),
+        "금지패턴": str(row.get("후보표현/패턴", "")),
+        "원문예시": str(row.get("예시샘플", "")),
+        "대체표현": str(row.get("권장수정", "")),
+        "메모": f"추천처리={row.get('추천처리', '')}, 추천DB={row.get('추천DB', '')}, 감지={row.get('감지횟수', 0)}회",
+    }
+
+
+def stress_auto_recommendation_guide():
+    return """
+**보는 법**
+- 여기 창이 DB 작업의 메인입니다. `전체 이슈`는 참고용이라 다 보지 않아도 됩니다.
+- 처음에는 `승인 추천만`을 보고, 애매한 문장을 찾고 싶을 때만 `애매/보류만`으로 바꾸면 됩니다.
+- `완전 금지`는 체험 위장·보장 표현처럼 바로 막아도 되는 것, `반복 감점`은 여러 번 나오면 AI 같아지는 것, `주의`는 문맥에 따라 조심할 표현입니다.
+- `보류`는 저장하지 않아도 됩니다. 나중에 2~3번 더 나오면 그때 `주의`나 `반복 감점`으로 올리면 됩니다.
+- 기본은 앱이 고르고, 사용자는 체크된 상위 후보만 승인/해제하면 됩니다.
+""".strip()
+
+
+def stress_approval_empty_guide():
+    return """
+아직 이 창에 후보가 안 보인다면 보통 둘 중 하나입니다.
+
+1. 위의 `대량 샘플 생성·검수 실행` 버튼을 아직 누르지 않았습니다.
+2. 샘플을 돌렸지만 자동 추천할 만큼 반복되거나 위험한 후보가 적습니다.
+
+운영은 간단합니다. 샘플을 돌린 뒤, 아래 `자동 추천 DB 후보`에서 `승인 추천만` 먼저 보고, 애매한 것은 `볼 후보`를 `애매/보류만`으로 바꿔 확인하면 됩니다.
+""".strip()
+
+
 
 # =========================
 # v8.8: 국어선생님 퇴고 DB · 이상 문체/문장론 기반 검수 엔진
@@ -7329,7 +7536,7 @@ def build_sample_shorts_script(topic="", keyword="", field="", length="30초", s
         body += ["여기서 많이 놓치는 건 마지막 확인입니다.", "여러분은 어떤 기준을 먼저 보시나요?"]
     return "\n".join(body)
 
-st.title("📝 달로썸 원고 검수기 v9.3")
+st.title("📝 달로썸 원고 검수기 v9.4.3")
 st.caption("GPT 조사 프롬프트 → 원고 설계 → 최종 원고 검수 → 사람화 수정 → 클라이언트 프리셋 → 수익 작업대까지 한 흐름으로 사용합니다. v9.3에서는 쇼츠 대본 전용 엔진을 추가해, 블로그 원고를 15초·30초·45초·60초·3분 이하 쇼츠 구조로 변환하고 후킹·자막·컷 구성·댓글 유도·위험표현 검수까지 정리합니다.")
 
 
@@ -8935,16 +9142,24 @@ with tab_stress:
 
     if st.button("대량 샘플 생성·검수 실행", type="primary", key="run_stress_test_btn"):
         rows, issue_rows, mined = run_stress_test(s_products, s_count, s_field)
+        auto_recs = build_stress_auto_recommendations(issue_rows, top_n=40)
         st.session_state["stress_rows"] = rows
         st.session_state["stress_issue_rows"] = issue_rows
         st.session_state["stress_mined"] = mined
+        st.session_state["stress_auto_recs"] = auto_recs
 
     rows = st.session_state.get("stress_rows", [])
     issue_rows = st.session_state.get("stress_issue_rows", [])
     mined = st.session_state.get("stress_mined", [])
+    auto_recs = st.session_state.get("stress_auto_recs", build_stress_auto_recommendations(issue_rows, top_n=40) if issue_rows else [])
+
+    st.write("### 2. DB 후보 승인판 · 애매한 건 여기서 봅니다")
+    st.info(stress_auto_recommendation_guide())
+    if not rows:
+        st.warning(stress_approval_empty_guide())
 
     if rows:
-        st.write("### 2. 요약")
+        st.write("### 3. 요약")
         total = len(rows)
         risky = sum(1 for r in rows if r.get("위험등급") != "양호")
         high = sum(1 for r in rows if r.get("위험등급") == "높음")
@@ -8958,13 +9173,83 @@ with tab_stress:
         summary_df = stress_summary_dataframe(rows)
         st.dataframe(summary_df, use_container_width=True)
 
-        st.write("### 3. 이상한 사람화/위험 문장 샘플")
+        st.write("### 4. 자동 추천 DB 후보 · 실제 저장/보류 처리 창")
+        st.caption("애매한 문장은 여기서 `볼 후보`를 `애매/보류만`으로 바꾸면 바로 볼 수 있습니다. 기본은 승인 추천만 확인하면 됩니다.")
+        rec_df = pd.DataFrame(auto_recs)
+        if not rec_df.empty:
+            rec_col1, rec_col2, rec_col3 = st.columns([1, 1, 1])
+            with rec_col1:
+                rec_approve_filter = st.selectbox("볼 후보", ["승인 추천만", "애매/보류만", "검토/승인", "전체"], index=0, key="stress_rec_approve_filter")
+            with rec_col2:
+                rec_action_filter = st.selectbox("처리 유형", ["전체", "완전 금지", "반복 감점", "주의", "보류"], index=0, key="stress_rec_action_filter")
+            with rec_col3:
+                rec_min_count = st.number_input("최소 감지횟수", min_value=1, max_value=50, value=1, step=1, key="stress_rec_min_count")
+
+            rec_show = rec_df.copy()
+            if rec_approve_filter == "승인 추천만":
+                rec_show = rec_show[rec_show["승인권장"] == "승인 추천"]
+            elif rec_approve_filter == "애매/보류만":
+                rec_show = rec_show[(rec_show["추천처리"] == "보류") | (rec_show["승인권장"] == "보류")]
+            elif rec_approve_filter == "검토/승인":
+                rec_show = rec_show[rec_show["승인권장"].isin(["승인 추천", "검토"])]
+            if rec_action_filter != "전체":
+                rec_show = rec_show[rec_show["추천처리"] == rec_action_filter]
+            rec_show = rec_show[rec_show["감지횟수"] >= int(rec_min_count)]
+
+            if rec_show.empty:
+                st.success("현재 필터에서는 후보가 없습니다. `볼 후보=전체` 또는 `처리 유형=전체`로 넓혀보세요. 보류 후보가 없으면 애매한 문장이 자동 추천 단계까지 올라오지 않은 상태입니다.")
+            else:
+                edit_cols = ["선택", "승인권장", "추천처리", "추천DB", "추천위험도", "감지횟수", "높음횟수", "상품", "구분", "후보표현/패턴", "자동분류이유", "권장수정"]
+                edited = st.data_editor(
+                    rec_show[edit_cols].head(80),
+                    use_container_width=True,
+                    height=420,
+                    key="stress_auto_rec_editor",
+                    column_config={"선택": st.column_config.CheckboxColumn("승인", help="저장할 후보만 체크")},
+                    disabled=[c for c in edit_cols if c != "선택"],
+                )
+                selected_auto = edited[edited["선택"] == True].to_dict("records") if not edited.empty else []
+                st.caption(f"현재 선택된 후보: {len(selected_auto)}개 · 기본적으로 앱이 체크한 것만 확인하면 됩니다.")
+
+                save_col1, save_col2, save_col3 = st.columns([1, 1, 1])
+                with save_col1:
+                    if st.button("선택 후보 → 이상 문장 DB 저장", key="save_selected_stress_to_weird_db"):
+                        existing = load_custom_weird_db()
+                        new_rows = [recommendation_to_weird_row(r, s_field) for r in selected_auto]
+                        save_custom_weird_db(existing + new_rows)
+                        st.success(f"이상 문장 DB에 {len(new_rows)}개 저장했습니다.")
+                with save_col2:
+                    if st.button("완전 금지/반복감점 → 패턴 DB 저장", key="save_selected_stress_to_pattern_db"):
+                        target_rows = [r for r in selected_auto if r.get("추천처리") in {"완전 금지", "반복 감점"}]
+                        pattern_rows = [recommendation_to_pattern_row(r, s_field) for r in target_rows]
+                        merged = merge_pattern_rows(load_custom_weird_pattern_db(), pattern_rows)
+                        save_custom_weird_pattern_db(merged)
+                        st.success(f"금지/반복감점 패턴 DB에 {len(pattern_rows)}개 반영했습니다.")
+                with save_col3:
+                    if st.button("선택 후보 JSON 다운로드 준비", key="prepare_stress_auto_json"):
+                        st.session_state["stress_selected_auto_json"] = selected_auto
+                        st.success("아래 다운로드 버튼에 선택 후보를 준비했습니다.")
+
+                selected_json = st.session_state.get("stress_selected_auto_json", selected_auto)
+                st.download_button(
+                    "선택 후보 JSON 다운로드",
+                    data=json.dumps(selected_json, ensure_ascii=False, indent=2).encode("utf-8-sig"),
+                    file_name="stress_auto_recommendations_selected.json",
+                    mime="application/json",
+                    key="download_stress_auto_selected",
+                )
+        else:
+            st.success("자동 추천 DB 후보가 없습니다. 전체 이슈가 없거나 강한 반복 패턴이 적은 상태입니다.")
+
+        st.write("### 5. 이상한 사람화/위험 문장 샘플 · 참고용")
+        st.caption("전체 흐름을 확인하는 화면입니다. DB 작업은 위의 자동 추천 후보에서 먼저 처리하세요.")
         result_df = pd.DataFrame(rows)
         level_filter = st.multiselect("위험등급 필터", ["높음", "중간", "낮음", "양호"], default=["높음", "중간", "낮음"], key="stress_level_filter")
         show_df = result_df[result_df["위험등급"].isin(level_filter)] if level_filter else result_df
         st.dataframe(show_df[["상품", "번호", "샘플유형", "위험등급", "이슈수", "레시피점수", "대표이슈", "대표수정", "샘플"]].head(300), use_container_width=True, height=360)
 
-        st.write("### 4. DB 보완 후보")
+        st.write("### 6. 기존 DB 보완 후보 · 전체 후보 참고용")
+        st.caption("이 영역은 원래 방식의 전체 후보 모음입니다. 보통은 위 자동 추천 후보만 승인하면 됩니다.")
         mined_df = pd.DataFrame(mined)
         if not mined_df.empty:
             st.dataframe(mined_df, use_container_width=True, height=330)
@@ -8980,7 +9265,7 @@ with tab_stress:
         else:
             st.success("이번 테스트에서는 강한 DB 보완 후보가 많지 않았습니다.")
 
-        st.write("### 5. 전체 이슈 로그")
+        st.write("### 6. 전체 이슈 로그 · 참고용")
         issue_df = pd.DataFrame(issue_rows)
         if not issue_df.empty:
             st.dataframe(issue_df.head(500), use_container_width=True, height=420)
@@ -9003,11 +9288,12 @@ with tab_stress:
     else:
         st.info("버튼을 누르면 상품별 샘플을 20~150개씩 생성해서 검수합니다. 기자단은 사진 제공형 기준으로, 쇼츠·홈피드·카페글은 각 문체 기준으로 테스트합니다.")
 
-    st.write("### 6. 이 탭을 쓰는 방식")
+    st.write("### 7. 이 탭을 쓰는 방식")
     st.markdown(
         """
-- 이상한 문장이 보이면 `DB 보완 후보`에서 표현과 수정 방향을 확인합니다.
-- 후보가 반복 감지되면 다음 버전의 `AWKWARD_HUMANIZATION_DB`나 `STRESS_AWKWARD_PATTERN_DB`에 추가합니다.
+- 먼저 `자동 추천 DB 후보`에서 `승인 추천`만 확인합니다. 전체 이슈를 다 볼 필요는 없습니다.
+- `완전 금지`는 바로 패턴 DB에 반영하고, `반복 감점`은 여러 번 나올 때만 감점되도록 관리합니다.
+- `주의/보류`는 이상 문장 DB에 저장해두고, 3회 이상 반복되면 패턴 후보로 승격합니다.
 - 기자단은 특히 `사진을 분석하는 말투`, `사진 제공형인데 체험한 척`, `꼼꼼/만족/확신 같은 근거 없는 칭찬`을 잡는 데 사용합니다.
 - 쇼츠는 `블로그 설명문 축약`, `토큰 과다`, `자극만 있고 정보 없음`을 잡습니다.
 - 홈피드는 `제목만 세고 본문 근거 없음`, `ㅋㅋ 과다`, `이슈성 약함`을 잡습니다.

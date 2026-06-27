@@ -4,7 +4,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v7.1", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v7.5", layout="wide")
 
 PURPOSES = [
     "",
@@ -44,13 +44,16 @@ def writer_index(field="", usecase_mode="", saved_value=None):
 ARTICLE_STYLES = ["일반 정보성", "대표 작성형 정보성", "매출 전환형 정보성", "홈피드 후킹형", "홈피드 수익형 블로그 글"]
 BRAND_INTENSITY_OPTIONS = ["업체명 없음", "본문 1회만", "본문 2~3회 자연 반영", "제목 포함"]
 
-HOMEFEED_CATEGORIES = ["리빙", "마트/코스트코/이마트/다이소", "뷰티/피부/헤어", "다이어트/건강관리", "연애/결혼/부부", "스포츠", "TV프로/연예/드라마", "육아/교육", "부업/돈/재택", "주식/코인/투자", "소비/절약", "기타 생활 이슈"]
+HOMEFEED_CATEGORIES = ["리빙/생활", "마트/편의점/다이소/코스트코", "패션/명품/잡화", "뷰티/피부/헤어", "다이어트/건강관리", "연애/결혼/부부", "스포츠", "TV프로/연예/드라마", "육아/교육", "부업/돈/재택", "주식/코인/경제", "소비/절약/가격비교", "IT/가전/디지털", "여행/맛집/핫플", "기타 생활 이슈"]
 HOMEFEED_TONES = ["내가 말하듯이 쓰는 밈형", "웃픈 현실형", "정보성이지만 말맛 있는 글", "반전형", "경고형", "공감 썰형"]
 HOMEFEED_HOOK_LEVELS = ["약함", "중간", "강함"]
 HOMEFEED_EXPERIENCE = ["직접 경험 있음", "자료 조사 기반", "일반 상황 정리"]
 HOMEFEED_REVENUE_PURPOSES = ["애드포스트", "쇼핑 커넥트", "체류시간", "댓글/저장 유도", "포트폴리오"]
+HOMEFEED_ISSUE_PERIODS = ["오늘", "최근 3일", "최근 7일", "최근 14일"]
 HOMEFEED_OVERSEAS_POLICIES = ["포함 안 함", "관련 있을 때만 포함", "반드시 포함"]
 HOMEFEED_OVERSEAS_USAGES = ["원문 팩트 확인용", "해외 반응 참고용", "국내 기사와 비교용", "제목 후킹 소재 참고용", "종합 활용"]
+HOMEFEED_OVERSEAS_SCOPES = ["자동 선택", "카테고리별 해외 원문", "공식 발표/원문 중심", "국내외 가격·출시 비교", "해외 반응/SNS 원문 보조", "글로벌 뉴스 전체", "시장·공시·기관자료 중심", "해외연예/IT 글로벌"]
+HOMEFEED_OVERSEAS_SOURCE_OPTIONS = ["공식 브랜드/제조사/판매처", "공식 기관/협회/리그", "글로벌 공식몰/국가별 가격 페이지", "Reuters/AP", "BBC/CNN/Guardian 등 주요 외신", "ESPN/The Athletic 등 스포츠 전문매체", "Vogue/WWD/Business of Fashion 등 패션 전문매체", "The Verge/TechCrunch/GSMArena 등 IT 전문매체", "Bloomberg/CNBC/WSJ/FT", "CoinDesk/Cointelegraph", "공식 공시/보고서/기관자료", "공식 SNS/유튜브 원문", "커뮤니티/SNS 반응은 보조만"]
 
 def homefeed_planning_block(category="", tone="", hook_level="", experience="", revenue_purpose="", issue_note="", overseas_policy="", overseas_usage=""):
     category = category or "생활 이슈"
@@ -68,7 +71,7 @@ def homefeed_planning_block(category="", tone="", hook_level="", experience="", 
 - 후킹 강도: {hook_level}
 - 경험 여부: {experience}
 - 수익 목적: {revenue_purpose}
-- 요즘 이슈성/생활 맥락: {issue_note if issue_note else '사용자가 입력한 주제와 조사 자료 안에서 확인한다.'}
+- 요즘 이슈성/생활 맥락: {issue_note if issue_note else '카테고리 안에서 수집된 이슈와 조사 자료 안에서 확인한다.'}
 - 해외자료 포함 여부: {overseas_policy}
 - 해외자료 활용 방식: {overseas_usage}
 - 홈피드형은 검색 키워드 반복보다 ‘생활 이슈성, 제목 후킹, 첫문장 공감, 말맛, 체류시간’을 우선한다.
@@ -76,7 +79,7 @@ def homefeed_planning_block(category="", tone="", hook_level="", experience="", 
 - 첫문장은 정의문이 아니라 실제 생활 장면, 웃픈 상황, 반전, 질문, 짧은 말걸기로 시작한다.
 - 직접 경험이 없으면 ‘제가 해봤는데’, ‘직접 사봤는데’, ‘수익이 났다’처럼 경험을 꾸미지 않는다.
 - 주식/코인/투자 주제는 매수·매도 권유, 수익 보장, 손실 없음, 특정 종목·코인 추천처럼 보이는 표현을 피하고 정보·리스크·관찰 포인트 중심으로 쓴다.
-- 스포츠·주식/코인·해외연예·IT처럼 해외 원문이 빠르거나 맥락이 중요한 주제는 해외자료를 함께 확인한다. 단, 해외자료 포함 여부가 ‘포함 안 함’이면 국내자료만 사용한다.
+- 스포츠·주식/코인·명품·패션·IT·해외연예처럼 해외 원문, 공식 출시, 가격, 공시, 현지 반응이 중요한 카테고리는 해외자료를 함께 확인한다. 단, 해외자료 포함 여부가 ‘포함 안 함’이면 국내자료만 사용한다.
 - 국내자료는 한국 독자 반응·댓글 분위기·홈피드 소재 확인용으로, 해외자료는 최초 보도·원문 팩트·해외 반응·깊은 맥락 확인용으로 구분한다.
 - 해외자료는 Reuters, AP, BBC, ESPN, 공식 구단/협회, Bloomberg, CNBC, CoinDesk 등 신뢰 가능한 원문·주요 매체를 우선한다.
 - 한 해외 매체의 단독 보도나 추측은 확정처럼 쓰지 말고 ‘해당 매체 보도에 따르면’, ‘가능성이 거론된다’ 정도로 처리한다.
@@ -1265,6 +1268,265 @@ def length_guidance(target_len, spacing_type, paragraph_option):
 - 각 문단의 문장 수를 억지로 늘리지 말고, 중복 설명을 줄인다.
 - 키워드는 자연스럽게 넣고, 분량을 맞추기 위해 키워드를 반복하지 않는다.
 - 짧은 테스트 원고에서는 키워드를 많이 넣기보다 독자 고민과 설명의 자연스러움을 우선한다."""
+
+
+def build_homefeed_research_prompt(category="", issue_period="최근 7일", focus_keyword="", tone="", hook_level="", experience="", revenue_purpose="", issue_note="", overseas_policy="", overseas_usage="", overseas_scope="", overseas_sources="", overseas_keywords="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", extra_focus=""):
+    """홈피드형은 업체형/검색형 프롬프트와 섞지 않고, 카테고리 기반 이슈 수집용으로 별도 생성한다."""
+    category = category or "생활 이슈"
+    issue_period = issue_period or "최근 7일"
+    focus_keyword = (focus_keyword or "").strip()
+    tone = tone or "정보성이지만 말맛 있는 글"
+    hook_level = hook_level or "중간"
+    experience = experience or "자료 조사 기반"
+    revenue_purpose = revenue_purpose or "애드포스트"
+    issue_note = (issue_note or "").strip()
+    overseas_policy = overseas_policy or "관련 있을 때만 포함"
+    overseas_usage = overseas_usage or "원문 팩트 확인용"
+    overseas_scope = overseas_scope or "자동 선택"
+    if isinstance(overseas_sources, (list, tuple)):
+        overseas_sources = ", ".join([str(x) for x in overseas_sources if str(x).strip()])
+    overseas_sources = (overseas_sources or "카테고리에 맞춰 자동 선택").strip()
+    overseas_keywords = (overseas_keywords or "국내 이슈를 기준으로 필요한 영문 검색어를 생성").strip()
+    extra_focus = (extra_focus or "").strip()
+    length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    focus_line = focus_keyword if focus_keyword else "특정 주제를 먼저 고정하지 말고, 카테고리 안에서 현재 반응이 큰 이슈를 먼저 찾는다."
+    issue_line = issue_note if issue_note else "카테고리 안에서 지금 사람들이 클릭·댓글·저장할 만한 생활 이슈를 찾는다."
+    extra_line = f"\n[추가 조건]\n{extra_focus}\n" if extra_focus else ""
+    return f"""[네이버 홈피드형 이슈 수집 프롬프트]
+
+목표:
+네이버 블로그에 발행할 홈피드형 글 소재를 찾기 위한 사전 자료조사를 해줘.
+이 프롬프트는 기존 업체형/검색형 원고 조사가 아니다. 업체명, 전환 목표, 홈페이지 정보, 키워드 반복 횟수, 병원/법률식 A/B/C 자료등급 구조를 사용하지 않는다. 홈피드형은 “무엇을 쓸지”를 먼저 정하는 게 아니라, 카테고리 안에서 지금 반응할 이슈를 수집한 뒤 글감으로 고른다.
+작업 구조는 “카테고리별 이슈 수집 → 사실/반응 정리 → 글 내용 설계 → 홈피드화” 순서로 진행한다.
+
+홈피드 카테고리: {category}
+이슈 수집 기간: {issue_period}
+관심 브랜드/상품/인물/팀/키워드 또는 좁힐 단서: {focus_line}
+글 톤: {tone}
+후킹 강도: {hook_level}
+경험 여부: {experience}
+수익 목적: {revenue_purpose}
+요즘 이슈성/생활 맥락: {issue_line}
+해외자료 포함 여부: {overseas_policy}
+해외자료 활용 방식: {overseas_usage}
+해외 수집 범위: {overseas_scope}
+우선 확인할 해외 소스: {overseas_sources}
+해외 검색어/영문 키워드: {overseas_keywords}
+{length_plan}
+
+수집 방식:
+- 주제와 핵심 키워드를 먼저 고정하지 말고, 홈피드 카테고리 안에서 최근 반응이 큰 이슈·신상·가격·논란·비교 포인트 후보를 먼저 찾는다.
+- 수집한 이슈를 그대로 요약하는 데서 끝내지 말고, 블로그 글로 쓸 수 있게 핵심 내용·국내 반응·해외 원문/가격/공식 발표·독자 반응 포인트·후킹 포인트로 정리한 뒤 홈피드형 제목/썸네일/첫문장으로 변환한다.
+- 국내자료는 한국 독자 반응, 댓글 분위기, 네이버에서 반응할 만한 제목 소재를 확인하는 용도로 본다.
+- 해외자료는 최초 보도, 공식 발표, 원문 팩트, 해외 가격/출시 정보, 해외 반응, 깊은 맥락을 확인하는 용도로 본다.
+- 해외 수집은 국내에서 반응 중인 이슈를 먼저 잡은 뒤, 그 이슈와 직접 연결되는 원문·공식 발표·해외 공식몰·국가별 가격·신뢰 외신만 확인한다.
+- 해외자료 포함 여부가 ‘포함 안 함’이면 국내자료만 사용한다.
+- 해외자료 포함 여부가 ‘반드시 포함’이어도 직접 관련 해외 원문이 부족하면 억지로 끼워 넣지 말고 “직접 관련 해외 원문 부족”으로 표시한다.
+- 스포츠·주식/코인·명품/패션·해외연예·IT처럼 해외 원문, 공식 출시, 가격 비교, 공시가 중요한 분야는 해외자료를 함께 확인한다.
+- 한 매체 단독 보도나 추측은 확정처럼 쓰지 말고 ‘해당 매체 보도에 따르면’, ‘가능성이 거론된다’ 정도로 분리한다.
+- 기사 문장을 그대로 베끼지 말고, 원고에 반영할 수 있는 패턴으로 재구성한다.
+
+카테고리별 수집 기준:
+- 패션/명품/잡화: 신상 출시, 가격 공개, 국내외 가격 차이, 품절/대기, 소재·디자인 변화, 소비자 반응, “예쁜데 가격에서 멈칫” 같은 현실 반응을 본다. 공식 브랜드/제조사/판매처, 글로벌 공식몰/국가별 가격 페이지, Vogue·WWD·Business of Fashion 같은 패션 전문매체를 우선 확인한다. 가격을 비판하더라도 “바가지/호구/무조건 손해”처럼 단정하지 말고 가격 부담·비교 심리·소비자 반응 중심으로 쓴다.
+- 스포츠: 축구만 뜻하지 않는다. 야구, 농구, 배구, 격투기, 골프, e스포츠, 국제대회, 올림픽/월드컵/아시안게임, 선수 이슈, 경기 결과, 이적·트레이드, 부상, 인터뷰, 팬 반응, 국내외 보도 차이를 본다. 공식 협회/리그/구단 발표를 1순위로 보고, Reuters/AP·ESPN·The Athletic·BBC 등 주요 매체를 보조로 확인한다. 기자 개인 SNS나 팬 계정은 원출처 확인 전 확정 근거로 쓰지 않는다.
+- 주식/코인/투자: 매수·매도 추천이 아니라 시장 이슈, 리스크, 변동성 이유, 확인할 지표 중심으로 정리한다. Bloomberg, CNBC, Reuters, CoinDesk, 공식 공시·기관 자료를 우선한다.
+- 연예/TV/드라마: 방송 장면 캡처와 기사 사진 무단 사용을 전제로 하지 말고, 이슈 흐름과 반응 포인트 중심으로 정리한다.
+- 리빙/마트/뷰티/다이어트: 최근 상품, 생활 변화, 가격, 후기 반응, 비교 고민, 계절성 이슈를 중심으로 본다.
+- 부업/돈/재택: 실제 수익 보장처럼 쓰지 말고, 사람들의 관심 이유, 구조, 주의점, 현실적인 확인 기준 중심으로 본다.
+- 소비/절약: 가격 변화, 할인/품절/후기 반응, 과소비 공감, 비교 포인트를 홈피드형 소재로 본다.
+
+이미지 사용 규칙:
+- 기사 사진, 방송 캡처, 선수·연예인 사진을 저장해서 블로그에 재업로드하는 방식은 권장하지 않는다.
+- 직접 만든 썸네일, 표 이미지, 타임라인 이미지, 링크 카드, 공식 허용 이미지, 공공누리·CC 이미지처럼 조건 확인 가능한 자료를 우선 제안한다.
+- 이미지가 필요한 경우 ‘어떤 이미지를 직접 만들면 좋은지’까지 같이 제안한다.
+
+출력 형식:
+
+[1] 최근 이슈 후보 10개
+각 후보마다 아래 형식으로 정리해줘.
+- 이슈명:
+- 관련 링크: 국내 1~3개 / 해외자료가 필요하면 해외 1~3개
+- 국내자료로 확인할 내용:
+- 해외자료로 확인할 내용:
+- 글감화 각도:
+- 현재 반응 이유:
+- 홈피드 적합도: 높음/보통/낮음
+- 클릭 포인트:
+- 댓글 갈림 포인트:
+- 사실 확인 난이도:
+- 사진/이미지 사용 주의:
+
+[2] 최우선 추천 이슈 3개
+- 왜 이 이슈가 홈피드에 더 맞는지 설명해줘.
+- 너무 위험하거나 루머성이 강하면 제외 이유를 적어줘.
+
+[3] 사실 확인 분류
+- 확정된 사실:
+- 보도에 따른 내용:
+- 추측/루머로 분리할 내용:
+- 쓰면 위험한 단정 표현:
+
+[4] 사람들이 반응할 포인트
+- 놀란 지점:
+- 갈리는 지점:
+- 웃긴 지점:
+- 불안하거나 궁금한 지점:
+- 댓글 달릴 만한 질문:
+
+[5] 제목 후보
+- 검색 안정형 제목 3개
+- 홈피드 후킹형 제목 10개
+주의: 후킹은 가능하지만 본문에서 답하지 않는 낚시성 제목은 제외한다.
+
+[6] 썸네일 문구 5개
+- 8~16자 정도로 짧게 제안한다.
+- 제목을 그대로 반복하지 않는다.
+
+[7] 첫문장 후보 5개
+- 정의문으로 시작하지 않는다.
+- 지나가다 멈추는 독자를 기준으로 말걸기, 웃픈 현실, 반전, 질문형으로 만든다.
+- 직접 경험이 없으면 경험한 척하지 않는다.
+
+[8] 원고 흐름 설계
+- 도입:
+- 이슈 요약:
+- 글 내용 핵심 정리:
+- 국내/해외 자료 비교 정리:
+- 사람들이 반응하는 이유:
+- 확인할 포인트:
+- 홈피드화 포인트:
+- 댓글/저장 유도 마무리:
+
+[9] 이미지/저작권 가이드
+- 쓰지 않는 게 좋은 이미지:
+- 비교적 안전한 이미지 방식:
+- 직접 제작할 썸네일 아이디어:
+- 출처 표기 주의:
+
+[10] 초안 작성용 요약
+아래 형식으로 짧게 정리해줘.
+- 선택 이슈:
+- 핵심 팩트:
+- 국내 반응 포인트:
+- 해외자료 반영 포인트:
+- 제목 방향:
+- 첫문장 방향:
+- 본문 흐름:
+- 홈피드화 포인트:
+- 피해야 할 표현:
+- 이미지 방향:
+- 분량/문단 반영 방향:
+{extra_line}
+"""
+
+
+
+def build_homefeed_draft_prompt(category="", issue_period="최근 7일", focus_keyword="", tone="", hook_level="", experience="", revenue_purpose="", issue_note="", overseas_policy="", overseas_usage="", overseas_scope="", overseas_sources="", overseas_keywords="", research_text="", extra_rules="", target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절"):
+    """홈피드 조사 결과를 기존 키워드/업체형 구조 없이 바로 블로그 초안으로 바꾸는 전용 프롬프트."""
+    category = category or "생활 이슈"
+    issue_period = issue_period or "최근 7일"
+    focus_keyword = (focus_keyword or "").strip() or "없음 - 조사 결과 안에서 가장 적합한 이슈를 선택"
+    tone = tone or "정보성이지만 말맛 있는 글"
+    hook_level = hook_level or "중간"
+    experience = experience or "자료 조사 기반"
+    revenue_purpose = revenue_purpose or "애드포스트"
+    issue_note = (issue_note or "").strip() or "조사 결과에서 확인된 이슈성과 반응 포인트를 우선 사용"
+    overseas_policy = overseas_policy or "관련 있을 때만 포함"
+    overseas_usage = overseas_usage or "원문 팩트 확인용"
+    overseas_scope = overseas_scope or "자동 선택"
+    if isinstance(overseas_sources, (list, tuple)):
+        overseas_sources = ", ".join([str(x) for x in overseas_sources if str(x).strip()])
+    overseas_sources = (overseas_sources or "카테고리에 맞춰 자동 선택").strip()
+    overseas_keywords = (overseas_keywords or "").strip() or "필요 시 조사 결과와 카테고리에 맞춰 자연스럽게 반영"
+    research_text = (research_text or "").strip() or "여기에 ① 조사 결과를 붙여넣는다."
+    extra_rules = (extra_rules or "").strip()
+    length_plan = length_guidance(target_len, spacing_type, paragraph_option)
+    extra_line = f"\n[추가 작성 조건]\n{extra_rules}\n" if extra_rules else ""
+    return f"""아래 조사 결과를 바탕으로 네이버 블로그에 올릴 홈피드형 초안을 작성해줘.
+
+중요:
+이 작업은 기존 검색형/업체형 원고가 아니다.
+주제와 핵심 키워드를 먼저 고정하지 말고, 조사 결과 안에서 홈피드에 가장 맞는 이슈 1개를 선택한 뒤 글로 만든다.
+업체명, 전환 목표, 홈페이지 홍보, 키워드 반복 횟수, A/B/C 자료등급 구조는 사용하지 않는다.
+
+작업 구조:
+1. 카테고리 안에서 수집된 이슈 확인
+2. 글감으로 쓸 이슈 1개 선택
+3. 국내자료와 해외자료가 있으면 사실·가격·출시·반응을 분리 정리
+4. 독자가 멈출 포인트를 뽑기
+5. 제목·썸네일·첫문장으로 홈피드화
+6. 블로그 본문 작성
+
+홈피드 카테고리: {category}
+이슈 수집 기간: {issue_period}
+관심 브랜드/상품/인물/팀/키워드: {focus_keyword}
+글 톤: {tone}
+후킹 강도: {hook_level}
+경험 여부: {experience}
+수익 목적: {revenue_purpose}
+이슈성/생활 맥락: {issue_note}
+해외자료 포함 여부: {overseas_policy}
+해외자료 활용 방식: {overseas_usage}
+해외 수집 범위: {overseas_scope}
+우선 확인한 해외 소스: {overseas_sources}
+해외 검색어/영문 키워드: {overseas_keywords}
+{length_plan}
+
+작성 기준:
+- 제목은 검색형 제목보다 홈피드에서 지나가다 멈추는 제목을 우선한다.
+- 단, 본문에서 실제로 답하지 않는 낚시성 제목은 쓰지 않는다.
+- 첫문장은 정의문으로 시작하지 않는다. 생활 장면, 가격 반응, 댓글 반응, 반전, 짧은 말걸기 중 하나로 시작한다.
+- 직접 경험이 없으면 “제가 사봤는데”, “직접 써봤는데”, “제가 해봤는데”처럼 경험을 꾸미지 않는다.
+- 국내외 가격, 출시 정보, 선수/연예인/브랜드 관련 내용은 조사 결과에서 확인된 범위 안에서만 쓴다.
+- 가격을 비판할 때는 “바가지”, “호구”, “무조건 손해”처럼 단정하지 말고, 소비자 입장에서 부담·비교·망설임 중심으로 표현한다.
+- 스포츠/연예/이슈 글은 기사 사진이나 방송 캡처를 저장해 쓰는 전제로 작성하지 않는다.
+- 주식/코인/투자 카테고리는 매수·매도 권유, 수익 보장, 손실 없음, 특정 종목 추천처럼 보이는 표현을 피한다.
+- 해외 단독 보도나 추측은 확정처럼 쓰지 말고 “해당 매체 보도에 따르면”, “가능성이 거론된다” 정도로 분리한다.
+- 애드포스트 수익, 홈피드 노출, 조회수, 구매전환을 보장하는 표현은 쓰지 않는다.
+
+출력 형식:
+
+[1] 선택 이슈
+- 선택한 이슈:
+- 이 이슈를 고른 이유:
+- 국내자료에서 확인한 내용:
+- 해외자료에서 확인한 내용:
+- 사실/보도/추측 구분:
+
+[2] 제목 후보
+- 검색 안정형 제목 3개
+- 홈피드 후킹형 제목 10개
+- 최종 추천 제목 1개
+
+[3] 썸네일 문구 5개
+- 8~16자 정도
+- 제목 반복 금지
+
+[4] 첫문장 후보 5개
+- 말걸기형
+- 웃픈 현실형
+- 반전형
+- 질문형
+- 짧은 한 줄형
+
+[5] 블로그 본문 초안
+- 제목
+- 도입
+- 이슈 요약
+- 국내/해외 자료 비교 또는 핵심 내용 정리
+- 사람들이 반응하는 이유
+- 확인할 포인트
+- 댓글/저장 유도 마무리
+
+[6] 이미지 방향
+- 쓰지 않는 게 좋은 이미지:
+- 직접 제작할 썸네일 아이디어:
+- 링크 카드/공식 이미지/공공누리 활용 가능성:
+- 출처 표기 주의:
+
+[조사 결과]
+{research_text}
+{extra_line}"""
 
 
 def build_research_prompt(topic, keyword, field, content_goal, extra_focus, target_len=1500, spacing_type="공백 제외", paragraph_option="분량 우선, 문단 수 자연 조절", intro_type="자동 추천", title_type="자동 추천", voice_type="자동 추천", first_sentence_type="자동 추천", homepage_mode="홈페이지 정보 없음", homepage_info="", homepage_url="", keyword_delivery_text="", keyword_placement_text="", usecase_mode="블로그 정보성", writer_perspective="정보성 블로그 작성자", article_style="일반 정보성", sub_keywords="", brand_name="", conversion_goal="", brand_intensity="업체명 없음", tone_detail="", homefeed_category="", homefeed_tone="", homefeed_hook="", homefeed_experience="", homefeed_revenue="", homefeed_issue="", homefeed_overseas_policy="", homefeed_overseas_usage=""):
@@ -2502,8 +2764,8 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v7.1")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v7.1에서는 홈피드형 빠른 설정을 앞에 노출했습니다.")
+st.title("📝 달로썸 원고 검수기 v7.5")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v7.5에서는 홈피드형을 전체 카테고리 공통 엔진으로 분리해 “카테고리 이슈 수집 → 국내/해외 자료 정리 → 글감 선택 → 홈피드화” 구조로 생성합니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
@@ -2526,71 +2788,149 @@ with tab_research:
         st.session_state["r_article_style"] = "홈피드 후킹형"
         st.info("홈피드형 기본값 적용: 분야=홈피드/생활 이슈, 원고 사용처=홈피드형, 글 성격=홈피드 후킹형")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")
-        r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
-        r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
-        r_usecase_mode = st.selectbox("원고 사용처", USECASE_MODES, index=0, key="r_usecase_mode")
-        st.caption(usecase_summary_line(r_usecase_mode))
-        r_writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=writer_index(r_field, r_usecase_mode), key="r_writer_perspective")
-        st.caption("분야에 맞게 앞에서 선택합니다. 에스테틱 원장으로 고정되지 않게 검수/초안까지 이어집니다.")
-        r_article_style = st.selectbox("글 성격", ARTICLE_STYLES, index=0, key="r_article_style")
-        r_tone_detail = tone_detail_text_area("말투 세부 지시", r_article_style, r_writer_perspective, base_key="r_tone_detail")
-        r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
-        r_voice_choice = st.selectbox("희망 도입 화법", VOICE_TYPE_OPTIONS, index=0, key="r_voice_choice")
-        st.caption("자동 추천을 두면 GPT가 조사자료 기준으로 화법을 추천합니다. 직접 선택하면 해당 화법을 우선 고려하게 합니다.")
-        r_first_sentence_type = st.selectbox("희망 도입 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="r_first_sentence_type")
-        st.caption("의문문으로 시작해야 하면 '의문문 강제'를 선택하세요. 체크리스트/FAQ/대화체도 따로 고를 수 있습니다.")
-        r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
-    with col2:
-        r_goal = st.text_input("원고 목적", value="", placeholder="예: 블로그 포트폴리오 및 지역 정보성 원고 / 체험수업 문의 유도", key="r_goal")
-        st.subheader("브랜드·전환 설정")
-        r_sub_keywords = st.text_input("보조 키워드", placeholder="예: 아행스어린이수영장, 덕이동 어린이 수영장, 어린이 수영 체험수업", key="r_sub_keywords")
-        r_brand_name = st.text_input("업체명/브랜드명", placeholder="예: 아행스어린이수영장", key="r_brand_name")
-        r_conversion_goal = st.text_input("전환 목표", placeholder="예: 무료 체험수업 문의 유도 / 네이버 예약 유도", key="r_conversion_goal")
-        r_brand_intensity = st.selectbox("업체명 반영 강도", BRAND_INTENSITY_OPTIONS, index=0, key="r_brand_intensity")
-        r_len_col1, r_len_col2 = st.columns(2)
-        with r_len_col1:
-            r_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="r_length_preset")
-            r_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="r_spacing_type")
-        with r_len_col2:
-            if r_length_preset == "직접 입력":
-                r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
-            else:
-                r_custom_length = int(re.sub(r"[^0-9]", "", r_length_preset) or 1500)
-                st.caption("직접 입력 글자수는 ‘희망 분량’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
-            r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
-        r_target_len = resolve_target_length(r_length_preset, r_custom_length)
-        st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
-        r_kw_settings = render_keyword_delivery_settings("research", r_keyword, r_target_len, expanded=False)
-        r_extra = st.text_area("추가로 중점 조사할 내용", value="", placeholder="홈피드형이면 요즘 이슈, 독자가 멈출 생활 상황, 비교 포인트를 적으세요.", height=110, key="r_extra")
-        if r_usecase_mode == "홈피드형" or r_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
-            st.subheader("홈피드 설계")
-            hf_col1, hf_col2 = st.columns(2)
-            with hf_col1:
-                r_homefeed_category = st.selectbox("홈피드 카테고리", HOMEFEED_CATEGORIES, index=0, key="r_homefeed_category")
-                r_homefeed_tone = st.selectbox("글 톤", HOMEFEED_TONES, index=1, key="r_homefeed_tone")
-                r_homefeed_hook = st.selectbox("후킹 강도", HOMEFEED_HOOK_LEVELS, index=1, key="r_homefeed_hook")
-            with hf_col2:
-                r_homefeed_experience = st.selectbox("경험 여부", HOMEFEED_EXPERIENCE, index=1, key="r_homefeed_experience")
-                r_homefeed_revenue = st.selectbox("수익 목적", HOMEFEED_REVENUE_PURPOSES, index=0, key="r_homefeed_revenue")
-                r_homefeed_issue = st.text_input("요즘 이슈성/생활 맥락", placeholder="예: 코스트코 신상, 다이어트 식단, 야구 이슈, 비트코인 변동성", key="r_homefeed_issue")
-                r_homefeed_overseas_policy = st.selectbox("해외자료 포함 여부", HOMEFEED_OVERSEAS_POLICIES, index=1, key="r_homefeed_overseas_policy")
-                r_homefeed_overseas_usage = st.selectbox("해외자료 활용 방식", HOMEFEED_OVERSEAS_USAGES, index=0, key="r_homefeed_overseas_usage")
-        else:
-            r_homefeed_category = r_homefeed_tone = r_homefeed_hook = r_homefeed_experience = r_homefeed_revenue = r_homefeed_issue = ""
-            r_homefeed_overseas_policy = r_homefeed_overseas_usage = ""
-        st.divider()
-        st.subheader("홈페이지 자료 조사")
-        r_homepage_mode = st.radio("조사 단계 홈페이지/업체 자료", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="r_homepage_mode")
-        r_homepage_url = st.text_input("공식 홈페이지 URL 또는 병원/업체명", placeholder="예: https://... 또는 ○○비뇨기과 / ○○법무법인", key="r_homepage_url")
-        r_homepage_info = st.text_area("직접 확인한 홈페이지 내용이 있으면 추가 입력", placeholder="선택사항: 원장 약력, 진료 철학, 장비, 상담 방식 등. 비워두면 GPT가 위 URL/업체명으로 공식 홈페이지를 확인하도록 지시합니다.", height=100, key="r_homepage_info")
-        st.caption("① 조사 프롬프트에서 GPT가 공식 홈페이지를 함께 확인해 원장 소개·철학·장점을 뽑도록 지시합니다. 확인 불가 시 임의 생성 금지.")
+    if r_homefeed_quick:
+        # 홈피드형은 기존 검색형/업체형의 주제·핵심키워드·업체명 구조를 쓰지 않는다.
+        r_field = "홈피드 / 생활 이슈"
+        r_usecase_mode = "홈피드형"
+        r_writer_perspective = "정보성 블로그 작성자"
+        r_article_style = "홈피드 후킹형"
+        r_tone_detail = default_tone_by_article_style(r_article_style, r_writer_perspective)
+        r_goal = "카테고리별 이슈를 수집·정리한 뒤 홈피드형 블로그 소재로 변환"
+        r_sub_keywords = ""
+        r_brand_name = ""
+        r_conversion_goal = ""
+        r_brand_intensity = "업체명 없음"
+        r_title_type = "선택 안함"
+        r_voice_choice = "자동 추천"
+        r_first_sentence_type = "자동 추천"
+        r_intro_type = "자동 추천"
+        r_homepage_mode = "홈페이지 정보 없음"
+        r_homepage_url = ""
+        r_homepage_info = ""
+        r_kw_settings = {"min_body": 0, "max_body": 0, "min_total": 0, "max_total": 0, "require_title": False, "require_first": False, "recommend_last": False}
+        st.info("홈피드 모드에서는 ‘주제/핵심 키워드’를 먼저 고정하지 않고, 카테고리 안에서 최근 이슈·출시·가격·반응 포인트를 먼저 수집합니다.")
 
-    r_keyword_delivery_text = keyword_delivery_setting_text(r_keyword, r_target_len, r_kw_settings)
-    r_keyword_placement_text = keyword_placement_plan_text(r_keyword, r_target_len, r_kw_settings)
-    research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type, r_homepage_mode, r_homepage_info, r_homepage_url, r_keyword_delivery_text, r_keyword_placement_text, r_usecase_mode, r_writer_perspective, r_article_style, r_sub_keywords, r_brand_name, r_conversion_goal, r_brand_intensity, r_tone_detail, r_homefeed_category, r_homefeed_tone, r_homefeed_hook, r_homefeed_experience, r_homefeed_revenue, r_homefeed_issue, r_homefeed_overseas_policy, r_homefeed_overseas_usage)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("홈피드 이슈 수집 설정")
+            r_homefeed_category = st.selectbox("홈피드 카테고리", HOMEFEED_CATEGORIES, index=HOMEFEED_CATEGORIES.index("스포츠"), key="r_homefeed_category")
+            r_homefeed_period = st.selectbox("이슈 수집 기간", HOMEFEED_ISSUE_PERIODS, index=2, key="r_homefeed_period")
+            r_homefeed_focus = st.text_input("관심 브랜드/상품/인물/팀/키워드(선택)", value="", placeholder="예: 샤넬 신상, 국내외 가격, 오타니, KBO, 다이소 품절템, 비트코인, 드라마명 / 비우면 카테고리 전체에서 찾음", key="r_homefeed_focus")
+            r_homefeed_issue = st.text_area("이슈 수집 방향/제외 조건", value="", placeholder="예: 국내외 가격 비교가 되는 이슈 / 댓글이 갈리는 이슈 / 단순 사실 나열 제외 / 사진 저작권 위험 낮은 소재 선호", height=110, key="r_homefeed_issue")
+            r_homefeed_tone = st.selectbox("글 톤", HOMEFEED_TONES, index=0, key="r_homefeed_tone")
+            r_homefeed_hook = st.selectbox("후킹 강도", HOMEFEED_HOOK_LEVELS, index=2, key="r_homefeed_hook")
+        with col2:
+            st.subheader("발행 목적·자료 범위")
+            r_homefeed_experience = st.selectbox("경험 여부", HOMEFEED_EXPERIENCE, index=1, key="r_homefeed_experience")
+            r_homefeed_revenue = st.selectbox("수익 목적", HOMEFEED_REVENUE_PURPOSES, index=0, key="r_homefeed_revenue")
+            r_homefeed_overseas_policy = st.selectbox("해외자료 포함 여부", HOMEFEED_OVERSEAS_POLICIES, index=1, key="r_homefeed_overseas_policy")
+            r_homefeed_overseas_usage = st.selectbox("해외자료 활용 방식", HOMEFEED_OVERSEAS_USAGES, index=0, key="r_homefeed_overseas_usage")
+            r_homefeed_overseas_scope = st.selectbox("해외 수집 범위", HOMEFEED_OVERSEAS_SCOPES, index=0, key="r_homefeed_overseas_scope")
+            r_homefeed_overseas_sources = st.multiselect("우선 확인할 해외 소스", HOMEFEED_OVERSEAS_SOURCE_OPTIONS, default=["공식 브랜드/제조사/판매처", "Reuters/AP", "공식 SNS/유튜브 원문"], key="r_homefeed_overseas_sources")
+            r_homefeed_overseas_keywords = st.text_input("해외 검색어/영문 키워드(선택)", value="", placeholder="예: Chanel new collection price, Shohei Ohtani injury, NBA trade, Bitcoin ETF / 비우면 자동 생성", key="r_homefeed_overseas_keywords")
+            r_len_col1, r_len_col2 = st.columns(2)
+            with r_len_col1:
+                r_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="r_length_preset")
+                r_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="r_spacing_type")
+            with r_len_col2:
+                if r_length_preset == "직접 입력":
+                    r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
+                else:
+                    r_custom_length = int(re.sub(r"[^0-9]", "", r_length_preset) or 1500)
+                    st.caption("직접 입력 글자수는 ‘희망 분량’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
+                r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
+            r_target_len = resolve_target_length(r_length_preset, r_custom_length)
+            st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
+            r_extra = st.text_area("추가 조건", value="", placeholder="예: 기사 사진 캡처 없이 쓸 수 있는 소재 위주 / 해외 원문 1개 이상 포함 / 루머성 강한 이슈 제외", height=110, key="r_extra")
+
+        # ② 설계 탭 호환용 내부값. 사용자 화면에는 주제/핵심키워드로 노출하지 않는다.
+        r_topic = f"홈피드 {r_homefeed_category} 이슈 수집·정리·홈피드화"
+        r_keyword = r_homefeed_focus.strip() or r_homefeed_category
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")
+            r_keyword = st.text_input("핵심 키워드", value="써마지", key="r_keyword")
+            r_field = st.selectbox("분야", RESEARCH_FIELDS, index=0, key="r_field")
+            r_usecase_mode = st.selectbox("원고 사용처", USECASE_MODES, index=0, key="r_usecase_mode")
+            st.caption(usecase_summary_line(r_usecase_mode))
+            r_writer_perspective = st.selectbox("작성자 관점", WRITER_PERSPECTIVES, index=writer_index(r_field, r_usecase_mode), key="r_writer_perspective")
+            st.caption("분야에 맞게 앞에서 선택합니다. 에스테틱 원장으로 고정되지 않게 검수/초안까지 이어집니다.")
+            r_article_style = st.selectbox("글 성격", ARTICLE_STYLES, index=0, key="r_article_style")
+            r_tone_detail = tone_detail_text_area("말투 세부 지시", r_article_style, r_writer_perspective, base_key="r_tone_detail")
+            r_title_type = st.selectbox("희망 제목 유형", TITLE_TYPE_OPTIONS, index=0, key="r_title_type")
+            r_voice_choice = st.selectbox("희망 도입 화법", VOICE_TYPE_OPTIONS, index=0, key="r_voice_choice")
+            st.caption("자동 추천을 두면 GPT가 조사자료 기준으로 화법을 추천합니다. 직접 선택하면 해당 화법을 우선 고려하게 합니다.")
+            r_first_sentence_type = st.selectbox("희망 도입 첫문장 형태", FIRST_SENTENCE_TYPES, index=0, key="r_first_sentence_type")
+            st.caption("의문문으로 시작해야 하면 '의문문 강제'를 선택하세요. 체크리스트/FAQ/대화체도 따로 고를 수 있습니다.")
+            r_intro_type = st.selectbox("희망 도입 8가지 방식", INTRO_TYPE_OPTIONS, index=0, key="r_intro_type")
+        with col2:
+            r_goal = st.text_input("원고 목적", value="", placeholder="예: 블로그 포트폴리오 및 지역 정보성 원고 / 체험수업 문의 유도", key="r_goal")
+            st.subheader("브랜드·전환 설정")
+            r_sub_keywords = st.text_input("보조 키워드", placeholder="예: 아행스어린이수영장, 덕이동 어린이 수영장, 어린이 수영 체험수업", key="r_sub_keywords")
+            r_brand_name = st.text_input("업체명/브랜드명", placeholder="예: 아행스어린이수영장", key="r_brand_name")
+            r_conversion_goal = st.text_input("전환 목표", placeholder="예: 무료 체험수업 문의 유도 / 네이버 예약 유도", key="r_conversion_goal")
+            r_brand_intensity = st.selectbox("업체명 반영 강도", BRAND_INTENSITY_OPTIONS, index=0, key="r_brand_intensity")
+            r_len_col1, r_len_col2 = st.columns(2)
+            with r_len_col1:
+                r_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="r_length_preset")
+                r_spacing_type = st.selectbox("분량 기준", SPACING_TYPES, index=0, key="r_spacing_type")
+            with r_len_col2:
+                if r_length_preset == "직접 입력":
+                    r_custom_length = st.number_input("직접 입력 글자수", min_value=500, max_value=6000, value=1500, step=100, key="r_custom_length")
+                else:
+                    r_custom_length = int(re.sub(r"[^0-9]", "", r_length_preset) or 1500)
+                    st.caption("직접 입력 글자수는 ‘희망 분량’을 ‘직접 입력’으로 선택할 때만 표시됩니다.")
+                r_paragraph_option = st.selectbox("문단 설정", PARAGRAPH_OPTIONS, index=0, key="r_paragraph_option")
+            r_target_len = resolve_target_length(r_length_preset, r_custom_length)
+            st.caption(f"조사 프롬프트에 들어갈 분량 조건: {r_spacing_type} {r_target_len}자 내외 / {r_paragraph_option}")
+            r_kw_settings = render_keyword_delivery_settings("research", r_keyword, r_target_len, expanded=False)
+            r_extra = st.text_area("추가로 중점 조사할 내용", value="", placeholder="홈피드형이면 요즘 이슈, 독자가 멈출 생활 상황, 비교 포인트를 적으세요.", height=110, key="r_extra")
+            if r_usecase_mode == "홈피드형" or r_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
+                st.subheader("홈피드 설계")
+                hf_col1, hf_col2 = st.columns(2)
+                with hf_col1:
+                    r_homefeed_category = st.selectbox("홈피드 카테고리", HOMEFEED_CATEGORIES, index=0, key="r_homefeed_category")
+                    r_homefeed_period = st.selectbox("이슈 수집 기간", HOMEFEED_ISSUE_PERIODS, index=2, key="r_homefeed_period")
+                    r_homefeed_tone = st.selectbox("글 톤", HOMEFEED_TONES, index=1, key="r_homefeed_tone")
+                    r_homefeed_hook = st.selectbox("후킹 강도", HOMEFEED_HOOK_LEVELS, index=1, key="r_homefeed_hook")
+                with hf_col2:
+                    r_homefeed_focus = st.text_input("관심 브랜드/상품/인물/팀/키워드(선택)", value="", placeholder="예: 샤넬 신상, 국내외 가격, 손흥민, KBO, 다이소 품절템", key="r_homefeed_focus")
+                    r_homefeed_experience = st.selectbox("경험 여부", HOMEFEED_EXPERIENCE, index=1, key="r_homefeed_experience")
+                    r_homefeed_revenue = st.selectbox("수익 목적", HOMEFEED_REVENUE_PURPOSES, index=0, key="r_homefeed_revenue")
+                    r_homefeed_issue = st.text_input("요즘 이슈성/생활 맥락", placeholder="예: 샤넬 신상 가격, 코스트코 신상, 야구 이슈, 비트코인 변동성", key="r_homefeed_issue")
+                    r_homefeed_overseas_policy = st.selectbox("해외자료 포함 여부", HOMEFEED_OVERSEAS_POLICIES, index=1, key="r_homefeed_overseas_policy")
+                    r_homefeed_overseas_usage = st.selectbox("해외자료 활용 방식", HOMEFEED_OVERSEAS_USAGES, index=0, key="r_homefeed_overseas_usage")
+                    r_homefeed_overseas_scope = st.selectbox("해외 수집 범위", HOMEFEED_OVERSEAS_SCOPES, index=0, key="r_homefeed_overseas_scope")
+                    r_homefeed_overseas_sources = st.multiselect("우선 확인할 해외 소스", HOMEFEED_OVERSEAS_SOURCE_OPTIONS, default=["공식 브랜드/제조사/판매처", "Reuters/AP", "공식 SNS/유튜브 원문"], key="r_homefeed_overseas_sources")
+                    r_homefeed_overseas_keywords = st.text_input("해외 검색어/영문 키워드(선택)", value="", placeholder="예: Chanel new collection price, Shohei Ohtani injury, Bitcoin ETF / 비우면 자동 생성", key="r_homefeed_overseas_keywords")
+            else:
+                r_homefeed_category = r_homefeed_tone = r_homefeed_hook = r_homefeed_experience = r_homefeed_revenue = r_homefeed_issue = ""
+                r_homefeed_overseas_policy = r_homefeed_overseas_usage = ""
+                r_homefeed_overseas_scope = "자동 선택"
+                r_homefeed_overseas_sources = []
+                r_homefeed_overseas_keywords = ""
+                r_homefeed_period = "최근 7일"
+                r_homefeed_focus = ""
+            st.divider()
+            st.subheader("홈페이지 자료 조사")
+            r_homepage_mode = st.radio("조사 단계 홈페이지/업체 자료", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="r_homepage_mode")
+            r_homepage_url = st.text_input("공식 홈페이지 URL 또는 병원/업체명", placeholder="예: https://... 또는 ○○비뇨기과 / ○○법무법인", key="r_homepage_url")
+            r_homepage_info = st.text_area("직접 확인한 홈페이지 내용이 있으면 추가 입력", placeholder="선택사항: 원장 약력, 진료 철학, 장비, 상담 방식 등. 비워두면 GPT가 위 URL/업체명으로 공식 홈페이지를 확인하도록 지시합니다.", height=100, key="r_homepage_info")
+            st.caption("① 조사 프롬프트에서 GPT가 공식 홈페이지를 함께 확인해 원장 소개·철학·장점을 뽑도록 지시합니다. 확인 불가 시 임의 생성 금지.")
+
+    r_keyword_delivery_text = keyword_delivery_setting_text(r_keyword, r_target_len, r_kw_settings) if not r_homefeed_quick else ""
+    r_keyword_placement_text = keyword_placement_plan_text(r_keyword, r_target_len, r_kw_settings) if not r_homefeed_quick else ""
+    is_homefeed_prompt = r_homefeed_quick or r_usecase_mode == "홈피드형" or r_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]
+    if is_homefeed_prompt:
+        research_prompt = build_homefeed_research_prompt(
+            r_homefeed_category, r_homefeed_period, r_homefeed_focus, r_homefeed_tone, r_homefeed_hook,
+            r_homefeed_experience, r_homefeed_revenue, r_homefeed_issue, r_homefeed_overseas_policy,
+            r_homefeed_overseas_usage, r_homefeed_overseas_scope, r_homefeed_overseas_sources, r_homefeed_overseas_keywords,
+            r_target_len, r_spacing_type, r_paragraph_option, r_extra
+        )
+    else:
+        research_prompt = build_research_prompt(r_topic, r_keyword, r_field, r_goal, r_extra, r_target_len, r_spacing_type, r_paragraph_option, r_intro_type, r_title_type, r_voice_choice, r_first_sentence_type, r_homepage_mode, r_homepage_info, r_homepage_url, r_keyword_delivery_text, r_keyword_placement_text, r_usecase_mode, r_writer_perspective, r_article_style, r_sub_keywords, r_brand_name, r_conversion_goal, r_brand_intensity, r_tone_detail, r_homefeed_category, r_homefeed_tone, r_homefeed_hook, r_homefeed_experience, r_homefeed_revenue, r_homefeed_issue, r_homefeed_overseas_policy, r_homefeed_overseas_usage)
     st.text_area("GPT에 복붙할 조사 프롬프트", value=research_prompt, height=650)
     st.download_button("조사 프롬프트 txt 다운로드", research_prompt, file_name="dalrosom_research_prompt.txt")
 
@@ -2599,15 +2939,15 @@ with tab_research:
 1. 위 프롬프트를 GPT에 붙여넣고 조사시킵니다.
 2. GPT가 준 링크를 직접 열어봅니다.
 3. 광고글, 오래된 글, 관련 없는 글은 버립니다.
-4. 확인한 자료 요약만 ② 원고 설계 모드에 붙여넣습니다.
-5. 프로그램이 A등급 공통정보, B등급 고민패턴, 도입화법, GPTs 초안 프롬프트를 만들어줍니다.
+4. 홈피드형이면 이슈 후보·선택 이슈·제목/썸네일/첫문장 결과를 ②에 붙여넣습니다.
+5. 일반 원고형이면 A/B/C 자료를 쓰고, 홈피드형이면 선택 이슈를 바로 블로그 초안으로 변환합니다.
 """)
 
 with tab_design:
     st.header("② 조사 결과 붙여넣기 · 원고 설계")
-    st.write("①에서 만든 조사 프롬프트로 받은 결과만 붙여넣으면, 원고 설계와 GPTs용 초안 프롬프트를 정리합니다.")
+    st.write("①에서 만든 조사 프롬프트로 받은 결과를 붙여넣으면, 일반 원고형은 A/B/C 설계로, 홈피드형은 선택 이슈 기반 초안 프롬프트로 정리합니다.")
     d_use_research_inputs = st.checkbox("① 의뢰 조건 입력값 그대로 사용", value=True, key="d_use_research_inputs")
-    st.caption("켜두면 ①에서 입력한 주제·키워드·분야·분량·키워드 납품 설정을 ②에서 다시 쓰지 않아도 됩니다.")
+    st.caption("켜두면 ①에서 입력한 값을 ②에서 다시 쓰지 않습니다. 홈피드형은 주제·키워드가 아니라 카테고리·관심단서·수집기간을 가져옵니다.")
 
     d_col1, d_col2 = st.columns(2)
     if d_use_research_inputs:
@@ -2623,6 +2963,8 @@ with tab_design:
         d_brand_intensity = st.session_state.get("r_brand_intensity", "업체명 없음")
         d_tone_detail = st.session_state.get("r_tone_detail", default_tone_by_article_style(d_article_style, d_writer_perspective))
         d_homefeed_category = st.session_state.get("r_homefeed_category", "")
+        d_homefeed_period = st.session_state.get("r_homefeed_period", "최근 7일")
+        d_homefeed_focus = st.session_state.get("r_homefeed_focus", "")
         d_homefeed_tone = st.session_state.get("r_homefeed_tone", "")
         d_homefeed_hook = st.session_state.get("r_homefeed_hook", "")
         d_homefeed_experience = st.session_state.get("r_homefeed_experience", "")
@@ -2630,13 +2972,19 @@ with tab_design:
         d_homefeed_issue = st.session_state.get("r_homefeed_issue", "")
         d_homefeed_overseas_policy = st.session_state.get("r_homefeed_overseas_policy", "")
         d_homefeed_overseas_usage = st.session_state.get("r_homefeed_overseas_usage", "")
+        d_homefeed_overseas_scope = st.session_state.get("r_homefeed_overseas_scope", "")
+        d_homefeed_overseas_sources = st.session_state.get("r_homefeed_overseas_sources", [])
+        d_homefeed_overseas_keywords = st.session_state.get("r_homefeed_overseas_keywords", "")
         d_length_preset = st.session_state.get("r_length_preset", "1500자")
         d_spacing_type = st.session_state.get("r_spacing_type", "공백 제외")
         d_custom_length = st.session_state.get("r_custom_length", 1500)
         d_paragraph_option = st.session_state.get("r_paragraph_option", "분량 우선, 문단 수 자연 조절")
         d_target_len = resolve_target_length(d_length_preset, d_custom_length)
         d_kw_settings = r_kw_settings
-        st.info(f"① 입력값 적용: 주제={d_topic} / 키워드={d_keyword} / 보조키워드={d_sub_keywords or '없음'} / 업체명={d_brand_name or '없음'} / 글 성격={d_article_style} / 전환목표={d_conversion_goal or '없음'} / 분야={d_field} / 사용처={d_usecase_mode} / 작성자 관점={d_writer_perspective} / 분량={d_spacing_type} {d_target_len}자 내외")
+        if d_usecase_mode == "홈피드형" or d_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
+            st.info(f"① 홈피드 입력값 적용: 카테고리={d_homefeed_category or '없음'} / 수집기간={d_homefeed_period} / 관심단서={d_homefeed_focus or '카테고리 전체'} / 글톤={d_homefeed_tone or '없음'} / 후킹={d_homefeed_hook or '없음'} / 해외자료={d_homefeed_overseas_policy or '없음'} / 분량={d_spacing_type} {d_target_len}자 내외")
+        else:
+            st.info(f"① 입력값 적용: 주제={d_topic} / 키워드={d_keyword} / 보조키워드={d_sub_keywords or '없음'} / 업체명={d_brand_name or '없음'} / 글 성격={d_article_style} / 전환목표={d_conversion_goal or '없음'} / 분야={d_field} / 사용처={d_usecase_mode} / 작성자 관점={d_writer_perspective} / 분량={d_spacing_type} {d_target_len}자 내외")
         with d_col1:
             d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
             st.caption(f"원고 사용처: {d_usecase_mode} / {usecase_summary_line(d_usecase_mode)}")
@@ -2653,6 +3001,8 @@ with tab_design:
                 st.write(f"말투: {d_tone_detail}")
                 if d_usecase_mode == "홈피드형" or d_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
                     st.write(f"홈피드 카테고리: {d_homefeed_category or '없음'}")
+                    st.write(f"이슈 수집 기간: {d_homefeed_period}")
+                    st.write(f"관심 단서: {d_homefeed_focus or '카테고리 전체'}")
                     st.write(f"홈피드 글 톤: {d_homefeed_tone or '없음'}")
                     st.write(f"후킹 강도: {d_homefeed_hook or '없음'}")
                     st.write(f"경험 여부: {d_homefeed_experience or '없음'}")
@@ -2660,6 +3010,9 @@ with tab_design:
                     st.write(f"이슈성: {d_homefeed_issue or '없음'}")
                     st.write(f"해외자료 포함: {d_homefeed_overseas_policy or '없음'}")
                     st.write(f"해외자료 활용: {d_homefeed_overseas_usage or '없음'}")
+                    st.write(f"해외 수집 범위: {d_homefeed_overseas_scope or '없음'}")
+                    st.write(f"해외 우선 소스: {', '.join(d_homefeed_overseas_sources) if isinstance(d_homefeed_overseas_sources, list) and d_homefeed_overseas_sources else '없음'}")
+                    st.write(f"해외 검색어: {d_homefeed_overseas_keywords or '자동'}")
     else:
         with d_col1:
             d_topic = st.text_input("주제", value="써마지 시술", key="d_topic")
@@ -2678,6 +3031,8 @@ with tab_design:
             if d_usecase_mode == "홈피드형" or d_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
                 st.subheader("홈피드 설계")
                 d_homefeed_category = st.selectbox("홈피드 카테고리", HOMEFEED_CATEGORIES, index=0, key="d_homefeed_category")
+                d_homefeed_period = st.selectbox("이슈 수집 기간", HOMEFEED_ISSUE_PERIODS, index=2, key="d_homefeed_period")
+                d_homefeed_focus = st.text_input("관심 브랜드/상품/인물/팀/키워드(선택)", placeholder="예: 샤넬 신상, 국내외 가격, 손흥민, KBO, 다이소 품절템", key="d_homefeed_focus")
                 d_homefeed_tone = st.selectbox("글 톤", HOMEFEED_TONES, index=1, key="d_homefeed_tone")
                 d_homefeed_hook = st.selectbox("후킹 강도", HOMEFEED_HOOK_LEVELS, index=1, key="d_homefeed_hook")
                 d_homefeed_experience = st.selectbox("경험 여부", HOMEFEED_EXPERIENCE, index=1, key="d_homefeed_experience")
@@ -2685,9 +3040,17 @@ with tab_design:
                 d_homefeed_issue = st.text_input("요즘 이슈성/생활 맥락", placeholder="예: 코스트코 신상, 주식시장 변동성, 드라마 화제 장면", key="d_homefeed_issue")
                 d_homefeed_overseas_policy = st.selectbox("해외자료 포함 여부", HOMEFEED_OVERSEAS_POLICIES, index=1, key="d_homefeed_overseas_policy")
                 d_homefeed_overseas_usage = st.selectbox("해외자료 활용 방식", HOMEFEED_OVERSEAS_USAGES, index=0, key="d_homefeed_overseas_usage")
+                d_homefeed_overseas_scope = st.selectbox("해외 수집 범위", HOMEFEED_OVERSEAS_SCOPES, index=0, key="d_homefeed_overseas_scope")
+                d_homefeed_overseas_sources = st.multiselect("우선 확인할 해외 소스", HOMEFEED_OVERSEAS_SOURCE_OPTIONS, default=["공식 브랜드/제조사/판매처", "Reuters/AP", "공식 SNS/유튜브 원문"], key="d_homefeed_overseas_sources")
+                d_homefeed_overseas_keywords = st.text_input("해외 검색어/영문 키워드(선택)", placeholder="예: Chanel new collection price, Shohei Ohtani injury, Bitcoin ETF", key="d_homefeed_overseas_keywords")
             else:
                 d_homefeed_category = d_homefeed_tone = d_homefeed_hook = d_homefeed_experience = d_homefeed_revenue = d_homefeed_issue = ""
+                d_homefeed_period = "최근 7일"
+                d_homefeed_focus = ""
                 d_homefeed_overseas_policy = d_homefeed_overseas_usage = ""
+                d_homefeed_overseas_scope = ""
+                d_homefeed_overseas_sources = []
+                d_homefeed_overseas_keywords = ""
         with d_col2:
             d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
             st.caption(f"원고 사용처: {d_usecase_mode} / {usecase_summary_line(d_usecase_mode)}")
@@ -2716,116 +3079,150 @@ with tab_design:
 
     research_text = st.text_area("GPT 조사 결과 붙여넣기", height=360, placeholder="①에서 만든 조사 프롬프트를 GPT에 붙여넣고, GPT가 정리해준 조사 결과를 여기에 붙여넣으세요. 주제·키워드·분량은 다시 안 써도 됩니다.", key="research_text")
 
-    counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
-    st.write("### 화법 선택")
-    recommended_voice = recommend_voice_type(d_field, d_topic, d_keyword, research_text)
-    d_voice_choice = st.selectbox("메인 화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
-    d_voice = recommended_voice if d_voice_choice == "자동 추천" else d_voice_choice
-    st.caption(f"자동 추천 화법: {recommended_voice} / 최종 적용 화법: {d_voice}")
-    st.session_state["applied_voice_type"] = d_voice
+    if d_usecase_mode == "홈피드형" or d_article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글"]:
+        st.write("### 홈피드형 글감 선택·초안 변환")
+        st.info("홈피드형 ② 단계는 A/B/C 자료등급이나 키워드 배치 지도를 쓰지 않습니다. ① 조사 결과에서 이슈 1개를 고르고, 제목·썸네일·첫문장·본문으로 바로 변환합니다.")
+        homefeed_draft_prompt = build_homefeed_draft_prompt(
+            d_homefeed_category,
+            d_homefeed_period if 'd_homefeed_period' in locals() else "최근 7일",
+            d_homefeed_focus if 'd_homefeed_focus' in locals() else "",
+            d_homefeed_tone,
+            d_homefeed_hook,
+            d_homefeed_experience,
+            d_homefeed_revenue,
+            d_homefeed_issue,
+            d_homefeed_overseas_policy,
+            d_homefeed_overseas_usage,
+            d_homefeed_overseas_scope if 'd_homefeed_overseas_scope' in locals() else "자동 선택",
+            d_homefeed_overseas_sources if 'd_homefeed_overseas_sources' in locals() else [],
+            d_homefeed_overseas_keywords if 'd_homefeed_overseas_keywords' in locals() else "",
+            research_text,
+            d_extra_rules,
+            d_target_len,
+            d_spacing_type,
+            d_paragraph_option,
+        )
+        st.write("## 홈피드형 초안 프롬프트")
+        st.text_area(
+            "GPTs에 복붙",
+            value=homefeed_draft_prompt,
+            height=620,
+            key=dynamic_widget_key("homefeed_draft_prompt_live", d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage, research_text, d_extra_rules, d_target_len)
+        )
+        st.download_button("홈피드형 초안 프롬프트 txt 다운로드", homefeed_draft_prompt, file_name="dalrosom_homefeed_draft_prompt.txt", key=dynamic_widget_key("homefeed_draft_download", homefeed_draft_prompt))
+        st.write("### 홈피드형 사용 순서")
+        st.write("1. ① 조사 프롬프트로 이슈 후보를 수집합니다. 2. 조사 결과를 여기에 붙여넣습니다. 3. 위 초안 프롬프트를 GPTs에 넣어 선택 이슈 1개를 본문으로 만듭니다. 4. 이미지 방향은 직접 제작/링크카드/공식 허용 이미지 위주로 확인합니다.")
+    else:
+        counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
+        st.write("### 화법 선택")
+        recommended_voice = recommend_voice_type(d_field, d_topic, d_keyword, research_text)
+        d_voice_choice = st.selectbox("메인 화법 선택", VOICE_TYPE_OPTIONS, index=0, key="d_voice")
+        d_voice = recommended_voice if d_voice_choice == "자동 추천" else d_voice_choice
+        st.caption(f"자동 추천 화법: {recommended_voice} / 최종 적용 화법: {d_voice}")
+        st.session_state["applied_voice_type"] = d_voice
 
-    recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
-    d_title_choice = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=TITLE_TYPE_OPTIONS.index("자동 추천"), key="d_title_type_choice")
-    d_title_type = recommended_title if d_title_choice == "자동 추천" else d_title_choice
-    st.caption(f"자동 추천 제목 유형: {recommended_title} / 최종 적용 제목 유형: {d_title_type}")
-    st.session_state["applied_title_type"] = d_title_type
+        recommended_title = recommend_title_style(d_field, d_topic, d_keyword, research_text)
+        d_title_choice = st.selectbox("제목 유형 선택", TITLE_TYPE_OPTIONS, index=TITLE_TYPE_OPTIONS.index("자동 추천"), key="d_title_type_choice")
+        d_title_type = recommended_title if d_title_choice == "자동 추천" else d_title_choice
+        st.caption(f"자동 추천 제목 유형: {recommended_title} / 최종 적용 제목 유형: {d_title_type}")
+        st.session_state["applied_title_type"] = d_title_type
 
-    recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
-    d_intro_choice = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPE_OPTIONS, index=0, key="d_intro_type_choice")
-    d_intro_type = recommended_intro if d_intro_choice == "자동 추천" else d_intro_choice
-    st.caption(f"자동 추천 도입 방식: {recommended_intro} / 최종 적용 도입 방식: {d_intro_type}")
-    st.session_state["applied_intro_type"] = d_intro_type
+        recommended_intro = recommend_intro_style(d_field, d_topic, d_keyword, research_text, d_voice)
+        d_intro_choice = st.selectbox("달로썸 도입 8가지 방식 선택", INTRO_TYPE_OPTIONS, index=0, key="d_intro_type_choice")
+        d_intro_type = recommended_intro if d_intro_choice == "자동 추천" else d_intro_choice
+        st.caption(f"자동 추천 도입 방식: {recommended_intro} / 최종 적용 도입 방식: {d_intro_type}")
+        st.session_state["applied_intro_type"] = d_intro_type
 
-    d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
-    st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
-    st.session_state["applied_first_sentence_type"] = d_first_sentence_type
-    st.session_state["applied_topic"] = d_topic
-    st.session_state["applied_keyword"] = d_keyword
-    st.session_state["applied_field"] = d_field
-    st.session_state["applied_content_type"] = d_content_type
-    st.session_state["applied_usecase_mode"] = d_usecase_mode
-    st.session_state["applied_writer_perspective"] = d_writer_perspective
-    st.session_state["applied_article_style"] = d_article_style
-    st.session_state["applied_sub_keywords"] = d_sub_keywords
-    st.session_state["applied_brand_name"] = d_brand_name
-    st.session_state["applied_conversion_goal"] = d_conversion_goal
-    st.session_state["applied_brand_intensity"] = d_brand_intensity
-    st.session_state["applied_tone_detail"] = d_tone_detail
-    st.session_state["applied_target_len"] = d_target_len
-    st.session_state["applied_spacing_type"] = d_spacing_type
-    st.session_state["applied_homepage_mode"] = d_homepage_mode
-    st.session_state["applied_homepage_info"] = d_homepage_info
-    st.session_state["applied_keyword_settings"] = d_kw_settings
+        d_first_sentence_type = st.selectbox("도입 첫문장 형태 선택", FIRST_SENTENCE_TYPES, index=0, key="d_first_sentence_type")
+        st.caption("초안을 의문문으로 시작시키고 싶으면 여기서 '의문문 강제'를 선택하세요. 화법과 별도로 적용됩니다.")
+        st.session_state["applied_first_sentence_type"] = d_first_sentence_type
+        st.session_state["applied_topic"] = d_topic
+        st.session_state["applied_keyword"] = d_keyword
+        st.session_state["applied_field"] = d_field
+        st.session_state["applied_content_type"] = d_content_type
+        st.session_state["applied_usecase_mode"] = d_usecase_mode
+        st.session_state["applied_writer_perspective"] = d_writer_perspective
+        st.session_state["applied_article_style"] = d_article_style
+        st.session_state["applied_sub_keywords"] = d_sub_keywords
+        st.session_state["applied_brand_name"] = d_brand_name
+        st.session_state["applied_conversion_goal"] = d_conversion_goal
+        st.session_state["applied_brand_intensity"] = d_brand_intensity
+        st.session_state["applied_tone_detail"] = d_tone_detail
+        st.session_state["applied_target_len"] = d_target_len
+        st.session_state["applied_spacing_type"] = d_spacing_type
+        st.session_state["applied_homepage_mode"] = d_homepage_mode
+        st.session_state["applied_homepage_info"] = d_homepage_info
+        st.session_state["applied_keyword_settings"] = d_kw_settings
 
-    d_keyword_delivery_text = keyword_delivery_setting_text(d_keyword, d_target_len, d_kw_settings)
-    d_keyword_placement_text = keyword_placement_plan_text(d_keyword, d_target_len, d_kw_settings)
-    st.write("### 키워드 배치 지도")
-    st.text_area("초안 작성에 적용할 키워드 위치/횟수 기준", value=d_keyword_delivery_text + "\n\n" + d_keyword_placement_text, height=300)
+        d_keyword_delivery_text = keyword_delivery_setting_text(d_keyword, d_target_len, d_kw_settings)
+        d_keyword_placement_text = keyword_placement_plan_text(d_keyword, d_target_len, d_kw_settings)
+        st.write("### 키워드 배치 지도")
+        st.text_area("초안 작성에 적용할 키워드 위치/횟수 기준", value=d_keyword_delivery_text + "\n\n" + d_keyword_placement_text, height=300)
 
-    st.write("### 제목 후보")
-    title_candidates = generate_title_candidates(d_keyword, d_topic, d_title_type, b_lines, d_field)
-    for cand in title_candidates:
-        length_note = "✅ 30자 이내" if len(cand) <= 30 else f"⚠️ {len(cand)}자"
-        st.info(f"{cand}  ·  {length_note}")
+        st.write("### 제목 후보")
+        title_candidates = generate_title_candidates(d_keyword, d_topic, d_title_type, b_lines, d_field)
+        for cand in title_candidates:
+            length_note = "✅ 30자 이내" if len(cand) <= 30 else f"⚠️ {len(cand)}자"
+            st.info(f"{cand}  ·  {length_note}")
 
-    st.write("### 자료 등급 카운트")
-    st.table(pd.DataFrame([{"구분": k, "감지 수": v} for k, v in counts.items()]))
+        st.write("### 자료 등급 카운트")
+        st.table(pd.DataFrame([{"구분": k, "감지 수": v} for k, v in counts.items()]))
 
-    cc1, cc2, cc3 = st.columns(3)
-    with cc1:
-        st.write("### A등급 공통 핵심정보 후보")
-        if a_lines:
-            for x in a_lines:
-                st.info(x)
-        else:
-            st.warning("A등급 공통정보 후보가 약합니다. GPT 조사 결과의 [2] A등급 공통 핵심정보 섹션을 붙여넣어 주세요.")
-    with cc2:
-        st.write("### B등급 고민패턴 후보")
-        if b_lines:
-            for x in b_lines:
-                st.warning(x)
-        else:
-            st.warning("B등급 고민패턴 후보가 약합니다. 실제 질문/댓글/상담글 요약을 더 넣어주세요.")
-    with cc3:
-        st.write("### C등급 말맛 참고 후보")
-        if c_lines:
-            for x in c_lines:
-                st.success(x)
-        else:
-            st.info("C등급 말맛 참고는 없어도 됩니다. 단, 후기형 원고라면 있으면 좋습니다.")
+        cc1, cc2, cc3 = st.columns(3)
+        with cc1:
+            st.write("### A등급 공통 핵심정보 후보")
+            if a_lines:
+                for x in a_lines:
+                    st.info(x)
+            else:
+                st.warning("A등급 공통정보 후보가 약합니다. GPT 조사 결과의 [2] A등급 공통 핵심정보 섹션을 붙여넣어 주세요.")
+        with cc2:
+            st.write("### B등급 고민패턴 후보")
+            if b_lines:
+                for x in b_lines:
+                    st.warning(x)
+            else:
+                st.warning("B등급 고민패턴 후보가 약합니다. 실제 질문/댓글/상담글 요약을 더 넣어주세요.")
+        with cc3:
+            st.write("### C등급 말맛 참고 후보")
+            if c_lines:
+                for x in c_lines:
+                    st.success(x)
+            else:
+                st.info("C등급 말맛 참고는 없어도 됩니다. 단, 후기형 원고라면 있으면 좋습니다.")
 
-    st.write("## 전 분야 감정 흐름 설계")
-    emotion_flow_plan = build_emotion_flow_plan(d_topic, d_keyword, d_voice, b_lines, d_field)
-    st.text_area("도입 첫문장 후보 / 본문 브릿지 / 마무리 재연결", value=emotion_flow_plan, height=420)
+        st.write("## 전 분야 감정 흐름 설계")
+        emotion_flow_plan = build_emotion_flow_plan(d_topic, d_keyword, d_voice, b_lines, d_field)
+        st.text_area("도입 첫문장 후보 / 본문 브릿지 / 마무리 재연결", value=emotion_flow_plan, height=420)
 
-    st.write("## 문단별 고민 배치안")
-    bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
-    st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
+        st.write("## 문단별 고민 배치안")
+        bridge_plan = build_emotion_bridge_plan(d_topic, d_keyword, d_voice, b_lines)
+        st.text_area("감정이 죽지 않도록 본문 전환부에 넣을 고민 배치", value=bridge_plan, height=360)
 
-    st.write("## 업체 정보 반영 안내")
-    st.info("별도 홈페이지 입력칸은 제거했습니다. 업체 공개정보를 쓰려면 ‘초안 작성 추가 조건’ 또는 조사 결과 안에 넣고, 확인된 정보 안에서만 반영하도록 지시하세요.")
+        st.write("## 업체 정보 반영 안내")
+        st.info("별도 홈페이지 입력칸은 제거했습니다. 업체 공개정보를 쓰려면 ‘초안 작성 추가 조건’ 또는 조사 결과 안에 넣고, 확인된 정보 안에서만 반영하도록 지시하세요.")
 
-    draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_keyword_delivery_text, d_keyword_placement_text, d_usecase_mode, d_writer_perspective, d_article_style, d_sub_keywords, d_brand_name, d_conversion_goal, d_brand_intensity, d_tone_detail, d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage)
-    claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info, usecase_mode=d_usecase_mode, writer_perspective=d_writer_perspective, article_style=d_article_style, sub_keywords=d_sub_keywords, brand_name=d_brand_name, conversion_goal=d_conversion_goal, brand_intensity=d_brand_intensity, tone_detail=d_tone_detail)
+        draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_keyword_delivery_text, d_keyword_placement_text, d_usecase_mode, d_writer_perspective, d_article_style, d_sub_keywords, d_brand_name, d_conversion_goal, d_brand_intensity, d_tone_detail, d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage)
+        claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info, usecase_mode=d_usecase_mode, writer_perspective=d_writer_perspective, article_style=d_article_style, sub_keywords=d_sub_keywords, brand_name=d_brand_name, conversion_goal=d_conversion_goal, brand_intensity=d_brand_intensity, tone_detail=d_tone_detail)
 
-    st.write("## GPTs용 초안 프롬프트")
-    st.text_area(
-        "GPTs에 복붙",
-        value=draft_prompt,
-        height=520,
-        key=dynamic_widget_key("draft_prompt_live", d_topic, d_keyword, d_sub_keywords, d_brand_name, d_article_style, d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_usecase_mode, d_writer_perspective, d_voice, d_intro_type, d_first_sentence_type, d_title_type, d_target_len, research_text)
-    )
-    st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
+        st.write("## GPTs용 초안 프롬프트")
+        st.text_area(
+            "GPTs에 복붙",
+            value=draft_prompt,
+            height=520,
+            key=dynamic_widget_key("draft_prompt_live", d_topic, d_keyword, d_sub_keywords, d_brand_name, d_article_style, d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_usecase_mode, d_writer_perspective, d_voice, d_intro_type, d_first_sentence_type, d_title_type, d_target_len, research_text)
+        )
+        st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
 
-    st.write("## Claude용 윤문 지시문 기본형")
-    st.caption("설계값이 바뀌면 이 칸도 자동으로 새 키로 갱신됩니다. 예전 화법명이나 사용처가 남으면 새로고침하지 말고 ②값을 한 번 다시 선택하세요.")
-    st.text_area(
-        "Claude에 보낼 때 원고와 함께 복붙",
-        value=claude_prompt_empty,
-        height=420,
-        key=dynamic_widget_key("claude_design_live", d_voice, d_intro_type, d_title_type, d_keyword, d_sub_keywords, d_brand_name, d_article_style, d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_usecase_mode, d_writer_perspective)
-    )
-    st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt", key=dynamic_widget_key("claude_design_download", claude_prompt_empty))
+        st.write("## Claude용 윤문 지시문 기본형")
+        st.caption("설계값이 바뀌면 이 칸도 자동으로 새 키로 갱신됩니다. 예전 화법명이나 사용처가 남으면 새로고침하지 말고 ②값을 한 번 다시 선택하세요.")
+        st.text_area(
+            "Claude에 보낼 때 원고와 함께 복붙",
+            value=claude_prompt_empty,
+            height=420,
+            key=dynamic_widget_key("claude_design_live", d_voice, d_intro_type, d_title_type, d_keyword, d_sub_keywords, d_brand_name, d_article_style, d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_usecase_mode, d_writer_perspective)
+        )
+        st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt", key=dynamic_widget_key("claude_design_download", claude_prompt_empty))
 
 with tab_check:
     st.title("📝 원고 검수 모드")

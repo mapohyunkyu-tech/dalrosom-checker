@@ -4,7 +4,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v7.0", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v7.1", layout="wide")
 
 PURPOSES = [
     "",
@@ -2502,14 +2502,30 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
 """
 
 
-st.title("📝 달로썸 원고 검수기 v6.9")
-st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v7.0에서는 네이버 홈피드형 원고 모드에 해외자료 포함 옵션을 추가했습니다.")
+st.title("📝 달로썸 원고 검수기 v7.1")
+st.caption("GPT 조사 프롬프트 → 자료등급/고민패턴/화법 선택/감정흐름/제목유형/도입8가지 → GPTs용 프롬프트 → 초안 검수 → Claude 윤문 지시까지 한 흐름으로 사용합니다. v7.1에서는 홈피드형 빠른 설정을 앞에 노출했습니다.")
 
 tab_research, tab_design, tab_check = st.tabs(["① 의뢰 조건 입력·GPT 조사 프롬프트", "② 조사 결과 붙여넣기·원고 설계", "③ 원고 검수 모드"])
 
 with tab_research:
     st.header("① 의뢰 조건 입력 · GPT 조사 프롬프트")
     st.write("GPT가 먼저 조사하고, 너는 링크를 직접 확인한 뒤 확인된 자료를 ② 원고 설계 모드에 붙여넣는 흐름입니다.")
+
+    # 홈피드형은 기존 업체/검색형 설정 안에 숨어 보이지 않는 문제가 있어,
+    # ① 화면 맨 앞에서 바로 켤 수 있게 빠른 설정을 둔다.
+    r_homefeed_quick = st.checkbox(
+        "홈피드형으로 시작하기",
+        value=False,
+        help="켜면 원고 사용처·분야·작성자 관점·글 성격을 홈피드형 기본값으로 맞춥니다.",
+        key="r_homefeed_quick",
+    )
+    if r_homefeed_quick:
+        st.session_state["r_field"] = "홈피드 / 생활 이슈"
+        st.session_state["r_usecase_mode"] = "홈피드형"
+        st.session_state["r_writer_perspective"] = "정보성 블로그 작성자"
+        st.session_state["r_article_style"] = "홈피드 후킹형"
+        st.info("홈피드형 기본값 적용: 분야=홈피드/생활 이슈, 원고 사용처=홈피드형, 글 성격=홈피드 후킹형")
+
     col1, col2 = st.columns(2)
     with col1:
         r_topic = st.text_input("조사 주제", value="써마지 시술", key="r_topic")

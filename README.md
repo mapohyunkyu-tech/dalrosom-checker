@@ -40,3 +40,10 @@ v9.4는 v9.3 쇼츠 대본 엔진에 `⑮ 홈피드 제목·썸네일 실험실`
 ## 검증
 
 - `python -m py_compile app.py` 통과
+
+## v9.4.1 오류 수정
+
+- 쇼츠 대본 엔진에서 `clean_text()` 함수가 정의되지 않아 발생하던 NameError를 수정했습니다.
+- `extract_source_points_for_shorts()`와 `inspect_shorts_text()`가 공통 텍스트 정리 함수를 정상 호출하도록 보완했습니다.
+- `python -m py_compile app.py` 문법 검사를 통과했습니다.
+

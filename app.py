@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v9.4", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v9.4.1", layout="wide")
 
 PURPOSES = [
     "",
@@ -412,6 +412,26 @@ SPECIALTY_ORDER = [k for k in SPECIALTY_ORDER if k in SPECIALTY_PROFILES] + [
 
 def _compact_text_for_match(*parts):
     return re.sub(r"\s+", "", " ".join(str(x or "") for x in parts).lower().replace("-", " "))
+
+
+def clean_text(text=""):
+    """앱 전역에서 쓰는 안전한 텍스트 정리 함수.
+
+    쇼츠/홈피드/검수 모듈이 공통으로 호출할 수 있도록
+    None, 숫자, 리스트성 입력까지 문자열로 정리하고 공백을 정규화한다.
+    """
+    if text is None:
+        return ""
+    text = str(text)
+    # Streamlit 입력/복붙에서 섞이는 특수 공백과 제어문자를 정리한다.
+    text = text.replace("\u00a0", " ").replace("\ufeff", "")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[\t\v\f]+", " ", text)
+    # 줄 단위 앞뒤 공백 제거 후 빈 줄 과다를 줄인다.
+    lines = [re.sub(r" {2,}", " ", line).strip() for line in text.split("\n")]
+    text = "\n".join(lines)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    return text
 
 
 def detect_specialty_profile(field="", topic="", keyword="", body="", writer_perspective=""):

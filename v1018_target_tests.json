@@ -1,0 +1,32 @@
+[
+  {
+    "name": "sufficient_not_detected_as_bunhada",
+    "ok": true,
+    "detail": "[]"
+  },
+  {
+    "name": "explicit_dispute_emotion_still_detected",
+    "ok": true,
+    "detail": "['분하다', '억울']"
+  },
+  {
+    "name": "mujogeon_misconception_context_safe",
+    "ok": true,
+    "detail": "또 하나의 오해는 샷 수가 많을수록 무조건 좋다는 생각입니다. 실제로는 피부 상태를 먼저 확인해야 합니다."
+  },
+  {
+    "name": "mujogeon_hard_risk_not_safe",
+    "ok": true,
+    "detail": "이 시술은 누구에게나 무조건 효과가 있습니다."
+  },
+  {
+    "name": "line_based_subheadings_split",
+    "ok": true,
+    "detail": "[('도입', '도입'), ('본문1', '샷 수보다 먼저 보는 기준'), ('본문2', '한 번이면 충분하다는 오해'), ('본문3', '효과 시점과 유지기간은 다르게 봐야 합니다'), ('마무리', '상담 전 정리해야 할 질문')]"
+  },
+  {
+    "name": "keyword_report_not_single_intro_only",
+    "ok": true,
+    "detail": "### 키워드 배치 결과\n- 제목: 1회 ✅\n- 본문 기준: 3회 / 요구 2~4회\n- 제목 포함 전체: 4회 / 요구 3~5회\n- 소제목 카운트 기준: 소제목 제외\n\n|구간|소제목|소제목 횟수|본문 횟수|판정용 횟수|\n|---|---|---:|---:|---:|\n|도입|도입|0|2|2|\n|본문1|샷 수보다 먼저 보는 기준|0|0|0|\n|본문2|한 번이면 충분하다는 오해|0|0|0|\n|본문3|효과 시점과 유지기간은 다르게 봐야 합니다|0|0|0|\n|마무리|상담 전 정리해야 할 질문|0|1|1|\n\n판정: 키워드가 빠진 문단이 있습니다: 본문1, 본문2, 본문3 / 키워드가 한 문단에 몰린 구간이 있습니다: 도입"
+  }
+]

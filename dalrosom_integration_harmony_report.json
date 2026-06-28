@@ -11,7 +11,7 @@
       "detail": {
         "research_len": 11412,
         "draft_len": 13724,
-        "check_score": 63,
+        "check_score": 67,
         "gate": "출고 보류"
       }
     },
@@ -100,7 +100,7 @@
       "name": "⑫ 이상문장DB→패턴후보",
       "ok": true,
       "detail": {
-        "loaded": 2625,
+        "loaded": 3000,
         "patterns": 5
       }
     }

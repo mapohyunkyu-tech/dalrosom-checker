@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.17", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.18", layout="wide")
 
 PURPOSES = [
     "",
@@ -1939,23 +1939,59 @@ def is_heading_block(block):
 
 
 def split_keyword_sections(body):
-    blocks = [b.strip() for b in re.split(r"\n\s*\n", body or "") if b.strip()]
+    """키워드 배치 검수용 섹션 분리.
+
+    v10.0.18: 빈 줄 기준 블록 분리만 쓰면, 사용자가 소제목 바로 아래에 본문을 붙여 넣었을 때
+    전체를 ‘도입’ 한 문단으로 오판할 수 있어 줄 단위 소제목도 함께 인식한다.
+    """
+    body = (body or "").strip()
     sections = []
     current = None
-    for b in blocks:
-        if is_heading_block(b):
-            if current:
-                sections.append(current)
-            current = {"heading": re.sub(r"^#+\s*", "", b).strip(), "text": ""}
+
+    def start_section(heading):
+        nonlocal current
+        if current:
+            sections.append(current)
+        current = {"heading": re.sub(r"^#+\s*", "", heading).strip(), "text": ""}
+
+    lines = body.splitlines()
+    buf = []
+    for raw in lines:
+        line = raw.strip()
+        if not line:
+            if current is not None and current["text"]:
+                current["text"] = (current["text"] + "\n").strip()
+            elif current is None and buf:
+                buf.append("")
+            continue
+        if re.match(r"^(제목 후보|최종 제목|본문)\s*[:：]?", line):
+            continue
+        if line.startswith(("□", "☑", "✓", "✔", "- ", "·", "•")):
+            if current is None:
+                buf.append(line)
+            else:
+                current["text"] = (current["text"] + "\n" + line).strip() if current["text"] else line
+            continue
+        if is_heading_block(line):
+            if current is None and not buf and len(line) <= 32 and any(k in line for k in ["전 확인", "확인할", "5가지", "기준", "방법"]):
+                buf.append(line)
+                continue
+            if current is None and buf:
+                sections.append({"heading": "도입", "text": "\n".join([x for x in buf if x]).strip()})
+                buf = []
+            start_section(line)
         else:
             if current is None:
-                current = {"heading": "도입", "text": b}
+                buf.append(line)
             else:
-                current["text"] = (current["text"] + "\n" + b).strip() if current["text"] else b
+                current["text"] = (current["text"] + "\n" + line).strip() if current["text"] else line
+
     if current:
         sections.append(current)
-    if not sections and body.strip():
-        sections = [{"heading": "도입", "text": body.strip()}]
+    elif buf:
+        sections.append({"heading": "도입", "text": "\n".join([x for x in buf if x]).strip()})
+    if not sections and body:
+        sections = [{"heading": "도입", "text": body}]
     n = len(sections)
     for i, sec in enumerate(sections):
         if i == 0:
@@ -1965,7 +2001,6 @@ def split_keyword_sections(body):
         else:
             sec["role"] = f"본문{i}"
     return sections
-
 
 def keyword_count_loose(text, keyword, form_policy="정확히 일치"):
     if not keyword:
@@ -2162,15 +2197,32 @@ def is_medical_choice_text(field="", title="", body="", keyword=""):
 
 
 def detect_medical_emotion_mismatch(field="", title="", body="", keyword=""):
-    """의료 선택 글에 맞지 않는 법률/피해보상식 감정선 감지."""
+    """의료 선택 글에 맞지 않는 법률/피해보상식 감정선 감지.
+
+    v10.0.18: ‘충분한가요/충분하다’ 안의 ‘분한’을 분쟁 감정어로 오탐하지 않도록
+    문맥 기반으로 보정한다. 오해 반박형·질문형 의료 도입의 비교 고민은 정상으로 본다.
+    """
     if not is_medical_choice_text(field, title, body, keyword):
         return []
     intro = (body or "")[:1000]
     found = []
-    patterns = ["억울", "억울하고 답답", "손해 보는 느낌", "손해보는 느낌", "피해를 보는 느낌", "납득하기 어렵고 억울", "분하다"]
-    for p in patterns:
-        if p in intro and p not in found:
-            found.append(p)
+
+    # 명시적인 분쟁/피해 감정어만 잡는다. 단어 일부 매칭으로 ‘충분한가요’를 잡지 않는다.
+    explicit_patterns = [
+        "억울", "억울하고 답답", "손해 보는 느낌", "손해보는 느낌",
+        "피해를 보는 느낌", "납득하기 어렵고 억울", "분합니다", "분했", "분해서", "분한 마음"
+    ]
+    for pat in explicit_patterns:
+        if pat in intro and pat not in found:
+            found.append("분하다" if pat.startswith("분") else pat)
+
+    # ‘분하다’는 독립 감정 표현일 때만 잡고, 충분/불충분 같은 정상 단어는 제외한다.
+    for m in re.finditer(r"분하(?:다|고|게|여|죠|네|네요|다는|다고)", intro):
+        window = intro[max(0, m.start()-3):m.end()+3]
+        if any(safe in window for safe in ["충분하", "불충분하"]):
+            continue
+        found.append("분하다")
+
     # ‘답답’은 흉통/호흡 등 증상 문맥이면 제외하고, 결정 감정 문맥에서만 잡는다.
     if "답답" in intro and not _has_any(intro, ["가슴", "호흡", "숨", "코막힘"]):
         if _has_any(intro, ["결정", "선택", "검사 가능", "말만 듣고", "비용", "상담"]):
@@ -2445,21 +2497,25 @@ def generate_title_candidates(keyword, topic, title_type, b_lines=None, field=""
     return cleaned[:5]
 
 def is_safe_risk_context(body, phrase):
-    """위험 단어가 부정/주의 문맥에서 쓰인 경우는 오탐으로 보지 않는다."""
+    """위험 단어가 부정/주의/오해 반박 문맥에서 쓰인 경우는 오탐으로 보지 않는다."""
     common_safe_markers = [
         "아니", "않", "없", "피하", "주의", "권하지", "권하기보다", "단정", "어렵", "어려",
-        "볼 수는 없습니다", "볼 수 없습니다", "말하기 어렵", "말하기는 어렵", "무조건 없애", "무조건 두껍"
+        "볼 수는 없습니다", "볼 수 없습니다", "말하기 어렵", "말하기는 어렵",
+        "오해", "생각하기 쉽", "생각하는 경우", "생각입니다", "라고 생각", "이라고 생각",
+        "기대하기보다", "보기보다", "먼저 확인", "확인해야", "주의해야",
+        "무조건 없애", "무조건 두껍"
     ]
-    for match in re.finditer(re.escape(phrase), body):
-        window = body[max(0, match.start() - 35): min(len(body), match.end() + 55)]
+    for match in re.finditer(re.escape(phrase), body or ""):
+        window = body[max(0, match.start() - 45): min(len(body), match.end() + 70)]
         if phrase == "무조건":
-            safe_phrases = [
-                "무조건 더 좋다고 말하기", "무조건 더 좋다고", "무조건 좋은", "무조건 권", "무조건 선택",
-                "무조건 효과", "무조건 개선", "무조건 좋아"  # 아래에서 위험 문맥과 구분
-            ]
-            # 위험 문맥: 무조건 효과/개선/좋아짐 등은 그대로 위험 처리
-            if any(x in window for x in ["무조건 효과", "무조건 개선", "무조건 좋아", "무조건 낫", "무조건 받을", "무조건 승소"]):
+            # 위험 문맥: 원고가 실제로 결과를 보장하거나 권유하는 경우만 위험 처리
+            hard_risk = ["무조건 효과가", "무조건 개선", "무조건 좋아집", "무조건 낫", "무조건 받을 수", "무조건 승소", "무조건 해결"]
+            if any(x in window for x in hard_risk) and not any(safe in window for safe in ["오해", "생각", "단정", "어렵", "아니", "않"]):
                 return False
+            # ‘무조건 좋다는 오해/생각’, ‘무조건 더 좋다고 보기 어렵다’는 반박 문맥
+            if any(x in window for x in ["무조건 좋다는", "무조건 더 좋", "무조건 많이", "무조건 강", "무조건 권", "무조건 선택"]):
+                if any(safe in window for safe in ["오해", "생각", "단정", "어렵", "아니", "않", "보다", "먼저"]):
+                    return True
         if any(marker in window for marker in common_safe_markers):
             return True
     return False
@@ -9112,7 +9168,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.16")
+st.title("📝 달로썸 원고 검수기 v10.0.18")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -10162,7 +10218,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.16 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.18 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

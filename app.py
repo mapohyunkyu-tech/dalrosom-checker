@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.16", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.17", layout="wide")
 
 PURPOSES = [
     "",
@@ -2964,6 +2964,139 @@ def show_issues(title, items):
     else:
         for name, desc in items:
             st.warning(f"**{name}** — {desc}")
+
+
+def build_review_share_report(
+    *, title, body, title_source, first_sentence, keyword, field, usecase_mode, writer_perspective,
+    article_style, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, selected_title_type,
+    selected_voice_type, selected_intro_type, selected_first_sentence_type, ending_type, philosophy_source_label,
+    scores, total, cap_reasons, meta, issues, kw_report, grade_label, grade_note, sentence_suggestions, glossary_terms,
+    delivery_revision, brand_name='', conversion_goal='', content_goal=''
+):
+    """⑧ 검수 결과를 ChatGPT/Claude에 공유하기 쉬운 txt 리포트로 만든다."""
+    def add(lines, text=''):
+        lines.append(str(text))
+
+    def issue_lines(section):
+        rows = issues.get(section, []) if isinstance(issues, dict) else []
+        if not rows:
+            return [f"- {section}: 통과"]
+        return [f"- {section}: {name} — {desc}" for name, desc in rows]
+
+    def rows_to_lines(rows, prefix='- '):
+        out = []
+        for row in rows or []:
+            if isinstance(row, dict):
+                out.append(prefix + ' / '.join(f"{k}: {v}" for k, v in row.items()))
+            else:
+                out.append(prefix + str(row))
+        return out or [prefix + '없음']
+
+    lines = []
+    add(lines, '# 달로썸 ⑧ 원고 검수 결과 공유 리포트')
+    add(lines, '')
+    add(lines, '## 1. 입력 조건')
+    add(lines, f'- 분야: {field}')
+    add(lines, f'- 사용처: {usecase_mode}')
+    add(lines, f'- 작성자 관점: {writer_perspective}')
+    add(lines, f'- 글 성격: {article_style}')
+    add(lines, f'- 대표 글결: {primary_gyeol}')
+    add(lines, f'- 보조 글결 1: {secondary_gyeol_1}')
+    add(lines, f'- 보조 글결 2: {secondary_gyeol_2}')
+    add(lines, f'- 핵심 키워드: {keyword}')
+    add(lines, f'- 업체명/브랜드명: {brand_name or "없음"}')
+    add(lines, f'- 전환 목표: {conversion_goal or "없음"}')
+    add(lines, f'- 원고 목적: {content_goal or "자동 생성/미입력"}')
+    add(lines, f'- 제목 유형: {selected_title_type}')
+    add(lines, f'- 화법: {selected_voice_type}')
+    add(lines, f'- 도입 방식: {selected_intro_type}')
+    add(lines, f'- 첫문장 형태: {selected_first_sentence_type}')
+    add(lines, f'- 마무리 방식: {ending_type}')
+    add(lines, f'- 철학/강점 상태: {philosophy_source_label}')
+    add(lines, '')
+
+    add(lines, '## 2. 제목/첫문장 인식')
+    add(lines, f'- 인식된 제목: {title or "없음"}')
+    add(lines, f'- 제목 출처: {title_source}')
+    add(lines, f'- 제목 글자수: {len(title) if title else 0}')
+    add(lines, f'- 감지된 실제 첫문장: {first_sentence or "없음"}')
+    add(lines, '')
+
+    add(lines, '## 3. 점수')
+    add(lines, f'- 총점: {total}점 / {price_estimate(total)}')
+    for key in ['제목', '본문', '도입', 'AI티', '복사찌꺼기', '위험표현', '작성자 관점', '마무리']:
+        denom = {'제목': 15, '본문': 20, '도입': 15, 'AI티': 15, '복사찌꺼기': 10, '위험표현': 15, '작성자 관점': 10, '마무리': 10}.get(key, '')
+        add(lines, f'- {key}: {scores.get(key, 0)}/{denom}')
+    if cap_reasons:
+        add(lines, '')
+        add(lines, '### 점수 상한 적용 이유')
+        for r in cap_reasons:
+            add(lines, f'- {r}')
+    add(lines, '')
+
+    add(lines, '## 4. 핵심 수치')
+    add(lines, f'- 공백 제외 글자수: {meta.get("no_space_len", "?")}')
+    add(lines, f'- 키워드 횟수: 본문 {meta.get("body_kw", "?")} / 제목 포함 {meta.get("total_kw", "?")}')
+    add(lines, f'- 소제목 수: {meta.get("subheads", "?")}')
+    add(lines, f'- 감지 제목 유형: {", ".join(meta.get("detected_title") or []) if meta.get("detected_title") else "없음"}')
+    add(lines, f'- 감지 도입 방식: {", ".join(meta.get("detected_intro") or []) if meta.get("detected_intro") else "없음"}')
+    add(lines, '')
+
+    add(lines, '## 5. 키워드 배치 검수')
+    add(lines, kw_report.replace('✅', '[OK]').replace('⚠️', '[주의]'))
+    add(lines, '')
+
+    add(lines, '## 6. 세부 업종/납품 검수')
+    specialty_profile = meta.get('specialty_profile') or {}
+    if specialty_profile:
+        add(lines, f'- 세부 업종: {specialty_profile.get("display")}')
+        add(lines, f'- 톤 기준: {specialty_profile.get("tone")}')
+    else:
+        add(lines, '- 세부 업종: 자동 감지 없음')
+    add(lines, f'- 반영된 필수 기준: {", ".join(meta.get("specialty_hits") or []) if meta.get("specialty_hits") else "뚜렷하게 감지되지 않음"}')
+    add(lines, f'- 보강할 필수 기준: {", ".join((meta.get("specialty_missing") or [])[:10]) if meta.get("specialty_missing") else "대체로 반영됨"}')
+    add(lines, '')
+    add(lines, '### 납품 리스크')
+    lines.extend(rows_to_lines(meta.get('delivery_risks'), prefix='- '))
+    add(lines, '')
+    add(lines, '### 납품 전 최종 체크리스트')
+    lines.extend(rows_to_lines(meta.get('delivery_checklist'), prefix='- '))
+    add(lines, '')
+    add(lines, f'### 감점 사유 기반 수정 방향\n{delivery_revision or "없음"}')
+    add(lines, '')
+
+    add(lines, '## 7. 항목별 검수 문제')
+    for section in ['제목', '본문', '도입', 'AI티', '사람화', '복사찌꺼기', '위험표현', '작성자 관점', '마무리', '납품 리스크']:
+        lines.extend(issue_lines(section))
+    add(lines, '')
+
+    add(lines, '## 8. 사람화 수정 전/후')
+    add(lines, f'- 납품 등급: {grade_label}')
+    add(lines, f'- 등급 메모: {grade_note}')
+    if sentence_suggestions:
+        for i, row in enumerate(sentence_suggestions, 1):
+            if isinstance(row, dict):
+                add(lines, f'{i}. [{row.get("유형", "문장")}]')
+                add(lines, f'   - 수정 전: {row.get("수정 전", "")}')
+                add(lines, f'   - 수정 후: {row.get("수정 후", "")}')
+            else:
+                add(lines, f'{i}. {row}')
+    else:
+        add(lines, '- 강한 AI문장/비현장어 감지 없음')
+    add(lines, '')
+
+    add(lines, '## 9. 용어 설명 제안')
+    add(lines, ', '.join(glossary_terms) if glossary_terms else '없음')
+    add(lines, '')
+
+    add(lines, '## 10. 내가 확인받고 싶은 질문')
+    add(lines, '아래 원고가 왜 보완/재작성 판정인지, 어떤 문단을 어떻게 고치면 점수가 올라가는지 우선순위로 알려줘.')
+    add(lines, '')
+    add(lines, '## 11. 검수 원고')
+    add(lines, f'최종 제목: {title}')
+    add(lines, '')
+    add(lines, body)
+    return '\n'.join(lines).strip()
 
 
 def glossary_check(body, field):
@@ -10206,6 +10339,50 @@ with tab_check:
             st.info("본문에 나오지만 초보 독자에게 설명이 있으면 좋은 용어: " + ", ".join(glossary_terms))
         else:
             st.success("용어 설명 제안 없음")
+
+        st.write("## 검수 결과 공유용 다운로드")
+        review_share_report = build_review_share_report(
+            title=title,
+            body=body,
+            title_source=title_source,
+            first_sentence=first_sentence_preview,
+            keyword=keyword,
+            field=field,
+            usecase_mode=selected_usecase_mode,
+            writer_perspective=writer_perspective,
+            article_style=article_style,
+            primary_gyeol=resolve_primary_gyeol(primary_gyeol, field, article_style, check_topic_for_claude if 'check_topic_for_claude' in globals() else title, keyword),
+            secondary_gyeol_1=secondary_gyeol_1,
+            secondary_gyeol_2=secondary_gyeol_2,
+            selected_title_type=selected_title_type,
+            selected_voice_type=selected_voice_type,
+            selected_intro_type=selected_intro_type,
+            selected_first_sentence_type=selected_first_sentence_type,
+            ending_type=ending_type,
+            philosophy_source_label=philosophy_source_label,
+            scores=scores,
+            total=total,
+            cap_reasons=cap_reasons,
+            meta=meta,
+            issues=issues,
+            kw_report=kw_report,
+            grade_label=grade_label,
+            grade_note=grade_note,
+            sentence_suggestions=sentence_suggestions,
+            glossary_terms=glossary_terms,
+            delivery_revision=meta.get("delivery_revision", ""),
+            brand_name=brand_name,
+            conversion_goal=conversion_goal,
+            content_goal=content_goal,
+        )
+        st.caption("이 파일을 나에게 올리면, 어떤 항목 때문에 보완/재작성 판정이 났는지 바로 볼 수 있습니다.")
+        st.download_button(
+            "검수 결과 공유용 txt 다운로드",
+            review_share_report,
+            file_name="dalrosom_review_share_report.txt",
+            mime="text/plain",
+            key=dynamic_widget_key("review_share_report_download", title, keyword, total, meta.get("no_space_len"), review_share_report[:500])
+        )
 
         st.write("## 검수 후 리라이트 생성")
 

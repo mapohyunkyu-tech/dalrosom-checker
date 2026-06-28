@@ -1,3 +1,12 @@
-# 달로썸 원고 검수기 v10.0.21
+# 달로썸 원고 검수기 v10.0.22
 
-작성자 서술 강도 패치. 대표자 주장형(논지)과 대표자 직접 서술형(말투)을 분리했습니다. 일반 정보형, 전문가 설명형, 대표자 관점형, 대표자 직접 서술형을 선택해 원장/변호사/대표가 직접 쓴 듯한 원고와 제3자 정보성 원고를 구분할 수 있습니다.
+## 핫픽스
+- v10.0.21에서 `작성자 서술 강도` 위젯 생성 후 같은 key(`r_author_narration`)를 `st.session_state`에 다시 쓰면서 StreamlitAPIException이 발생하던 문제를 수정했습니다.
+- ③/⑧ 자동 적용 흐름에서 사용할 수 있도록 `applied_author_narration` 저장을 별도 key로 분리했습니다.
+
+## 확인
+- `python -m py_compile app.py` 통과
+- `run_menu_fake_test.py` 통과
+- `run_integration_harmony_check.py` 통과
+- `run_v1021_target_tests.py` 통과
+- `run_v1022_target_tests.py` 통과

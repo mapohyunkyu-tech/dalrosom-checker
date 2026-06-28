@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.21", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.22", layout="wide")
 
 PURPOSES = [
     "",
@@ -1131,7 +1131,7 @@ WRITING_GYEOL_SECONDARY_OPTIONS = ["선택 안함"] + [x for x in WRITING_GYEOL_
 
 
 # =========================
-# v10.0.21: 작성자 서술 강도
+# v10.0.22: 작성자 서술 강도
 # =========================
 AUTHOR_NARRATION_OPTIONS = [
     "자동 추천",
@@ -1177,7 +1177,7 @@ def resolve_author_narration(mode="", writer_perspective="", primary_gyeol="", s
 
 def author_narration_block(mode="", writer_perspective="", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", article_style="", brand_name="", field=""):
     resolved = resolve_author_narration(mode, writer_perspective, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, article_style, brand_name, field)
-    lines = ["[작성자 서술 강도 · v10.0.21]", f"- 적용 서술 강도: {resolved}"]
+    lines = ["[작성자 서술 강도 · v10.0.22]", f"- 적용 서술 강도: {resolved}"]
     if resolved == "중립 정보형":
         lines += [
             "- 제3자가 정리한 정보성 글처럼 쓰되, 전문성과 신뢰가 느껴지게 한다.",
@@ -9303,7 +9303,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.21")
+st.title("📝 달로썸 원고 검수기 v10.0.22")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -9781,7 +9781,6 @@ with tab_research:
             r_effective_goal = effective_content_goal(r_goal, r_field, r_article_style, r_topic, r_keyword, r_conversion_goal, r_brand_name, r_usecase_mode, r_sub_keywords, r_primary_gyeol, r_secondary_gyeol_1, r_secondary_gyeol_2)
             st.info("적용 원고 목적: " + r_effective_goal)
             st.session_state["r_resolved_primary_gyeol"] = resolve_primary_gyeol(r_primary_gyeol, r_field, r_article_style, r_topic, r_keyword)
-            st.session_state["r_author_narration"] = r_author_narration
             st.session_state["r_effective_goal"] = r_effective_goal
             r_len_col1, r_len_col2 = st.columns(2)
             with r_len_col1:
@@ -10152,6 +10151,7 @@ with tab_design:
         st.session_state["applied_content_type"] = d_content_type
         st.session_state["applied_usecase_mode"] = d_usecase_mode
         st.session_state["applied_writer_perspective"] = d_writer_perspective
+        st.session_state["applied_author_narration"] = d_author_narration
         st.session_state["applied_article_style"] = d_article_style
         st.session_state["applied_primary_gyeol"] = d_primary_gyeol
         st.session_state["applied_secondary_gyeol_1"] = d_secondary_gyeol_1
@@ -10363,7 +10363,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.21 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.22 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

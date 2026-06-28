@@ -9,9 +9,9 @@
       "name": "①→②→③→⑩ 검색형 원고 흐름",
       "ok": true,
       "detail": {
-        "research_len": 9687,
-        "draft_len": 10452,
-        "check_score": 69,
+        "research_len": 10001,
+        "draft_len": 10924,
+        "check_score": 63,
         "gate": "출고 보류"
       }
     },
@@ -100,7 +100,7 @@
       "name": "⑫ 이상문장DB→패턴후보",
       "ok": true,
       "detail": {
-        "loaded": 825,
+        "loaded": 975,
         "patterns": 5
       }
     }

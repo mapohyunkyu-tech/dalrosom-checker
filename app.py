@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.6", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.7", layout="wide")
 
 PURPOSES = [
     "",
@@ -8236,7 +8236,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.6")
+st.title("📝 달로썸 원고 검수기 v10.0.7")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -8568,7 +8568,7 @@ tab_presets, tab_research, tab_design, tab_product, tab_photo_press_writer, tab_
 
 
 
-st.info("사용 흐름: ① 프리셋 불러오기/저장 → ② 의뢰 조건 입력 → ③ 조사 결과 붙여넣기 → GPTs 초안/Claude 자연화 → ⑧ 최종 검수 → ⑩ 국어선생님 → ⑪ 통합 출고판정")
+st.info("사용 흐름: ① 프리셋 → ② 의뢰 조건 → ③ 조사 결과/초안 프롬프트 → GPTs 초안 생성 → ⑧ Claude 패키지 생성 → Claude 자연화 → ⑧ 앱 검수 실행 → ⑩ 국어선생님 → ⑪ 통합 출고판정")
 
 _pending_preset_name = st.session_state.pop("pending_apply_preset_name", None)
 if _pending_preset_name:
@@ -9109,8 +9109,6 @@ with tab_design:
         st.info("별도 홈페이지 입력칸은 제거했습니다. 업체 공개정보를 쓰려면 ‘초안 작성 추가 조건’ 또는 조사 결과 안에 넣고, 확인된 정보 안에서만 반영하도록 지시하세요.")
 
         draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_keyword_delivery_text, d_keyword_placement_text, d_usecase_mode, d_writer_perspective, d_article_style, d_sub_keywords, d_brand_name, d_conversion_goal, d_brand_intensity, d_tone_detail, d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage)
-        claude_prompt_empty = build_claude_prompt(d_voice, d_intro_type, d_title_type, d_keyword, d_field, first_sentence_type=d_first_sentence_type, homepage_mode=d_homepage_mode, homepage_info=d_homepage_info, usecase_mode=d_usecase_mode, writer_perspective=d_writer_perspective, article_style=d_article_style, sub_keywords=d_sub_keywords, brand_name=d_brand_name, conversion_goal=d_conversion_goal, brand_intensity=d_brand_intensity, tone_detail=d_tone_detail)
-
         st.write("## GPTs용 초안 프롬프트")
         st.text_area(
             "GPTs에 복붙",
@@ -9120,19 +9118,13 @@ with tab_design:
         )
         st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
 
-        st.write("## Claude용 윤문 지시문 기본형")
-        st.caption("설계값이 바뀌면 이 칸도 자동으로 새 키로 갱신됩니다. 예전 화법명이나 사용처가 남으면 새로고침하지 말고 ③값을 한 번 다시 선택하세요.")
-        st.text_area(
-            "Claude에 보낼 때 원고와 함께 복붙",
-            value=claude_prompt_empty,
-            height=420,
-            key=dynamic_widget_key("claude_design_live", d_voice, d_intro_type, d_title_type, d_keyword, d_sub_keywords, d_brand_name, d_article_style, d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_usecase_mode, d_writer_perspective)
-        )
-        st.download_button("Claude용 지시문 txt 다운로드", claude_prompt_empty, file_name="dalrosom_claude_prompt.txt", key=dynamic_widget_key("claude_design_download", claude_prompt_empty))
+        st.write("## 다음 순서")
+        st.info("③은 GPTs 초안 프롬프트를 만드는 단계입니다. GPTs에서 초안을 만든 뒤에는 ⑧ '최종 원고 검수·Claude 패키지'로 이동해 원고를 붙여넣고 Claude 자연화 패키지를 생성하세요. Claude용 복붙 패키지는 ⑧에서만 사용합니다.")
 
 with tab_check:
     st.header("⑧ 최종 원고 검수 · Claude 패키지")
-    st.caption("초안 작성 후 점수, 위험표현, 도입/마무리를 확인합니다. 필요할 때만 리라이트를 생성합니다.")
+    st.caption("여기는 두 번 쓰는 칸입니다. 1차: GPTs 초안을 붙여 Claude 패키지를 만듭니다. 2차: Claude 수정본을 다시 붙여 앱 검수를 실행합니다.")
+    st.info("사용 순서: GPTs 초안 붙여넣기 → Claude 자연화 패키지 복사 → Claude 수정본 받기 → 수정본을 다시 이 칸에 붙여넣기 → 아래 '앱 검수 실행' 클릭")
 
     with st.sidebar:
         st.header("원고 조건")
@@ -9240,10 +9232,10 @@ with tab_check:
             min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
             max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
             check_kw_settings = render_keyword_delivery_settings("check", keyword, check_target_len, expanded=False)
-    draft = st.text_area("검수할 원고를 붙여넣으세요", height=520, placeholder="제목 포함 원고를 그대로 붙여넣어도 됩니다.")
+    draft = st.text_area("GPTs 초안 또는 Claude 수정본 붙여넣기", height=520, placeholder="1차: GPTs 초안을 붙여 Claude 패키지를 만들고, 2차: Claude 수정본을 다시 붙여 앱 검수를 실행하세요. 제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
-    st.write("## v10.0.6 Claude 자연화용 복붙 패키지")
-    st.caption("GPTs 초안을 Claude에 원고만 붙이면 ②/③ 설정 조건이 끊길 수 있습니다. 이 칸은 조건+원고를 한 번에 묶어 Claude에 보내는 안전 패키지입니다.")
+    st.write("## v10.0.7 Claude 자연화용 복붙 패키지")
+    st.caption("이 패키지는 Claude에 보내는 용도입니다. 여기서 만든 패키지를 Claude에 붙여넣고, Claude가 돌려준 수정본을 다시 위 원고 칸에 넣은 뒤 앱 검수를 실행하세요.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")
     check_required_for_claude = st.session_state.get("client_required_points", "")
@@ -9271,7 +9263,7 @@ with tab_check:
         output_rule="최종 원고만 출력",
     )
     st.text_area(
-        "Claude에 조건+원고 통째로 복붙",
+        "Claude에 복붙할 패키지",
         value=claude_naturalize_package,
         height=520,
         key=dynamic_widget_key("claude_naturalize_check", selected_usecase_mode, writer_perspective, article_style, keyword, field, selected_title_type, selected_voice_type, selected_intro_type, selected_first_sentence_type, brand_name, conversion_goal, brand_intensity, tone_detail, title_input, draft[:700])
@@ -9283,7 +9275,7 @@ with tab_check:
         key=dynamic_widget_key("claude_naturalize_check_download", claude_naturalize_package[:1000])
     )
 
-    if st.button("검수 시작", type="primary"):
+    if st.button("앱 검수 실행", type="primary"):
         title, body, title_source = extract_title(title_input, draft)
         if not body:
             st.error("본문이 비어 있습니다.")
@@ -9428,7 +9420,7 @@ with tab_check:
         if generate_intro and rewrite_intro_type == "8. 간단한 웹툰 만들어 넣기":
             st.caption("웹툰형은 실제 이미지를 만들지 않고 컷 구성안만 제공합니다. 실제 웹툰 이미지는 별도 이미지 제작 도구에서 만드는 방식이 안전합니다.")
 
-        st.write("## Claude용 윤문 지시문 · 현재 검수값 자동 갱신")
+        st.write("## 검수 결과 반영 재수정용 Claude 지시문 · 선택")
         current_body_for_claude = f"최종 제목: {title}\n\n본문:\n{body}".strip()
         claude_prompt_current = build_claude_prompt(
             selected_voice_type,
@@ -9449,14 +9441,14 @@ with tab_check:
             brand_intensity=brand_intensity,
             tone_detail=tone_detail
         )
-        st.caption("검수 화면의 최신 사용처·화법·도입방식·키워드 기준으로 매번 새로 생성됩니다. Claude에는 이 칸을 복붙하세요.")
+        st.caption("앱 검수 후에도 수정이 필요할 때만 사용하세요. 이미 Claude 자연화를 끝냈고 출고 가능이면 이 칸은 건너뛰어도 됩니다.")
         st.text_area(
-            "Claude에 바로 복붙",
+            "수정 재요청이 필요할 때만 Claude에 복붙",
             value=claude_prompt_current,
             height=520,
             key=dynamic_widget_key("claude_check_live", selected_usecase_mode, writer_perspective, article_style, sub_keywords, brand_name, conversion_goal, brand_intensity, tone_detail, selected_voice_type, selected_intro_type, selected_first_sentence_type, selected_title_type, keyword, field, homepage_mode, homepage_info, title, body[:500])
         )
-        st.download_button("현재 검수값 Claude 지시문 txt 다운로드", claude_prompt_current, file_name="dalrosom_claude_prompt_current.txt", key=dynamic_widget_key("claude_check_download", claude_prompt_current))
+        st.download_button("수정 재요청용 Claude 지시문 txt 다운로드", claude_prompt_current, file_name="dalrosom_claude_revision_prompt.txt", key=dynamic_widget_key("claude_check_download", claude_prompt_current))
 
         st.write("## 제출 판단")
         if total >= 92:
@@ -9468,7 +9460,7 @@ with tab_check:
         else:
             st.error("재작성 권장입니다. 구조부터 다시 잡는 편이 빠릅니다.")
     else:
-        st.info("왼쪽 조건을 입력하고 원고를 붙여넣은 뒤 검수 시작을 누르세요.")
+        st.info("왼쪽 조건을 입력하고 원고를 붙여넣은 뒤 앱 검수 실행을 누르세요.")
 
 
 with tab_humanizer:
@@ -9514,7 +9506,7 @@ with tab_humanizer:
         output_rule="최종 원고만 출력",
     )
     st.text_area(
-        "Claude에 조건+원고 통째로 복붙",
+        "Claude에 복붙할 패키지",
         value=h_claude_package,
         height=460,
         key=dynamic_widget_key("claude_naturalize_humanizer", h_topic, h_keyword, h_field, h_writer, h_title, h_body[:700])

@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v9.4.3", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v9.4.4", layout="wide")
 
 PURPOSES = [
     "",
@@ -5730,6 +5730,49 @@ def mined_db_snippet(mined_rows):
 
 
 
+
+# v9.4.4: 너무 짧은 단어 단독 후보는 자동 보류한다.
+# 예: "무조건", "직접", "100%", "최고의"는 문맥에 따라 정상 문장에도 들어갈 수 있으므로
+# 단어 하나만 금지 DB에 넣으면 검수기가 지나치게 빡빡해진다.
+SHORT_STANDALONE_DB_HOLD_TERMS = {"무조건", "직접", "100%", "최고의"}
+
+
+def normalize_candidate_token(text=""):
+    return re.sub(r"\s+", "", str(text or "").strip())
+
+
+def is_short_standalone_db_hold(text=""):
+    token = normalize_candidate_token(text)
+    return token in SHORT_STANDALONE_DB_HOLD_TERMS
+
+
+def is_safe_auto_save_recommendation(row):
+    """사용자가 따로 고르지 않아도 저장해도 되는 후보만 남긴다."""
+    if not row:
+        return False
+    if str(row.get("승인권장", "")) != "승인 추천":
+        return False
+    if str(row.get("추천처리", "")) not in {"완전 금지", "반복 감점"}:
+        return False
+    if is_short_standalone_db_hold(row.get("후보표현/패턴", "")):
+        return False
+    return True
+
+
+def stress_simple_action_summary(auto_recs):
+    safe = [r for r in auto_recs or [] if is_safe_auto_save_recommendation(r)]
+    hold = [r for r in auto_recs or [] if is_short_standalone_db_hold(r.get("후보표현/패턴", "")) or str(r.get("추천처리", "")) in {"주의", "보류"}]
+    review = [r for r in auto_recs or [] if str(r.get("승인권장", "")) == "검토"]
+    return {
+        "safe_save": safe,
+        "hold": hold,
+        "review": review,
+        "safe_count": len(safe),
+        "hold_count": len(hold),
+        "review_count": len(review),
+    }
+
+
 def classify_stress_candidate(issue_type="", text="", count=1, high_count=0, products=None, reason=""):
     """v9.4.3: 대량 샘플 이슈를 금지/주의/반복감점/보류로 자동 분류한다."""
     issue_type = str(issue_type or "")
@@ -5744,6 +5787,18 @@ def classify_stress_candidate(issue_type="", text="", count=1, high_count=0, pro
     db_target = "보류 DB"
     why = "문맥에 따라 달라질 수 있어 바로 금지하지 않고 보류합니다."
     priority = 0
+
+    # v9.4.4: 짧은 단어 하나만 후보로 올라온 경우는 자동 보류한다.
+    # "무조건 승소"는 금지지만, "무조건" 단독은 문맥에 따라 정상일 수 있다.
+    if is_short_standalone_db_hold(text):
+        return {
+            "추천처리": "보류",
+            "추천DB": "보류 DB",
+            "추천위험도": "낮음",
+            "승인권장": "보류",
+            "자동분류이유": "짧은 단어 단독 후보라 바로 저장하지 않습니다. 문장 묶음으로 반복될 때만 승격하세요.",
+            "우선순위": 0,
+        }
 
     if count >= 3:
         priority += 25
@@ -7536,7 +7591,7 @@ def build_sample_shorts_script(topic="", keyword="", field="", length="30초", s
         body += ["여기서 많이 놓치는 건 마지막 확인입니다.", "여러분은 어떤 기준을 먼저 보시나요?"]
     return "\n".join(body)
 
-st.title("📝 달로썸 원고 검수기 v9.4.3")
+st.title("📝 달로썸 원고 검수기 v9.4.4")
 st.caption("GPT 조사 프롬프트 → 원고 설계 → 최종 원고 검수 → 사람화 수정 → 클라이언트 프리셋 → 수익 작업대까지 한 흐름으로 사용합니다. v9.3에서는 쇼츠 대본 전용 엔진을 추가해, 블로그 원고를 15초·30초·45초·60초·3분 이하 쇼츠 구조로 변환하고 후킹·자막·컷 구성·댓글 유도·위험표현 검수까지 정리합니다.")
 
 
@@ -9177,67 +9232,114 @@ with tab_stress:
         st.caption("애매한 문장은 여기서 `볼 후보`를 `애매/보류만`으로 바꾸면 바로 볼 수 있습니다. 기본은 승인 추천만 확인하면 됩니다.")
         rec_df = pd.DataFrame(auto_recs)
         if not rec_df.empty:
-            rec_col1, rec_col2, rec_col3 = st.columns([1, 1, 1])
-            with rec_col1:
-                rec_approve_filter = st.selectbox("볼 후보", ["승인 추천만", "애매/보류만", "검토/승인", "전체"], index=0, key="stress_rec_approve_filter")
-            with rec_col2:
-                rec_action_filter = st.selectbox("처리 유형", ["전체", "완전 금지", "반복 감점", "주의", "보류"], index=0, key="stress_rec_action_filter")
-            with rec_col3:
-                rec_min_count = st.number_input("최소 감지횟수", min_value=1, max_value=50, value=1, step=1, key="stress_rec_min_count")
+            simple_summary = stress_simple_action_summary(auto_recs)
+            safe_auto_save = simple_summary["safe_save"]
+            hold_auto = simple_summary["hold"]
 
-            rec_show = rec_df.copy()
-            if rec_approve_filter == "승인 추천만":
-                rec_show = rec_show[rec_show["승인권장"] == "승인 추천"]
-            elif rec_approve_filter == "애매/보류만":
-                rec_show = rec_show[(rec_show["추천처리"] == "보류") | (rec_show["승인권장"] == "보류")]
-            elif rec_approve_filter == "검토/승인":
-                rec_show = rec_show[rec_show["승인권장"].isin(["승인 추천", "검토"])]
-            if rec_action_filter != "전체":
-                rec_show = rec_show[rec_show["추천처리"] == rec_action_filter]
-            rec_show = rec_show[rec_show["감지횟수"] >= int(rec_min_count)]
+            st.write("#### ✅ 간단 모드 · 헷갈리면 여기만 쓰세요")
+            sm1, sm2, sm3 = st.columns(3)
+            sm1.metric("저장 추천", simple_summary["safe_count"])
+            sm2.metric("자동 보류", simple_summary["hold_count"])
+            sm3.metric("검토만", simple_summary["review_count"])
+            st.success("운영법: `저장 추천`만 저장하세요. `자동 보류/검토만`은 지금 안 건드려도 됩니다.")
 
-            if rec_show.empty:
-                st.success("현재 필터에서는 후보가 없습니다. `볼 후보=전체` 또는 `처리 유형=전체`로 넓혀보세요. 보류 후보가 없으면 애매한 문장이 자동 추천 단계까지 올라오지 않은 상태입니다.")
-            else:
-                edit_cols = ["선택", "승인권장", "추천처리", "추천DB", "추천위험도", "감지횟수", "높음횟수", "상품", "구분", "후보표현/패턴", "자동분류이유", "권장수정"]
-                edited = st.data_editor(
-                    rec_show[edit_cols].head(80),
-                    use_container_width=True,
-                    height=420,
-                    key="stress_auto_rec_editor",
-                    column_config={"선택": st.column_config.CheckboxColumn("승인", help="저장할 후보만 체크")},
-                    disabled=[c for c in edit_cols if c != "선택"],
-                )
-                selected_auto = edited[edited["선택"] == True].to_dict("records") if not edited.empty else []
-                st.caption(f"현재 선택된 후보: {len(selected_auto)}개 · 기본적으로 앱이 체크한 것만 확인하면 됩니다.")
+            if safe_auto_save:
+                simple_df = pd.DataFrame(safe_auto_save)[["추천처리", "감지횟수", "구분", "후보표현/패턴", "자동분류이유", "권장수정"]]
+                st.dataframe(simple_df.head(20), use_container_width=True, height=260)
+                quick_col1, quick_col2 = st.columns([1, 1])
+                with quick_col1:
+                    if st.button("✅ 앱 추천대로 안전 후보만 저장", type="primary", key="stress_quick_save_safe_only"):
+                        existing_weird = load_custom_weird_db()
+                        new_weird_rows = [recommendation_to_weird_row(r, s_field) for r in safe_auto_save]
+                        save_custom_weird_db(existing_weird + new_weird_rows)
 
-                save_col1, save_col2, save_col3 = st.columns([1, 1, 1])
-                with save_col1:
-                    if st.button("선택 후보 → 이상 문장 DB 저장", key="save_selected_stress_to_weird_db"):
-                        existing = load_custom_weird_db()
-                        new_rows = [recommendation_to_weird_row(r, s_field) for r in selected_auto]
-                        save_custom_weird_db(existing + new_rows)
-                        st.success(f"이상 문장 DB에 {len(new_rows)}개 저장했습니다.")
-                with save_col2:
-                    if st.button("완전 금지/반복감점 → 패턴 DB 저장", key="save_selected_stress_to_pattern_db"):
-                        target_rows = [r for r in selected_auto if r.get("추천처리") in {"완전 금지", "반복 감점"}]
+                        target_rows = [r for r in safe_auto_save if r.get("추천처리") in {"완전 금지", "반복 감점"}]
                         pattern_rows = [recommendation_to_pattern_row(r, s_field) for r in target_rows]
                         merged = merge_pattern_rows(load_custom_weird_pattern_db(), pattern_rows)
                         save_custom_weird_pattern_db(merged)
-                        st.success(f"금지/반복감점 패턴 DB에 {len(pattern_rows)}개 반영했습니다.")
-                with save_col3:
-                    if st.button("선택 후보 JSON 다운로드 준비", key="prepare_stress_auto_json"):
-                        st.session_state["stress_selected_auto_json"] = selected_auto
-                        st.success("아래 다운로드 버튼에 선택 후보를 준비했습니다.")
 
-                selected_json = st.session_state.get("stress_selected_auto_json", selected_auto)
-                st.download_button(
-                    "선택 후보 JSON 다운로드",
-                    data=json.dumps(selected_json, ensure_ascii=False, indent=2).encode("utf-8-sig"),
-                    file_name="stress_auto_recommendations_selected.json",
-                    mime="application/json",
-                    key="download_stress_auto_selected",
-                )
+                        st.success(f"완료: 이상 문장 DB {len(new_weird_rows)}개, 패턴 DB {len(pattern_rows)}개 저장했습니다. 보류 후보는 건드리지 않았습니다.")
+                with quick_col2:
+                    st.download_button(
+                        "저장 추천 후보만 JSON 다운로드",
+                        data=json.dumps(safe_auto_save, ensure_ascii=False, indent=2).encode("utf-8-sig"),
+                        file_name="stress_safe_auto_save_candidates.json",
+                        mime="application/json",
+                        key="download_stress_safe_auto_save",
+                    )
+            else:
+                st.info("이번 결과에는 바로 저장할 안전 후보가 없습니다. 이럴 땐 저장하지 말고 넘어가면 됩니다.")
+
+            with st.expander("자동 보류/검토 후보 보기 · 보통은 안 봐도 됨", expanded=False):
+                if hold_auto:
+                    hold_cols = ["승인권장", "추천처리", "감지횟수", "구분", "후보표현/패턴", "자동분류이유"]
+                    st.dataframe(pd.DataFrame(hold_auto)[hold_cols].head(80), use_container_width=True, height=300)
+                    st.caption("여기에 `무조건`, `직접`, `100%`, `최고의` 같은 짧은 단어 단독 후보가 들어갑니다. 저장하지 않는 게 기본입니다.")
+                else:
+                    st.success("자동 보류 후보가 없습니다.")
+
+            with st.expander("고급 모드 · 직접 고르고 싶을 때만 열기", expanded=False):
+                rec_col1, rec_col2, rec_col3 = st.columns([1, 1, 1])
+                with rec_col1:
+                    rec_approve_filter = st.selectbox("볼 후보", ["승인 추천만", "애매/보류만", "검토/승인", "전체"], index=0, key="stress_rec_approve_filter")
+                with rec_col2:
+                    rec_action_filter = st.selectbox("처리 유형", ["전체", "완전 금지", "반복 감점", "주의", "보류"], index=0, key="stress_rec_action_filter")
+                with rec_col3:
+                    rec_min_count = st.number_input("최소 감지횟수", min_value=1, max_value=50, value=1, step=1, key="stress_rec_min_count")
+
+                rec_show = rec_df.copy()
+                if rec_approve_filter == "승인 추천만":
+                    rec_show = rec_show[rec_show["승인권장"] == "승인 추천"]
+                elif rec_approve_filter == "애매/보류만":
+                    rec_show = rec_show[(rec_show["추천처리"] == "보류") | (rec_show["승인권장"] == "보류")]
+                elif rec_approve_filter == "검토/승인":
+                    rec_show = rec_show[rec_show["승인권장"].isin(["승인 추천", "검토"])]
+                if rec_action_filter != "전체":
+                    rec_show = rec_show[rec_show["추천처리"] == rec_action_filter]
+                rec_show = rec_show[rec_show["감지횟수"] >= int(rec_min_count)]
+
+                if rec_show.empty:
+                    st.success("현재 필터에서는 후보가 없습니다. `볼 후보=전체` 또는 `처리 유형=전체`로 넓혀보세요. 보류 후보가 없으면 애매한 문장이 자동 추천 단계까지 올라오지 않은 상태입니다.")
+                else:
+                    edit_cols = ["선택", "승인권장", "추천처리", "추천DB", "추천위험도", "감지횟수", "높음횟수", "상품", "구분", "후보표현/패턴", "자동분류이유", "권장수정"]
+                    edited = st.data_editor(
+                        rec_show[edit_cols].head(80),
+                        use_container_width=True,
+                        height=420,
+                        key="stress_auto_rec_editor",
+                        column_config={"선택": st.column_config.CheckboxColumn("승인", help="저장할 후보만 체크")},
+                        disabled=[c for c in edit_cols if c != "선택"],
+                    )
+                    selected_auto = edited[edited["선택"] == True].to_dict("records") if not edited.empty else []
+                    st.caption(f"현재 선택된 후보: {len(selected_auto)}개 · 기본적으로 앱이 체크한 것만 확인하면 됩니다.")
+
+                    save_col1, save_col2, save_col3 = st.columns([1, 1, 1])
+                    with save_col1:
+                        if st.button("선택 후보 → 이상 문장 DB 저장", key="save_selected_stress_to_weird_db"):
+                            existing = load_custom_weird_db()
+                            new_rows = [recommendation_to_weird_row(r, s_field) for r in selected_auto]
+                            save_custom_weird_db(existing + new_rows)
+                            st.success(f"이상 문장 DB에 {len(new_rows)}개 저장했습니다.")
+                    with save_col2:
+                        if st.button("완전 금지/반복감점 → 패턴 DB 저장", key="save_selected_stress_to_pattern_db"):
+                            target_rows = [r for r in selected_auto if r.get("추천처리") in {"완전 금지", "반복 감점"}]
+                            pattern_rows = [recommendation_to_pattern_row(r, s_field) for r in target_rows]
+                            merged = merge_pattern_rows(load_custom_weird_pattern_db(), pattern_rows)
+                            save_custom_weird_pattern_db(merged)
+                            st.success(f"금지/반복감점 패턴 DB에 {len(pattern_rows)}개 반영했습니다.")
+                    with save_col3:
+                        if st.button("선택 후보 JSON 다운로드 준비", key="prepare_stress_auto_json"):
+                            st.session_state["stress_selected_auto_json"] = selected_auto
+                            st.success("아래 다운로드 버튼에 선택 후보를 준비했습니다.")
+
+                    selected_json = st.session_state.get("stress_selected_auto_json", selected_auto)
+                    st.download_button(
+                        "선택 후보 JSON 다운로드",
+                        data=json.dumps(selected_json, ensure_ascii=False, indent=2).encode("utf-8-sig"),
+                        file_name="stress_auto_recommendations_selected.json",
+                        mime="application/json",
+                        key="download_stress_auto_selected",
+                    )
         else:
             st.success("자동 추천 DB 후보가 없습니다. 전체 이슈가 없거나 강한 반복 패턴이 적은 상태입니다.")
 

@@ -4,5 +4,105 @@
     "pass": 10,
     "error": 0
   },
-  "failed": []
+  "checks": [
+    {
+      "name": "①→②→③→⑩ 검색형 원고 흐름",
+      "ok": true,
+      "detail": {
+        "research_len": 9687,
+        "draft_len": 10452,
+        "check_score": 69,
+        "gate": "출고 보류"
+      }
+    },
+    {
+      "name": "⑦ 상품별 원고 엔진→⑩ 품질게이트",
+      "ok": true,
+      "detail": {
+        "prompt_len": 2401,
+        "gate": "출고 보류"
+      }
+    },
+    {
+      "name": "⑧ 샘플테스트→DB후보→간단모드",
+      "ok": true,
+      "detail": {
+        "rows": 5,
+        "issue_rows": 12,
+        "mined": 6,
+        "recs": 7,
+        "safe": 0
+      }
+    },
+    {
+      "name": "⑨ 국어선생님→⑩ 품질게이트 점수연동",
+      "ok": true,
+      "detail": {
+        "kt_score": 88,
+        "gate": "수정 후 출고"
+      }
+    },
+    {
+      "name": "⑬ 사진자료 기자단→⑩ 품질게이트",
+      "ok": true,
+      "detail": {
+        "photo_rows": 3,
+        "inspect_count": 0
+      }
+    },
+    {
+      "name": "⑭ 쇼츠→검수→납품포맷",
+      "ok": true,
+      "detail": {
+        "script_len": 161,
+        "issues": 1,
+        "delivery_len": 412
+      }
+    },
+    {
+      "name": "⑮ 홈피드→점수→검수→납품포맷",
+      "ok": true,
+      "detail": {
+        "titles": 10,
+        "score": 67.5,
+        "inspect": 2
+      }
+    },
+    {
+      "name": "⑰→⑲→㉑ 월관리/통계/백업 연동",
+      "ok": true,
+      "detail": {
+        "calendar": 2,
+        "stats_keys": [
+          "rows",
+          "total",
+          "done_total",
+          "count",
+          "done_count",
+          "by_product",
+          "by_client"
+        ],
+        "backup_keys": [
+          "version",
+          "created_at",
+          "files"
+        ]
+      }
+    },
+    {
+      "name": "⑱ 견적서→이력 형식",
+      "ok": true,
+      "detail": {
+        "quote_len": 2
+      }
+    },
+    {
+      "name": "⑫ 이상문장DB→패턴후보",
+      "ok": true,
+      "detail": {
+        "loaded": 750,
+        "patterns": 5
+      }
+    }
+  ]
 }

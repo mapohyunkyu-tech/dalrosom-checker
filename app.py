@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.14", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.15", layout="wide")
 
 PURPOSES = [
     "",
@@ -1256,6 +1256,59 @@ def writing_gyeol_prompt_block(primary_gyeol="", secondary_gyeol_1="", secondary
         "- 매출 전환형이라도 장점 나열문으로 끝내지 말고, 선택 기준·판단 기준과 연결해 자연스럽게 마무리한다." + extra,
     ])
 
+
+
+# =========================
+# v10.0.15: 일반 GPT용 실행 모드 / 전문직 문체 안전장치
+# =========================
+def prompt_execution_mode_block(prompt_mode="달로썸 GPTs용", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", field="", article_style="", topic="", keyword=""):
+    """달로썸 GPTs 없이 일반 GPT에 붙여도 글결과 출력 구조가 무너지지 않게 하는 실행 모드 지시."""
+    primary = resolve_primary_gyeol(primary_gyeol, field, article_style, topic, keyword)
+    seconds = clean_secondary_gyeols(secondary_gyeol_1, secondary_gyeol_2)
+    names = " + ".join([primary] + seconds) if seconds else primary
+    if prompt_mode == "일반 GPT용":
+        return f"""[일반 GPT용 실행 규칙]
+- 이 프롬프트는 별도 GPTs 설정 없이 일반 GPT에 그대로 붙여넣는 용도다.
+- 달로썸 GPTs 내부 규칙, 이전 대화, 숨은 프리셋이 없다고 가정하고 아래 조건만으로 원고를 작성한다.
+- 대표 글결은 ‘{primary}’이며, 최종 글결 조합은 ‘{names}’이다. 이 글결이 제목, 도입, 소제목, 마무리에서 눈에 보이게 드러나야 한다.
+- 단순 체크리스트 정보글로 축소하지 말고, 선택한 글결의 필수 흐름을 본문 구조로 구현한다.
+- 조건 설명, 분석, 사과, 메모를 출력하지 말고 “제목 후보 / 최종 제목 / 본문”만 출력한다.
+- 달로썸식 기존 문체가 필요하면 달로썸 GPTs용을 따로 사용하고, 일반 GPT용에서는 아래 명시 조건을 우선한다."""
+    if prompt_mode == "외부 GPTs용 강제 프롬프트":
+        return f"""[외부 GPTs용 강제 실행 규칙]
+- 외부 GPTs의 기존 성격보다 아래 원고 조건을 우선한다.
+- 대표 글결 ‘{primary}’와 보조 글결 ‘{', '.join(seconds) if seconds else '없음'}’을 반드시 반영한다.
+- 원고 조건을 요약하거나 질문하지 말고 바로 초안을 작성한다."""
+    return f"""[달로썸 GPTs용 실행 규칙]
+- 달로썸 GPTs의 기존 말맛을 활용하되, 아래 선택 조건과 글결을 우선 적용한다.
+- 대표 글결 ‘{primary}’와 보조 글결 ‘{', '.join(seconds) if seconds else '없음'}’을 무시하지 않는다.
+- 달로썸식 원고가 필요할 때 사용하는 모드이며, 일반 GPT에 붙일 때는 ‘일반 GPT용’을 권장한다."""
+
+
+def professional_style_safety_block(field="", writer_perspective="", usecase_mode=""):
+    text = f"{field} {writer_perspective} {usecase_mode}"
+    is_professional = any(x in text for x in ["병원", "의료", "법률", "변호사", "세무", "노무", "금융", "보험", "전문", "원장", "의사"])
+    if not is_professional:
+        return """[문체 안전장치]
+- 자연스럽게 쓰되 비표준 어미나 장난스러운 말투를 사용하지 않는다.
+- ‘입니다요’, ‘합니다요’, ‘됩니다요’, ‘좋습니다요’ 같은 어색한 종결은 절대 사용하지 않는다."""
+    return """[전문직 문체 안전장치]
+- 병원·법률·전문직 원고는 차분한 존댓말로 쓴다.
+- 부드럽게 쓰더라도 비표준 어미, 장난스러운 구어체, 과한 친근체를 쓰지 않는다.
+- ‘입니다요’, ‘합니다요’, ‘됩니다요’, ‘좋습니다요’, ‘필요합니다요’, ‘확인해야 합니다요’ 같은 표현은 절대 사용하지 않는다.
+- 기본 종결은 ‘~입니다.’, ‘~합니다.’, ‘~할 수 있습니다.’, ‘~확인해야 합니다.’, ‘~상담이 필요합니다.’로 정리한다.
+- ‘~하죠’, ‘~거든요’, ‘~잖아요’를 반복하지 않는다. 필요할 때만 1~2회 이하로 사용한다.
+- 대표원장/변호사/전문가 관점이라도 실제 경험을 지어내지 않고, 판단 기준과 상담 기준 중심으로 설명한다."""
+
+
+def detect_nonstandard_professional_endings(text=""):
+    patterns = ["입니다요", "합니다요", "됩니다요", "좋습니다요", "필요합니다요", "확인해야 합니다요", "봅니다요", "들어갑니다요", "중요합니다요"]
+    hits = []
+    for p in patterns:
+        if p in (text or ""):
+            hits.append(p)
+    return sorted(set(hits))
+
 def inspect_writing_gyeol_alignment(body="", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", field="", article_style="", topic="", keyword=""):
     primary = resolve_primary_gyeol(primary_gyeol, field, article_style, topic, keyword)
     text = body or ""
@@ -2497,6 +2550,7 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         brand_name=brand_name,
     )
     gyeol_alignment = inspect_writing_gyeol_alignment(body, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, field, article_style, title, keyword)
+    nonstandard_endings = detect_nonstandard_professional_endings(body)
 
     # 제목
     title_score = 15
@@ -2568,9 +2622,6 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         for gi in gyeol_alignment.get("issues", [])[:3]:
             issues["본문"].append(("글결 반영 약함", gi))
         body_score -= min(5, 2 + len(gyeol_alignment.get("issues", [])))
-    if gyeol_alignment.get("issues"):
-        total = min(total, 91)
-        cap_reasons.append("선택한 대표 글결이 본문 흐름에 충분히 반영되지 않아 글결 상한 91점 적용")
     if specialty_profile and len(specialty_missing) >= 4:
         issues["본문"].append(("세부 업종 필수 기준 부족", f"{specialty_profile.get('display')} 원고에 필요한 기준이 부족합니다: {', '.join(specialty_missing[:6])}"))
         body_score -= 4
@@ -2624,6 +2675,9 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
         for hi in human_issues[:5]:
             issues["사람화"].append((hi["표현"], f"{hi['설명']} 수정 방향: {hi['수정']}"))
         ai_score -= min(6, 2 + len(human_issues))
+    if nonstandard_endings:
+        issues["AI티"].append(("비표준 어미", "전문직 원고에 맞지 않는 어색한 종결입니다: " + ", ".join(nonstandard_endings)))
+        ai_score -= min(8, 4 + len(nonstandard_endings))
     scores["AI티"] = max(ai_score, 0)
 
     # 복사 찌꺼기 / 출처 흔적
@@ -2724,6 +2778,12 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     raw_total = scores["제목"] + scores["본문"] + scores["도입"] + scores["AI티"] + scores["위험표현"] + scores["작성자 관점"] + scores["마무리"] - (10 - scores["복사찌꺼기"])
     total = min(max(raw_total, 0), 100)
     cap_reasons = []
+    if gyeol_alignment.get("issues"):
+        total = min(total, 91)
+        cap_reasons.append("선택한 대표 글결이 본문 흐름에 충분히 반영되지 않아 글결 상한 91점 적용")
+    if nonstandard_endings:
+        total = min(total, 86)
+        cap_reasons.append("입니다요/합니다요/됩니다요 같은 비표준 어미가 감지되어 문체 오류 상한 86점 적용")
     if selected_intro_type not in detected_intro:
         total = min(total, 90)
         cap_reasons.append("선택한 달로썸 도입 방식과 실제 도입 방식이 달라 총점 상한 90점 적용")
@@ -3245,7 +3305,7 @@ def resolve_target_length(preset, custom_value):
 
 
 def prompt_safe_text(text):
-    """GPTs에 복붙되는 프롬프트에서 숫자 범위·소제목·라벨이 깨져 보이는 문제를 줄인다.
+    """일반 GPT/GPTs에 복붙되는 프롬프트에서 숫자 범위·소제목·라벨이 깨져 보이는 문제를 줄인다.
     일부 복붙 환경에서 2~3곳, 1000~1500자가 23곳, 10001500자처럼 붙어 보이는 사례가 있어
     원고 지시문에는 물결표 범위 대신 한글 범위 표현을 사용한다.
     """
@@ -3646,6 +3706,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     purpose_block = content_goal_force_block(content_goal, field, article_style, topic, keyword, conversion_goal, brand_name, usecase_mode, sub_keywords, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2)
     brand_block = brand_voice_block(article_style, sub_keywords, brand_name, conversion_goal, brand_intensity, tone_detail, writer_perspective, field, topic, keyword)
     gyeol_block = writing_gyeol_prompt_block(primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, field, article_style, topic, keyword)
+    style_safety_block = professional_style_safety_block(field, writer_perspective, usecase_mode)
     homefeed_block = homefeed_planning_block(homefeed_category, homefeed_tone, homefeed_hook, homefeed_experience, homefeed_revenue, homefeed_issue, homefeed_overseas_policy, homefeed_overseas_usage) if usecase_mode == "홈피드형" or article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글", "홈판 후킹형"] else ""
     extra_focus = extra_focus.strip()
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
@@ -4004,7 +4065,7 @@ D등급: 참고만 가능
 - 공식 홈페이지에서 확인된 정보가 주제와 관련 있으면 마무리 반영은 필수다. 정보성은 1~2문장, 매출 전환형은 2~4문장으로 주제와 연결한다.
 - 홈페이지 정보가 주제와 관련이 약하면 억지 홍보하지 말고 ‘마무리 반영 가능 정보 부족’이라고 표시한다.
 
-[7] GPTs 초안 작성용 요약
+[7] 일반 GPT/GPTs 초안 작성용 요약
 내가 프로그램에 붙여넣을 수 있게 아래 형식으로 짧게 정리해줘.
 
 핵심 팩트 자료 요약:
@@ -4716,6 +4777,8 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     purpose_block = content_goal_force_block(content_goal, field, article_style, topic, keyword, conversion_goal, brand_name, usecase_mode, sub_keywords, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2)
     brand_block = brand_voice_block(article_style, sub_keywords, brand_name, conversion_goal, brand_intensity, tone_detail, writer_perspective, field, topic, keyword)
     gyeol_block = writing_gyeol_prompt_block(primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, field, article_style, topic, keyword)
+    execution_mode_block = prompt_execution_mode_block(prompt_mode, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, field, article_style, topic, keyword)
+    style_safety_block = professional_style_safety_block(field, writer_perspective, usecase_mode)
     homefeed_block = homefeed_planning_block(homefeed_category, homefeed_tone, homefeed_hook, homefeed_experience, homefeed_revenue, homefeed_issue, homefeed_overseas_policy, homefeed_overseas_usage) if usecase_mode == "홈피드형" or article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글", "홈판 후킹형"] else ""
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
     clean_b_lines = sanitize_b_concern_lines(b_lines, max_items=10, max_len=90)
@@ -4741,7 +4804,9 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     medical_guard = medical_emotion_title_guard_block(field, topic, keyword)
     law_guard = law_tone_guard_block(field, topic, keyword)
     expert_guard = field_specific_guard_block(field, topic, keyword, writer_perspective) + specialty_guard_block(field, topic, keyword, writer_perspective) + humanization_guard_block(field, topic, keyword, writer_perspective)
-    if prompt_mode == "외부 GPTs용 강제 프롬프트":
+    if prompt_mode == "일반 GPT용":
+        mode_notice = "일반 GPT용입니다. 별도 GPTs 설정이 없다고 가정하고 아래 조건만으로 작성합니다. 글결·분량·문체 안전장치를 반드시 지켜야 합니다."
+    elif prompt_mode == "외부 GPTs용 강제 프롬프트":
         mode_notice = "외부 GPTs용입니다. 아래 조건은 추천이 아니라 필수 작성 조건입니다. 조건을 지키지 못하면 다시 작성해야 합니다."
     else:
         mode_notice = "달로썸 GPTs용입니다. 기존 GPTs 설정과 충돌하더라도 아래 선택 조건을 우선 적용합니다."
@@ -4778,7 +4843,11 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 
 {purpose_block}
 
+{execution_mode_block}
+
 {gyeol_block}
+
+{style_safety_block}
 
 {brand_block}
 
@@ -4834,6 +4903,8 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 0-3. 작성자 관점은 “{writer_perspective}”이다. 단, 병원/의료 원고에서 지정 관점이 주제와 명백히 맞지 않으면 주제와 키워드에 맞는 진료과 관점을 우선한다. 작성자 관점이 이미 주제와 맞으면 임의로 다른 과목 관점으로 바꾸지 마.
 0-4. 위 [글 성격 / 브랜드 반영 / 말투 세부 조건]을 반드시 지킨다. 선택한 글 성격에 맞게 업체명·전환 목표·말맛을 조절한다. 선택한 글 성격에 따라 마무리 강도와 업체 정보 반영 범위를 조절한다.
 0-5. 위 [원고 글결 적용 지시]를 반드시 지킨다. 대표 글결이 선택 기준형이면 기준을, 오해 반박형이면 오해와 반박을, 대표자 주장형이면 판단 기준과 철학을, 증상 공감형이면 불편 공감과 치료/해결 흐름을 분명히 만든다.
+0-5-1. 일반 GPT용 모드에서는 달로썸 GPTs가 대신 잡아준다고 생각하지 말고, 글결 구조를 소제목과 문단 흐름에 직접 반영한다.
+0-5-2. 전문직 문체 안전장치를 지켜 ‘입니다요/합니다요/됩니다요’ 같은 비표준 어미를 절대 쓰지 않는다.
 1. 도입부는 반드시 “{voice_type}” 화법, “{first_sentence_type}” 첫문장 형태, “{intro_type}” 방식을 함께 반영해 작성해줘.
 1-1. 첫 문장은 반드시 위 [도입 첫문장 형태 필수 규칙]을 따른다.
 1-1-1. [전 분야 감정 흐름 설계]의 감정 도입 첫문장 후보 중 1개를 첫 문장으로 사용하거나, 같은 근거 B등급 고민 범위 안에서 자연스럽게 재구성해줘.
@@ -4873,6 +4944,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 - 최고/유일
 - 가짜 개인 경험담
 - 힘드셨나요/불안하시죠/걱정되시죠의 반복
+- 입니다요/합니다요/됩니다요/좋습니다요/필요합니다요 같은 비표준 어미
 - 병원/의료 일반 검사·시술 글에서 억울하다/억울하고 답답하다/손해 보는 느낌 같은 분쟁성 감정 표현
 - 제목 후보의 5체크/5기준/3주의처럼 숫자와 명사를 부자연스럽게 붙인 표현
 - 법률 원고에서 승소·회수·처벌·구속·유죄를 보장하거나 단정하는 표현
@@ -5090,7 +5162,7 @@ def build_claude_naturalize_package(
     resolved_secondary_gyeols = clean_secondary_gyeols(secondary_gyeol_1, secondary_gyeol_2)
 
     if not draft_text.strip():
-        draft_text = "여기에 GPTs에서 만든 원고를 붙여넣기"
+        draft_text = "여기에 일반 GPT 또는 GPTs에서 만든 원고를 붙여넣기"
 
     current_len_for_mode = len(re.sub(r"\s+", "", draft_text)) if spacing_type == "공백 제외" else len(draft_text)
     needs_length_boost = bool(target_len and current_len_for_mode < int(target_len * 0.85))
@@ -5100,6 +5172,7 @@ def build_claude_naturalize_package(
     sensitive_extra = ""
     if any(x in field for x in ["병원", "의료", "법률", "보험", "금융", "투자", "주식", "코인"]):
         sensitive_extra = "\n- 이 분야는 민감 업종이므로 효과·승소·수익·완치·부작용 없음 같은 결과 보장 표현을 절대 추가하지 말 것."
+    style_safety_for_claude = professional_style_safety_block(field, writer_perspective, usecase_mode)
 
     brand_rule = ""
     if brand_name:
@@ -5151,6 +5224,8 @@ def build_claude_naturalize_package(
 [이번 패키지 모드]
 - 모드: {package_mode}
 {boost_rule_text}
+
+{style_safety_for_claude}
 
 [작업 조건]
 - 주제: {topic or '미입력'}
@@ -8833,7 +8908,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.13")
+st.title("📝 달로썸 원고 검수기 v10.0.15")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -9165,7 +9240,7 @@ tab_presets, tab_research, tab_design, tab_product, tab_photo_press_writer, tab_
 
 
 
-st.info("사용 흐름: ① 프리셋 → ② 의뢰 조건 → ③ 조사 결과/초안 프롬프트 → GPTs 초안 생성 → ⑧ Claude 패키지 생성 → Claude 자연화 → ⑧ 앱 검수 실행 → ⑩ 국어선생님 → ⑪ 통합 출고판정")
+st.info("사용 흐름: ① 프리셋 → ② 의뢰 조건 → ③ 조사 결과/초안 프롬프트 → 일반 GPT 또는 달로썸 GPTs 초안 생성 → ⑧ Claude 패키지 생성 → Claude 자연화 → ⑧ 앱 검수 실행 → ⑩ 국어선생님 → ⑪ 통합 출고판정")
 
 _pending_preset_name = st.session_state.pop("pending_apply_preset_name", None)
 if _pending_preset_name:
@@ -9471,8 +9546,8 @@ with tab_design:
         with d_col1:
             d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
             st.caption(f"원고 사용처: {d_usecase_mode} / {usecase_summary_line(d_usecase_mode)}")
-            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
-            st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
+            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["일반 GPT용", "달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
+            st.caption("기본은 일반 GPT용입니다. 달로썸식 기존 말맛이 필요할 때만 달로썸 GPTs용을 선택하세요. 남의 GPTs는 외부 GPTs용 강제 프롬프트를 사용하세요.")
         with d_col2:
             d_extra_rules = st.text_area("초안 작성 추가 조건", placeholder="예: 추가 금지어, 클라이언트 요청사항, 특정 문체", height=100, key="d_extra_rules")
             with st.expander("②에서 가져온 브랜드·말투 조건 확인", expanded=True):
@@ -9556,8 +9631,8 @@ with tab_design:
         with d_col2:
             d_content_type = st.selectbox("원고 유형", CONTENT_TYPES, index=4, key="d_content_type")
             st.caption(f"원고 사용처: {d_usecase_mode} / {usecase_summary_line(d_usecase_mode)}")
-            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
-            st.caption("네가 만든/달로썸 GPTs에는 기본값, 남의 GPTs에는 외부 GPTs용 강제 프롬프트를 사용하세요.")
+            d_prompt_mode = st.selectbox("프롬프트 출력 방식", ["일반 GPT용", "달로썸 GPTs용", "외부 GPTs용 강제 프롬프트"], index=0, key="d_prompt_mode")
+            st.caption("기본은 일반 GPT용입니다. 달로썸식 기존 말맛이 필요할 때만 달로썸 GPTs용을 선택하세요. 남의 GPTs는 외부 GPTs용 강제 프롬프트를 사용하세요.")
             length_col1, length_col2 = st.columns(2)
             with length_col1:
                 d_length_preset = st.selectbox("희망 분량", LENGTH_PRESETS, index=1, key="d_length_preset")
@@ -9610,14 +9685,14 @@ with tab_design:
         )
         st.write("## 홈피드형 초안 프롬프트")
         st.text_area(
-            "GPTs에 복붙",
+            "일반 GPT/GPTs에 복붙",
             value=homefeed_draft_prompt,
             height=620,
             key=dynamic_widget_key("homefeed_draft_prompt_live", d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage, research_text, d_extra_rules, d_target_len)
         )
         st.download_button("홈피드형 초안 프롬프트 txt 다운로드", homefeed_draft_prompt, file_name="dalrosom_homefeed_draft_prompt.txt", key=dynamic_widget_key("homefeed_draft_download", homefeed_draft_prompt))
         st.write("### 홈피드형 사용 순서")
-        st.write("1. ② 조사 프롬프트로 이슈 후보를 수집합니다. 2. 조사 결과를 여기에 붙여넣습니다. 3. 위 초안 프롬프트를 GPTs에 넣어 선택 이슈 1개를 본문으로 만듭니다. 4. 이미지 방향은 직접 제작/링크카드/공식 허용 이미지 위주로 확인합니다.")
+        st.write("1. ② 조사 프롬프트로 이슈 후보를 수집합니다. 2. 조사 결과를 여기에 붙여넣습니다. 3. 위 초안 프롬프트를 일반 GPT 또는 GPTs에 넣어 선택 이슈 1개를 본문으로 만듭니다. 4. 이미지 방향은 직접 제작/링크카드/공식 허용 이미지 위주로 확인합니다.")
     else:
         counts, a_lines, b_lines, c_lines = analyze_research_text(research_text)
         st.write("### 화법 선택")
@@ -9740,22 +9815,22 @@ with tab_design:
         st.info("별도 홈페이지 입력칸은 제거했습니다. 업체 공개정보를 쓰려면 ‘초안 작성 추가 조건’ 또는 조사 결과 안에 넣고, 확인된 정보 안에서만 반영하도록 지시하세요.")
 
         draft_prompt = build_draft_prompt(d_topic, d_keyword, d_field, d_content_type, d_voice, d_intro_type, d_title_type, a_lines, b_lines, c_lines, d_extra_rules, d_target_len, d_spacing_type, d_paragraph_option, d_prompt_mode, d_first_sentence_type, d_homepage_mode, d_homepage_info, d_keyword_delivery_text, d_keyword_placement_text, d_usecase_mode, d_writer_perspective, d_article_style, d_sub_keywords, d_brand_name, d_conversion_goal, d_brand_intensity, d_tone_detail, d_homefeed_category, d_homefeed_tone, d_homefeed_hook, d_homefeed_experience, d_homefeed_revenue, d_homefeed_issue, d_homefeed_overseas_policy, d_homefeed_overseas_usage, d_content_goal, d_primary_gyeol, d_secondary_gyeol_1, d_secondary_gyeol_2)
-        st.write("## GPTs용 초안 프롬프트")
+        st.write("## 일반 GPT/GPTs용 초안 프롬프트")
         st.text_area(
-            "GPTs에 복붙",
+            "일반 GPT/GPTs에 복붙",
             value=draft_prompt,
             height=520,
             key=dynamic_widget_key("draft_prompt_live", d_topic, d_keyword, d_sub_keywords, d_brand_name, d_article_style, resolve_primary_gyeol(d_primary_gyeol, d_field, d_article_style, d_topic, d_keyword), d_conversion_goal, d_brand_intensity, d_tone_detail, d_field, d_usecase_mode, d_writer_perspective, d_voice, d_intro_type, d_first_sentence_type, d_title_type, d_target_len, research_text)
         )
-        st.download_button("GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
+        st.download_button("GPT/GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
 
         st.write("## 다음 순서")
-        st.info("③은 GPTs 초안 프롬프트를 만드는 단계입니다. GPTs에서 초안을 만든 뒤에는 ⑧ '최종 원고 검수·Claude 패키지'로 이동해 원고를 붙여넣고 Claude 자연화 패키지를 생성하세요. Claude용 복붙 패키지는 ⑧에서만 사용합니다.")
+        st.info("③은 일반 GPT/GPTs 초안 프롬프트를 만드는 단계입니다. 일반 GPT 또는 GPTs에서 초안을 만든 뒤에는 ⑧ '최종 원고 검수·Claude 패키지'로 이동해 원고를 붙여넣고 Claude 자연화 패키지를 생성하세요. Claude용 복붙 패키지는 ⑧에서만 사용합니다.")
 
 with tab_check:
     st.header("⑧ 최종 원고 검수 · Claude 패키지")
-    st.caption("여기는 두 번 쓰는 칸입니다. 1차: GPTs 초안을 붙여 Claude 패키지를 만듭니다. 2차: Claude 수정본을 다시 붙여 앱 검수를 실행합니다.")
-    st.info("사용 순서: GPTs 초안 붙여넣기 → Claude 자연화 패키지 복사 → Claude 수정본 받기 → 수정본을 다시 이 칸에 붙여넣기 → 아래 '앱 검수 실행' 클릭")
+    st.caption("여기는 두 번 쓰는 칸입니다. 1차: 일반 GPT/GPTs 초안을 붙여 Claude 패키지를 만듭니다. 2차: Claude 수정본을 다시 붙여 앱 검수를 실행합니다.")
+    st.info("사용 순서: 일반 GPT/GPTs 초안 붙여넣기 → Claude 자연화 패키지 복사 → Claude 수정본 받기 → 수정본을 다시 이 칸에 붙여넣기 → 아래 '앱 검수 실행' 클릭")
 
     with st.sidebar:
         st.header("원고 조건")
@@ -9874,7 +9949,7 @@ with tab_check:
             min_len = st.number_input("권장 최소 글자수(공백 제외)", min_value=500, max_value=6000, value=default_min, step=50)
             max_len = st.number_input("권장 최대 글자수(공백 제외)", min_value=600, max_value=7000, value=default_max, step=50)
             check_kw_settings = render_keyword_delivery_settings("check", keyword, check_target_len, expanded=False)
-    draft = st.text_area("GPTs 초안 또는 Claude 수정본 붙여넣기", height=520, placeholder="1차: GPTs 초안을 붙여 Claude 패키지를 만들고, 2차: Claude 수정본을 다시 붙여 앱 검수를 실행하세요. 제목 포함 원고를 그대로 붙여넣어도 됩니다.")
+    draft = st.text_area("일반 GPT/GPTs 초안 또는 Claude 수정본 붙여넣기", height=520, placeholder="1차: 일반 GPT/GPTs 초안을 붙여 Claude 패키지를 만들고, 2차: Claude 수정본을 다시 붙여 앱 검수를 실행하세요. 제목 포함 원고를 그대로 붙여넣어도 됩니다.")
 
     if draft.strip():
         draft_no_space_len = len(re.sub(r"\s+", "", draft))
@@ -9883,7 +9958,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.13 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.15 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

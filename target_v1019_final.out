@@ -76,3 +76,11 @@
     ]
   }
 ]
+{
+  "summary": {
+    "total": 7,
+    "pass": 7,
+    "fail": 0
+  },
+  "failed": []
+}

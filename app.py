@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.18", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.19", layout="wide")
 
 PURPOSES = [
     "",
@@ -805,7 +805,7 @@ HUMAN_AWKWARD_REPLACEMENTS = {
     "공통": {
         "확인하는 것이 필요합니다": "확인해보는 게 좋습니다 / 먼저 봐야 합니다",
         "진행하는 것이 좋습니다": "진행 전 확인하는 편이 좋습니다",
-        "도움이 될 수 있습니다": "판단하는 데 참고가 됩니다",
+        "도움이 될 수 있습니다": "참고할 수 있습니다",
         "중요합니다": "놓치기 쉽습니다 / 먼저 봐야 합니다",
         "알아보겠습니다": "기준을 나눠 보겠습니다",
         "살펴보겠습니다": "확인할 부분을 정리해보겠습니다",
@@ -961,10 +961,15 @@ def humanize_sentence_once(sentence="", field="", topic="", keyword="", writer_p
     s = s.replace("확인하는 것이 필요합니다", "먼저 확인해보는 게 좋습니다")
     s = s.replace("확인하는 것이 중요합니다", "먼저 봐야 합니다")
     s = s.replace("선택하는 것이 좋습니다", "선택 전 기준을 나눠보는 편이 좋습니다")
-    s = s.replace("도움이 될 수 있습니다", "판단하는 데 참고가 됩니다")
-    s = s.replace("도움이 됩니다", "판단하는 데 참고가 됩니다")
+    # '선택을 하는 데 도움이 됩니다'처럼 이미 '하는 데'가 있는 문장은
+    # '판단하는 데'를 덧붙이지 않는다. 자연스러운 참고 표현으로만 낮춘다.
+    s = re.sub(r"(하는\s*데)\s*도움이\s*될\s*수\s*있습니다", r"\1 참고할 수 있습니다", s)
+    s = re.sub(r"(하는\s*데)\s*도움이\s*됩니다", r"\1 참고가 됩니다", s)
+    s = s.replace("도움이 될 수 있습니다", "참고할 수 있습니다")
+    s = s.replace("도움이 됩니다", "참고가 됩니다")
     s = s.replace("중요합니다", "놓치기 쉽습니다")
     s = s.replace("필요합니다", "먼저 확인해야 합니다")
+    s = re.sub(r"하는 데\s*판단하는 데", "판단하는 데", s)
     s = re.sub(r"\s+", " ", s).strip()
     if s == original and len(s) >= 115:
         return s[:70].rstrip(" ,") + ". 이 부분은 한 문장으로 길게 설명하기보다 기준을 나눠 쓰는 편이 자연스럽습니다."
@@ -982,6 +987,10 @@ def generate_sentence_revision_suggestions(title="", body="", field="", keyword=
         before = (before or "").strip()
         after = (after or "").strip()
         if not before or not after or before == after:
+            return
+        # 자동 제안이 원문보다 어색해지는 대표 오류를 차단한다.
+        bad_after_patterns = ["하는 데 판단하는 데", "데 데", "먼저 확인이 먼저", "확인해야 합니다 확인"]
+        if any(pat in after for pat in bad_after_patterns):
             return
         key = (reason, before[:80], after[:80])
         if key in seen:
@@ -1020,7 +1029,9 @@ def final_delivery_grade(total=0, risks=None, human_issues=None, sentence_sugges
     high = sum(1 for r in risks if r.get("등급") == "높음")
     if high:
         return "전면 수정 필요", "높음 등급 납품 리스크가 있어 그대로 제출하면 위험합니다."
-    if total >= 95 and not human_issues and not sentence_suggestions:
+    if total >= 95 and not human_issues:
+        if sentence_suggestions:
+            return "바로 납품 가능", "강한 리스크는 없습니다. 자동 문장 제안은 선택사항이므로 오탈자와 줄바꿈만 확인하세요."
         return "바로 납품 가능", "오탈자와 줄바꿈만 확인하면 됩니다."
     if total >= 92:
         return "소폭 수정 후 납품 가능", "첫문장, 제목 말맛, 반복 표현만 정리하면 제출권입니다."
@@ -1772,26 +1783,32 @@ def default_philosophy_by_field(field, writer_perspective):
     return "과장된 표현보다 현실적인 기준과 꾸준한 관리를 중요하게 생각합니다."
 
 
+def clean_body_label_text(text=""):
+    """붙여넣기 원고 맨 앞의 '본문:' 라벨이 첫문장으로 잡히지 않게 제거한다."""
+    text = (text or "").strip()
+    text = re.sub(r"^본문\s*[:：]\s*", "", text).strip()
+    return text
+
+
 def extract_title(title_input, draft):
     title_input = (title_input or "").strip()
     draft = draft or ""
     if title_input:
-        title = re.sub(r"^제목\s*[:：]\s*", "", title_input).strip()
-        return title, draft.strip(), "제목 입력칸"
+        title = re.sub(r"^(최종\s*)?제목\s*[:：]\s*", "", title_input).strip()
+        return title, clean_body_label_text(draft), "제목 입력칸"
 
     lines = [l.strip() for l in draft.splitlines() if l.strip()]
     if not lines:
         return "", "", "없음"
     first = lines[0]
     if first.startswith("#"):
-        return first.lstrip("#").strip(), "\n".join(lines[1:]).strip(), "본문 첫 줄"
-    m = re.match(r"^제목\s*[:：]\s*(.+)$", first)
+        return first.lstrip("#").strip(), clean_body_label_text("\n".join(lines[1:])), "본문 첫 줄"
+    m = re.match(r"^(?:최종\s*)?제목\s*[:：]\s*(.+)$", first)
     if m:
-        return m.group(1).strip(), "\n".join(lines[1:]).strip(), "본문 제목표기"
+        return m.group(1).strip(), clean_body_label_text("\n".join(lines[1:])), "본문 제목표기"
     if len(first) <= 40 and not first.endswith(("다.", "요.", "니다.", "죠.", "?")):
-        return first, "\n".join(lines[1:]).strip(), "본문 첫 줄 자동추출"
-    return "", draft.strip(), "없음"
-
+        return first, clean_body_label_text("\n".join(lines[1:])), "본문 첫 줄 자동추출"
+    return "", clean_body_label_text(draft), "없음"
 
 def count_keyword(text, keyword):
     return text.count(keyword) if keyword else 0
@@ -1941,7 +1958,7 @@ def is_heading_block(block):
 def split_keyword_sections(body):
     """키워드 배치 검수용 섹션 분리.
 
-    v10.0.18: 빈 줄 기준 블록 분리만 쓰면, 사용자가 소제목 바로 아래에 본문을 붙여 넣었을 때
+    v10.0.19: 빈 줄 기준 블록 분리만 쓰면, 사용자가 소제목 바로 아래에 본문을 붙여 넣었을 때
     전체를 ‘도입’ 한 문단으로 오판할 수 있어 줄 단위 소제목도 함께 인식한다.
     """
     body = (body or "").strip()
@@ -2199,7 +2216,7 @@ def is_medical_choice_text(field="", title="", body="", keyword=""):
 def detect_medical_emotion_mismatch(field="", title="", body="", keyword=""):
     """의료 선택 글에 맞지 않는 법률/피해보상식 감정선 감지.
 
-    v10.0.18: ‘충분한가요/충분하다’ 안의 ‘분한’을 분쟁 감정어로 오탐하지 않도록
+    v10.0.19: ‘충분한가요/충분하다’ 안의 ‘분한’을 분쟁 감정어로 오탐하지 않도록
     문맥 기반으로 보정한다. 오해 반박형·질문형 의료 도입의 비교 고민은 정상으로 본다.
     """
     if not is_medical_choice_text(field, title, body, keyword):
@@ -2967,6 +2984,12 @@ def check_all(title, body, keyword, field, purpose, writer_perspective, selected
     if specialty_profile and len(specialty_missing) >= 4:
         total = min(total, 89)
         cap_reasons.append(f"{specialty_profile.get('display')} 세부 업종 필수 기준이 많이 빠져 납품 상한 89점 적용")
+    elif specialty_profile and len(specialty_missing) >= 2:
+        total = min(total, 92)
+        cap_reasons.append(f"{specialty_profile.get('display')} 세부 업종 필수 기준 보강 항목이 남아 납품 상한 92점 적용")
+    elif specialty_profile and len(specialty_missing) == 1:
+        total = min(total, 94)
+        cap_reasons.append(f"{specialty_profile.get('display')} 세부 업종 필수 기준 1개 보강 여지가 있어 100점 판정은 제한")
     if delivery_risks:
         high_risks = [r for r in delivery_risks if r.get('등급') == '높음']
         if high_risks:
@@ -9168,7 +9191,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.18")
+st.title("📝 달로썸 원고 검수기 v10.0.19")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -10218,7 +10241,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.18 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.19 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")
@@ -11256,7 +11279,27 @@ with tab_korean_teacher:
 
         st.write("### 3. 전체적으로 더 자연스럽게 고친 최종 문단")
         st.text_area("최종 문단", value=kt_result.get("최종문단", ""), height=260, key="kt_final_text")
+        kt_export_lines = [
+            "# 달로썸 ⑩ 국어선생님 퇴고 결과",
+            "",
+            f"- 상품 유형: {kt_product}",
+            f"- 분야: {kt_field}",
+            f"- 문체: {kt_style}",
+            f"- 기자단 체험 여부: {kt_experience}",
+            f"- 점수: {kt_result.get('점수', 0)}",
+            f"- 등급: {kt_result.get('등급', '-')}",
+            "",
+            "## 문장별 검수 결과",
+        ]
         if rows:
+            for i, row in enumerate(rows, 1):
+                kt_export_lines += [
+                    f"{i}. [{row.get('구분','')}]",
+                    f"- 어색한 문장: {row.get('어색한 문장','')}",
+                    f"- 문제 이유: {row.get('문제 이유','')}",
+                    f"- 수정 문장: {row.get('수정 문장','')}",
+                    "",
+                ]
             st.download_button(
                 "국어선생님 검수 결과 CSV 다운로드",
                 data=pd.DataFrame(rows).to_csv(index=False).encode("utf-8-sig"),
@@ -11264,6 +11307,16 @@ with tab_korean_teacher:
                 mime="text/csv",
                 key="download_korean_teacher_csv",
             )
+        else:
+            kt_export_lines.append("- 강하게 걸리는 문장론/이상 문체 문제는 많지 않습니다.")
+        kt_export_lines += ["", "## 최종 문단", kt_result.get("최종문단", "")]
+        st.download_button(
+            "국어선생님 공유용 TXT 다운로드",
+            data="\n".join(kt_export_lines).encode("utf-8-sig"),
+            file_name="korean_teacher_review_share.txt",
+            mime="text/plain",
+            key="download_korean_teacher_txt",
+        )
 
     st.write("### 4. GPT에 붙여넣는 국어선생님 프롬프트")
     st.text_area(

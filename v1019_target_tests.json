@@ -1,0 +1,37 @@
+[
+  {
+    "name": "extract_final_title_label",
+    "ok": true,
+    "detail": "써마지 전 확인할 5가지/본문 제목표기"
+  },
+  {
+    "name": "strip_body_label_after_title",
+    "ok": true,
+    "detail": "써마지 한 번으로 충분할지, 300샷과 600샷 중 무"
+  },
+  {
+    "name": "first_sentence_no_body_prefix",
+    "ok": true,
+    "detail": "써마지 한 번으로 충분할지, 300샷과 600샷 중 무엇이 맞을지 헷갈리시나요?"
+  },
+  {
+    "name": "humanize_help_no_duplicate_de",
+    "ok": true,
+    "detail": "상담 전 이 기준들을 정리해두면 불필요한 비교를 줄이고, 본인에게 맞는 선택을 하는 데 참고가 됩니다."
+  },
+  {
+    "name": "humanize_help_is_natural_reference",
+    "ok": true,
+    "detail": "상담 전 이 기준들을 정리해두면 불필요한 비교를 줄이고, 본인에게 맞는 선택을 하는 데 참고가 됩니다."
+  },
+  {
+    "name": "specialty_missing_caps_below_100",
+    "ok": true,
+    "detail": "total=80, missing=['부작용 가능성'], caps=['선택한 대표 글결이 본문 흐름에 충분히 반영되지 않아 글결 상한 91점 적용', '공백 제외 143자로 최소 기준 1000자의 70% 미만이라 분량 심각 미달 상한 82점 적용', '피부과/리프팅·레이저 세부 업종 필수 기준 1개 보강 여지가 있어 100점 판정은 제한']"
+  },
+  {
+    "name": "grade_100_with_optional_sentence_suggestion_still_ok",
+    "ok": true,
+    "detail": "바로 납품 가능/강한 리스크는 없습니다. 자동 문장 제안은 선택사항이므로 오탈자와 줄바꿈만 확인하세요."
+  }
+]

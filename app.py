@@ -3618,7 +3618,7 @@ D등급: 참고만 가능
 - {field} 분야에서 위험한 단정 표현은 피할 것.
 - 사용자가 링크를 직접 확인할 수 있도록 자료별 링크를 빠뜨리지 말 것.
 - 숫자 범위는 반드시 “2~4개”, “4~6회”처럼 물결표(~)를 넣어 표기하고, “24개”, “46회”처럼 붙여 쓰지 말 것.
-- 조사 결과 마지막에는 위 분량 조건에 맞춰 원고를 압축하거나 확장할 때 우선 반영할 내용도 정리할 것.
+- 조사 결과 마지막에는 위 분량 조건에 맞춰 원고를 보강하거나 정리할 때 우선 반영할 내용도 정리할 것.
 """ + (f"\n추가로 중점적으로 조사할 내용:\n{extra_focus}\n" if extra_focus else "")
 
 
@@ -3803,6 +3803,73 @@ def _shorten_line(line, n=52):
     return line[:n].rstrip() + ("..." if len(line) > n else "")
 
 
+def _is_b_concern_heading_or_noise(line):
+    """B등급 고민 후보에서 제목/라벨/프롬프트 찌꺼기를 제거한다."""
+    t = re.sub(r"\s+", " ", str(line or "")).strip()
+    if not t:
+        return True
+    stripped = re.sub(r"^[-•·\d\.\)\[\]\s]+", "", t).strip()
+    noise_exact = {
+        "B등급 잠재고객 고민패턴", "잠재고객 고민패턴", "제목으로 바꿀 수 있는 질문",
+        "본문 고민 브릿지 후보 3개", "마무리 재연결 문장 후보 2개", "사용 규칙",
+        "도입부", "본문 1 시작/전환부", "본문 2 시작/전환부", "본문 3 시작/전환부", "마무리",
+    }
+    if stripped in noise_exact:
+        return True
+    noise_contains = [
+        "A등급", "B등급", "C등급", "말맛 참고", "핵심정보", "감정 흐름",
+        "문단별 고민 배치안", "근거 B등급", "문장:", "사용 규칙", "금지:",
+    ]
+    if any(x in stripped for x in noise_contains):
+        # 단, 실제 고민 문장 안에 'B등급' 같은 라벨이 섞인 경우도 프롬프트 찌꺼기로 본다.
+        return True
+    return False
+
+
+def _split_b_concern_line(line):
+    """긴 B등급 고민 묶음을 실제 고민 단위로 잘라낸다."""
+    raw = re.sub(r"^[-•·\d\.\)\s]+", "", str(line or "")).strip()
+    raw = re.sub(r"\s+", " ", raw)
+    if not raw or _is_b_concern_heading_or_noise(raw):
+        return []
+    # 너무 긴 한 줄은 마침표/물음표/슬래시/긴 공백 기준으로 먼저 자른다.
+    parts = re.split(r"(?<=[.!?？。])\s+|\s{2,}| / |\s*/\s*", raw)
+    out = []
+    for part in parts:
+        part = part.strip(" -•·")
+        if not part or _is_b_concern_heading_or_noise(part):
+            continue
+        # 공백으로 이어진 긴 나열형은 고민 연결어 기준으로 다시 분해한다.
+        if len(part) > 95:
+            chunks = re.split(r"(?<=걱정)\s+|(?<=망설임)\s+|(?<=헷갈림)\s+|(?<=모름)\s+|(?<=불안)\s+|(?<=고민)\s+|(?<=부족함)\s+|(?<=가능성)\s+", part)
+        else:
+            chunks = [part]
+        for chunk in chunks:
+            chunk = re.sub(r"\s+", " ", chunk).strip(" -•·")
+            if not chunk or _is_b_concern_heading_or_noise(chunk):
+                continue
+            # 너무 범용적인 카테고리 라벨만 있는 문장은 제외한다.
+            if len(chunk) < 6:
+                continue
+            out.append(chunk)
+    return out
+
+
+def sanitize_b_concern_lines(b_lines, max_items=8, max_len=80):
+    """B등급 고민을 GPT 초안에 넣기 전에 제목/긴 묶음/깨진 라벨을 정리한다."""
+    cleaned = []
+    for x in b_lines or []:
+        for item in _split_b_concern_line(x):
+            item = re.sub(r"\s+", " ", item).strip()
+            if len(item) > max_len:
+                item = item[:max_len].rstrip() + "..."
+            if item and item not in cleaned:
+                cleaned.append(item)
+            if len(cleaned) >= max_items:
+                return cleaned
+    return cleaned
+
+
 def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
     voice_type = normalize_voice_for_field(field, voice_type or "자동 추천", topic, keyword)
     """조사자료에서 나온 B등급 고민을 전 분야 감정 흐름으로 변환한다.
@@ -3810,13 +3877,7 @@ def build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field=""):
     """
     topic = (topic or keyword or "이 주제").strip()
     kw = (keyword or topic).strip()
-    worries = []
-    for x in b_lines or []:
-        sx = _shorten_line(x, 90)
-        if sx and sx not in worries:
-            worries.append(sx)
-        if len(worries) >= 5:
-            break
+    worries = sanitize_b_concern_lines(b_lines, max_items=5, max_len=70)
 
     has_grounded_worries = len(worries) > 0
     if not has_grounded_worries:
@@ -4183,14 +4244,8 @@ def homepage_summary_guide(homepage_info):
 def build_emotion_bridge_plan(topic, keyword, voice_type, b_lines):
     """B등급 고민이 도입부에서만 사라지지 않도록 문단별 배치안을 만든다."""
     topic = (topic or keyword or "이 주제").strip()
-    # 핵심 고민 후보를 4개까지 사용
-    clean = []
-    for x in b_lines or []:
-        xx = re.sub(r"^[-•·\d\.\)\s]+", "", str(x)).strip()
-        if xx and xx not in clean:
-            clean.append(xx)
-        if len(clean) >= 4:
-            break
+    # 핵심 고민 후보를 4개까지 사용하되, B등급 제목/긴 묶음/프롬프트 라벨은 제거한다.
+    clean = sanitize_b_concern_lines(b_lines, max_items=4, max_len=70)
     while len(clean) < 4:
         defaults = [
             f"{topic}을 검색하는 독자가 가장 먼저 헷갈리는 지점",
@@ -4234,10 +4289,11 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     brand_block = brand_voice_block(article_style, sub_keywords, brand_name, conversion_goal, brand_intensity, tone_detail, writer_perspective, field, topic, keyword)
     homefeed_block = homefeed_planning_block(homefeed_category, homefeed_tone, homefeed_hook, homefeed_experience, homefeed_revenue, homefeed_issue, homefeed_overseas_policy, homefeed_overseas_usage) if usecase_mode == "홈피드형" or article_style in ["홈피드 후킹형", "홈피드 수익형 블로그 글", "홈판 후킹형"] else ""
     a_text = "\n".join([f"- {x}" for x in a_lines]) if a_lines else "- 아직 정리된 A등급 공통정보가 부족합니다. 제공된 자료 안에서 공통 사실만 신중하게 사용하세요."
-    b_text = "\n".join([f"- {x}" for x in b_lines]) if b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
+    clean_b_lines = sanitize_b_concern_lines(b_lines, max_items=10, max_len=90)
+    b_text = "\n".join([f"- {x}" for x in clean_b_lines]) if clean_b_lines else "- 아직 정리된 고민패턴이 부족합니다. 독자가 검색하는 이유를 먼저 추정하되 단정하지 마세요."
     c_text = "\n".join([f"- {x}" for x in c_lines]) if c_lines else "- 말맛 참고자료가 부족하므로 가짜 후기나 경험담은 만들지 마세요."
-    bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, b_lines)
-    emotion_flow_plan = build_emotion_flow_plan(topic, keyword, voice_type, b_lines, field)
+    bridge_plan = build_emotion_bridge_plan(topic, keyword, voice_type, clean_b_lines)
+    emotion_flow_plan = build_emotion_flow_plan(topic, keyword, voice_type, clean_b_lines, field)
     length_plan = length_guidance(target_len, spacing_type, paragraph_option)
     keyword_plan = keyword_delivery_text.strip() if keyword_delivery_text and keyword_delivery_text.strip() else keyword_count_instruction(keyword, target_len)
     keyword_placement_text = keyword_placement_text.strip() if keyword_placement_text else ""
@@ -4266,7 +4322,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
         title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 자료와 주제에 맞는 제목 유형을 자연스럽게 선택하되 어그로성 제목은 쓰지 마."
     else:
         title_rule = f"제목은 핵심 키워드 ‘{keyword}’를 맨 앞에 1회 넣고 가능하면 30자 이내로 작성해줘. 선택한 제목 유형 ‘{title_type}’을 반영하되, 본문 내용과 다른 어그로성 제목은 쓰지 마."
-    title_candidates = "\n".join([f"- {x}" for x in generate_title_candidates(keyword, topic, title_type, b_lines, field)])
+    title_candidates = "\n".join([f"- {x}" for x in generate_title_candidates(keyword, topic, title_type, clean_b_lines, field)])
     return f"""아래 자료 설계를 바탕으로 블로그 원고 초안을 작성해줘.
 
 {length_priority_notice(target_len, spacing_type)}
@@ -4360,6 +4416,13 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
 11. 마무리는 강한 구매/상담 유도보다 독자가 자기 상황을 확인하게 만드는 방향으로 작성해줘. 단, 홈페이지/업체 정보가 제공된 경우에는 확인된 장점·철학·상담 기준 중 이번 주제와 직접 연결되는 내용을 마무리에 반드시 1~2문장 포함해줘.
 12. 각 주요 문단의 첫 문장 또는 전환부에는 가능한 범위에서 독자가 실제로 헷갈리는 지점/불편한 상황/망설이는 이유를 배치해줘. 단, 1000~1500자 원고에서는 억지로 많이 넣지 말고 2~3곳만 자연스럽게 넣어줘.
 13. 공감은 “힘드셨나요?”, “불안하시죠?” 같은 빈 위로가 아니라 실제 B등급 고민 상황을 짚는 방식으로 작성해줘.
+
+[출력 전 자체 점검]
+- 최종 본문이 {spacing_type} {target_len}자 내외인지 확인한다.
+- 제목 후보/최종 제목/본문 라벨/체크리스트 기호를 제외하고도 본문이 충분한지 확인한다.
+- B등급 제목 라벨이나 자료 구분 라벨을 본문에 그대로 쓰지 않는다.
+- 숫자와 단위가 비정상적으로 붙어 깨진 표현이 있으면 출력 전에 자연스럽게 고친다.
+- 한 문단에 키워드가 몰렸는지 확인하고, 몰렸으면 대체어로 분산한다.
 
 피해야 할 표현:
 - 100%
@@ -8290,7 +8353,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.9")
+st.title("📝 달로썸 원고 검수기 v10.0.10")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -9295,7 +9358,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.9 Claude 자연화용 복붙 패키지")
+    st.write("## v10.0.10 Claude 자연화용 복붙 패키지")
     st.caption("이 패키지는 Claude에 보내는 용도입니다. 여기서 만든 패키지를 Claude에 붙여넣고, Claude가 돌려준 수정본을 다시 위 원고 칸에 넣은 뒤 앱 검수를 실행하세요.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

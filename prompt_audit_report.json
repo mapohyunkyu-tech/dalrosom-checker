@@ -1,0 +1,27 @@
+{
+  "findings": {
+    "bad_joined_numbers": [
+      "2000자",
+      "1700자",
+      "1800자",
+      "2000자",
+      "2200자",
+      "1700자",
+      "1500자",
+      "2000자",
+      "1500자",
+      "2000자"
+    ],
+    "bad_b_heading_sentence": [],
+    "old_compress_conflict": [],
+    "old_claude_in_3": [],
+    "old_button_label": []
+  },
+  "positives": {
+    "length_priority_top": true,
+    "hard_min_present": true,
+    "self_check_present": true,
+    "cleaned_b_section": true
+  },
+  "prompt_len": 14051
+}

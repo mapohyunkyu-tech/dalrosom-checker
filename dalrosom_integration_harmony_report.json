@@ -10,7 +10,7 @@
       "ok": true,
       "detail": {
         "research_len": 10001,
-        "draft_len": 10924,
+        "draft_len": 11683,
         "check_score": 63,
         "gate": "출고 보류"
       }
@@ -100,7 +100,7 @@
       "name": "⑫ 이상문장DB→패턴후보",
       "ok": true,
       "detail": {
-        "loaded": 975,
+        "loaded": 1050,
         "patterns": 5
       }
     }

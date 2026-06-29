@@ -13,7 +13,7 @@ import streamlit as st
 st.set_page_config(page_title="달로썸 원고 검수기 v10.0.29", layout="wide")
 
 
-# v10.0.30: 국어선생님 2차 재검수 반복 방지 핫픽스
+# v10.0.32: 통합검수 국어선생님 2차판정 강제/자동 보강 핫픽스
 # - API 키는 코드/파일에 저장하지 않는다.
 # - Streamlit secrets 또는 OPENAI_API_KEY 환경변수, 또는 실행 화면 입력값만 사용한다.
 DALROSOM_API_MODEL_OPTIONS = [
@@ -8344,6 +8344,25 @@ def _kt_compare_text(text=""):
     t = re.sub(r"\s+", " ", t).strip()
     return t
 
+def _kt_same_as_previous_final(text="", candidates=None):
+    """v10.0.32: ⑪ 통합검수에서 국어선생님 최종본 여부를 더 넓게 감지한다.
+    - ⑩ 최종문단, ⑩ 화면의 최종 문단 textarea, 직전 ⑪ 최종문단을 모두 후보로 본다.
+    - 공백/문단 차이/소프트 줄바꿈 차이는 무시한다.
+    """
+    cur = _kt_compare_text(text or "")
+    if not cur:
+        return False
+    for cand in candidates or []:
+        if not cand:
+            continue
+        if _kt_compare_text(cand) == cur:
+            return True
+    return False
+
+
+def _kt_second_pass_label(flag=False):
+    return "2차 재검수" if flag else "1차 검수"
+
 
 def _kt_second_pass_rows(rows):
     """v10.0.30: 2차 재검수에서는 납품 사고급 항목만 남기고
@@ -8647,9 +8666,12 @@ def _quality_gate_product_specific_blockers(body="", product_type="업체형 원
     return blockers, warnings
 
 
-def integrated_quality_gate(title="", body="", product_type="업체형 원고", field="청소 / 홈케어", style_name="부드러운 블로그형", experience_mode="사진 제공형", keyword="", brand_name="", homepage_mode="홈페이지 정보 없음", homepage_info=""):
+def integrated_quality_gate(title="", body="", product_type="업체형 원고", field="청소 / 홈케어", style_name="부드러운 블로그형", experience_mode="사진 제공형", keyword="", brand_name="", homepage_mode="홈페이지 정보 없음", homepage_info="", korean_teacher_second_pass=False):
     body = body or ""
-    kt = korean_teacher_review(body, product_type, field, style_name, experience_mode)
+    # v10.0.32: ⑪ 통합 출고 판정에서도 ⑩ 국어선생님 2차 재검수 신호를 그대로 전달한다.
+    # ⑩에서 이미 최종 퇴고본으로 통과한 원고를 ⑪이 다시 1차 원고처럼 채점하면
+    # 같은 문체 지적이 반복되어 85점권으로 떨어지는 문제가 생겼다.
+    kt = korean_teacher_review(body, product_type, field, style_name, experience_mode, second_pass=bool(korean_teacher_second_pass))
     human = human_recipe_score(body, product_type, experience_mode, field)
     awkward = detect_awkward_humanization(body, product_type, experience_mode)
     humanity = analyze_humanity_text(body, product_type, field)
@@ -12518,8 +12540,33 @@ with tab_quality_gate:
     )
     q_homepage_mode = st.selectbox("홈페이지 정보", ["홈페이지 정보 없음", "홈페이지 정보 있음"], index=0, key="q_homepage_mode")
     q_homepage_info = st.text_area("확인된 홈페이지/공식자료 내용", value="", height=120, key="q_homepage_info")
+    q_second_pass_mode = st.selectbox(
+        "국어선생님 2차 판정",
+        ["자동 판단", "강제로 2차 판정", "1차 원고로 판정"],
+        index=0,
+        key="q_second_pass_mode",
+        help="⑩ 국어선생님이 만든 최종문단을 ⑪에 다시 넣는 경우, 반복 지적 때문에 점수가 떨어지지 않도록 2차 판정으로 처리합니다.",
+    )
+    st.caption("국어선생님 최종 퇴고본을 다시 통합검수할 때 자동 감지가 안 되면 ‘강제로 2차 판정’을 선택하세요.")
 
     if st.button("통합 출고 판정 실행", type="primary", key="run_quality_gate"):
+        # v10.0.32: ⑩ 국어선생님 최종문단을 ⑪에 그대로 넣은 경우
+        # 통합판정도 2차 재검수로 인식해야 한다.
+        kt_prev_final_for_gate = st.session_state.get("kt_last_final_text", "")
+        kt_result_final_for_gate = st.session_state.get("kt_result", {}).get("최종문단", "") if isinstance(st.session_state.get("kt_result"), dict) else ""
+        kt_final_area_for_gate = st.session_state.get("kt_final_text", "")
+        q_prev_final_for_gate = st.session_state.get("quality_gate_last_final_text", "")
+        q_auto_second_pass = _kt_same_as_previous_final(
+            q_body,
+            [kt_prev_final_for_gate, kt_result_final_for_gate, kt_final_area_for_gate, q_prev_final_for_gate],
+        )
+        if q_second_pass_mode == "강제로 2차 판정":
+            q_kt_second_pass = True
+        elif q_second_pass_mode == "1차 원고로 판정":
+            q_kt_second_pass = False
+        else:
+            q_kt_second_pass = bool(q_auto_second_pass)
+        st.session_state["quality_gate_second_pass_used"] = q_kt_second_pass
         st.session_state["quality_gate_result"] = integrated_quality_gate(
             title=q_title,
             body=q_body,
@@ -12531,7 +12578,9 @@ with tab_quality_gate:
             brand_name=q_brand,
             homepage_mode=q_homepage_mode,
             homepage_info=q_homepage_info,
+            korean_teacher_second_pass=q_kt_second_pass,
         )
+        st.session_state["quality_gate_last_final_text"] = st.session_state["quality_gate_result"].get("국어선생님", {}).get("최종문단", "")
 
     q_result = st.session_state.get("quality_gate_result")
     if q_result:
@@ -12540,8 +12589,12 @@ with tab_quality_gate:
         a.metric("통합점수", q_result.get("통합점수", 0))
         b.metric("출고판정", q_result.get("출고판정", "-"))
         c.metric("국어선생님", q_result.get("국어선생님", {}).get("점수", 0))
+        if q_result.get("국어선생님", {}).get("2차검수") or st.session_state.get("quality_gate_second_pass_used"):
+            st.info("⑪ 통합검수에서 국어선생님 결과를 2차 재검수로 처리했습니다. 반복 문체 지적은 숨기고 납품 사고급 표현만 확인합니다.")
         d.metric("사람화", q_result.get("사람화", {}).get("점수", 0))
         st.info(q_result.get("판정이유", ""))
+        if q_result.get("국어선생님", {}).get("2차검수"):
+            st.success(q_result.get("국어선생님", {}).get("2차메모", "국어선생님 최종 퇴고본 2차 검수로 판단되어 반복 감점을 적용하지 않았습니다."))
 
         if q_result.get("차단항목"):
             st.error("차단 항목: " + ", ".join(q_result.get("차단항목", [])))
@@ -12583,6 +12636,7 @@ with tab_quality_gate:
             f"통합점수: {q_result.get('통합점수')}",
             f"출고판정: {q_result.get('출고판정')}",
             f"판정이유: {q_result.get('판정이유')}",
+            f"국어선생님 2차검수: {'적용' if q_result.get('국어선생님', {}).get('2차검수') else '미적용'}",
             "",
             "[먼저 고칠 순서]",
             q_result.get("수정순서", ""),

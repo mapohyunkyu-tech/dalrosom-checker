@@ -1,0 +1,64 @@
+{
+  "summary": {
+    "total": 11,
+    "pass": 11,
+    "failed": []
+  },
+  "tests": [
+    {
+      "name": "version title updated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "db router function present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "category selector present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sensitive field guard present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "custom weird generation guard present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "research prompt uses router context",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "draft prompt uses router context",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "claude prompt uses router context",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "api caption mentions router",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "api developer note mentions selected db",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no all-db dumping rule present",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

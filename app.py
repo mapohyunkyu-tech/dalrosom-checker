@@ -10,10 +10,10 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.27", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.28", layout="wide")
 
 
-# v10.0.27: OpenAI API 직접 연결용 최소 래퍼
+# v10.0.28: OpenAI API 직접 연결 + DB 라우터 선별 엔진
 # - API 키는 코드/파일에 저장하지 않는다.
 # - Streamlit secrets 또는 OPENAI_API_KEY 환경변수, 또는 실행 화면 입력값만 사용한다.
 DALROSOM_API_MODEL_OPTIONS = [
@@ -4521,7 +4521,7 @@ def build_research_prompt(topic, keyword, field, content_goal, extra_focus, targ
     medical_guard = medical_emotion_title_guard_block(field, topic, keyword)
     law_guard = law_tone_guard_block(field, topic, keyword)
     expert_guard = field_specific_guard_block(field, topic, keyword, writer_perspective) + specialty_guard_block(field, topic, keyword, writer_perspective) + humanization_guard_block(field, topic, keyword, writer_perspective)
-    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, "조사 프롬프트")
+    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, "조사 프롬프트", primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, writer_perspective, topic, keyword)
     first_sentence_plan = first_sentence_instruction(first_sentence_type, intro_type)
     homepage_mode = homepage_mode or "홈페이지 정보 없음"
     homepage_info = homepage_info.strip() if homepage_info else ""
@@ -5615,7 +5615,7 @@ def build_draft_prompt(topic, keyword, field, content_type, voice_type, intro_ty
     medical_guard = medical_emotion_title_guard_block(field, topic, keyword)
     law_guard = law_tone_guard_block(field, topic, keyword)
     expert_guard = field_specific_guard_block(field, topic, keyword, writer_perspective) + specialty_guard_block(field, topic, keyword, writer_perspective) + humanization_guard_block(field, topic, keyword, writer_perspective)
-    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, prompt_mode)
+    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, prompt_mode, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, writer_perspective, topic, keyword)
     if prompt_mode == "일반 GPT용":
         mode_notice = "일반 GPT용입니다. 별도 GPTs 설정이 없다고 가정하고 아래 조건만으로 작성합니다. 글결·분량·문체 안전장치를 반드시 지켜야 합니다."
     elif prompt_mode == "외부 GPTs용 강제 프롬프트":
@@ -5780,7 +5780,7 @@ def build_claude_prompt(voice_type, intro_type, title_type, keyword, field, body
     medical_guard = medical_emotion_title_guard_block(field, "", keyword)
     law_guard = law_tone_guard_block(field, "", keyword)
     expert_guard = field_specific_guard_block(field, "", keyword, writer_perspective) + specialty_guard_block(field, "", keyword, writer_perspective) + humanization_guard_block(field, "", keyword, writer_perspective)
-    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, "Claude 패키지")
+    humanity_export = humanity_external_prompt_block(field, usecase_mode, article_style, "Claude 패키지", "", "", "", writer_perspective, "", keyword)
     if title_type == "선택 안함":
         title_guard = "특정 제목 유형은 선택하지 않았다. 제목 유형을 억지로 맞추지 말고, 키워드 앞 배치와 30자 이내 권장, 어그로 금지 기준만 유지해줘."
         title_touch_rule = "0. 제목은 키워드 앞 배치와 기본 기준만 유지. 특정 제목 유형 강제 금지"
@@ -6832,27 +6832,177 @@ def humanity_safe_sample_lines(field="", usecase_mode="블로그 정보성", art
     return humanity_db_sample_text(categories, limit)
 
 
-def humanity_external_prompt_block(field="", usecase_mode="블로그 정보성", article_style="일반 정보성", prompt_mode="달로썸 GPTs용"):
-    product_type = infer_humanity_product_type(usecase_mode, article_style, field)
-    sensitive = field in HUMANITY_SAFETY_DB or any(x in str(field or "") for x in ["병원", "의료", "법률", "보험", "금융", "주식", "코인", "투자"])
-    intensity = "0. 안전 정보형" if sensitive else ("4. 홈피드/쇼츠형" if product_type in ["홈피드 글", "쇼츠 대본"] else ("2. 자연 블로그형" if product_type in ["기자단 원고", "카페 정보성 글"] else "1. 은근한 생활감"))
-    combo = human_medium_rule(product_type).get("추천", ["피곤함+비교피로+확인강박"])[0]
-    lines = []
-    lines.append("[감정·귀찮음·행동 DB 적용 지시 · v10.0.26]")
-    lines.append("- 외부 GPT/GPTs는 달로썸 앱 내부 DB 파일을 직접 읽을 수 없으므로, 아래 요약을 원고 작성 기준으로 사용한다.")
-    lines.append("- 감정어를 직접 설명하지 말고, 독자가 실제로 했을 법한 작은 행동·비교 피로·확인 강박·돈 고민으로 보여준다.")
+
+def is_sensitive_humanity_field(field=""):
+    field_text = str(field or "")
+    return field_text in HUMANITY_SAFETY_DB or any(x in field_text for x in ["병원", "의료", "법률", "보험", "금융", "주식", "코인", "투자"])
+
+
+def unique_keep_order(items):
+    seen = set()
+    out = []
+    for item in items or []:
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        out.append(item)
+    return out
+
+
+def humanity_router_categories(field="", usecase_mode="블로그 정보성", article_style="일반 정보성", prompt_mode="달로썸 GPTs용", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", writer_perspective="", topic="", keyword=""):
+    """v10.0.28: 전체 인간성 DB를 무식하게 다 넣지 않고, 조건에 맞는 카테고리만 선별한다."""
+    joined = " ".join([str(field or ""), str(usecase_mode or ""), str(article_style or ""), str(prompt_mode or ""), str(primary_gyeol or ""), str(secondary_gyeol_1 or ""), str(secondary_gyeol_2 or ""), str(writer_perspective or ""), str(topic or ""), str(keyword or "")])
+    sensitive = is_sensitive_humanity_field(field)
+    categories = []
     if sensitive:
-        lines.append("- 병원/법률/금융 등 민감 업종에서는 직접 치료·소송·상담을 받은 척하지 않는다. 생활감은 상담 전 독자의 고민과 확인 행동으로만 낮춰 쓴다.")
-        lines.append("- 예: ‘제가 받아보니’가 아니라 ‘상담 전 가격과 주의사항을 다시 확인하게 됩니다’처럼 쓴다.")
+        categories += ["비교 피로", "확인 강박", "돈 고민", "속마음/겉말 차이", "생각 변화", "말 안 되는 감정"]
+    elif any(x in joined for x in ["홈피드", "쇼츠"]):
+        categories += ["귀찮음/피곤함", "돈 고민", "비교 피로", "인간적 모순", "말 안 되는 감정", "몸 반응", "표정 변화", "말투 군더더기"]
+    elif any(x in joined for x in ["카페", "후기", "기자단"]):
+        categories += ["귀찮음/피곤함", "눈치/민망함", "미룸/회피", "가족/주변 반응", "작은 관찰", "손동작/시선", "생각 변화"]
     else:
-        lines.append("- 후기/기자단/카페/홈피드가 아니면 생활감은 도입부나 전환부에 1~2개만 넣고, 본문은 정보 기준을 유지한다.")
-    lines.append(human_authenticity_guide_text(product_type, field, intensity, combo))
-    lines.append("[복사용 인간성 DB 샘플]")
-    lines.append(humanity_safe_sample_lines(field, usecase_mode, article_style, 4))
-    lines.append("[적용 방식]")
-    lines.append("- 위 표현을 그대로 많이 복붙하지 말고, 주제와 B등급 고민에 맞게 1~3개만 변형해 사용한다.")
-    lines.append("- 자료에 없는 방문·구매·치료·상담 경험은 만들지 않는다.")
+        categories += ["귀찮음/피곤함", "돈 고민", "비교 피로", "확인 강박", "생각 변화", "작은 관찰"]
+
+    if any(x in joined for x in ["선택 기준", "비교", "비용", "가격", "전환형"]):
+        categories += ["비교 피로", "돈 고민", "확인 강박", "작은 후회/자책"]
+    if any(x in joined for x in ["오해 반박", "반박", "장비보다", "해석", "판단"]):
+        categories += ["생각 변화", "말 안 되는 감정", "확인 강박"]
+    if any(x in joined for x in ["대표자 직접", "직접 서술", "대표자 관점", "원장", "전문의", "변호사", "대표"]):
+        categories += ["속마음/겉말 차이", "확인 강박", "생각 변화"]
+    if any(x in joined for x in ["청소", "홈케어", "매트리스", "소파", "카페트"]):
+        categories += ["감각 묘사", "작은 관찰", "후폭풍"]
+    if any(x in joined for x in ["맛집", "음식", "카페"]):
+        categories += ["감각 묘사", "가족/주변 반응", "말투 군더더기"]
+
+    # 민감 업종은 직접 체험처럼 보일 수 있는 장치 제외
+    if sensitive:
+        blocked = {"몸 반응", "표정 변화", "감각 묘사", "후폭풍", "가족/주변 반응"}
+        categories = [c for c in categories if c not in blocked]
+    return unique_keep_order(categories)[:8]
+
+
+def humanity_router_intensity(field="", usecase_mode="블로그 정보성", article_style="일반 정보성"):
+    product_type = infer_humanity_product_type(usecase_mode, article_style, field)
+    if is_sensitive_humanity_field(field):
+        return "0. 안전 정보형"
+    if product_type in ["홈피드 글", "쇼츠 대본"]:
+        return "4. 홈피드/쇼츠형"
+    if product_type in ["기자단 원고", "카페 정보성 글"]:
+        return "2. 자연 블로그형"
+    return "1. 은근한 생활감"
+
+
+def humanity_router_sample_text(categories, per_category=3, max_total=18):
+    lines = []
+    total = 0
+    for cat in categories or []:
+        vals = HUMANITY_DB.get(cat, [])[:per_category]
+        if vals:
+            lines.append(f"- {cat}: " + ", ".join(vals))
+            total += len(vals)
+        if total >= max_total:
+            break
     return "\n".join(lines)
+
+
+def custom_weird_generation_guard_block(field="", usecase_mode="블로그 정보성", article_style="일반 정보성", topic="", keyword="", limit=10):
+    """사용자 이상문장/패턴 DB에서 생성 단계에 필요한 금지 패턴만 소량 선별한다."""
+    try:
+        product_type = infer_humanity_product_type(usecase_mode, article_style, field)
+        field_text = str(field or "")
+        joined = " ".join([str(field or ""), str(usecase_mode or ""), str(article_style or ""), str(topic or ""), str(keyword or "")])
+        rows = []
+        try:
+            rows.extend(load_custom_weird_pattern_db() or [])
+        except Exception:
+            pass
+        try:
+            # 패턴 DB가 부족한 경우만 원문 DB도 일부 참고
+            rows.extend(load_custom_weird_db() or [])
+        except Exception:
+            pass
+        scored = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            raw = str(row.get("금지패턴") or row.get("원문") or "").strip()
+            repl = str(row.get("대체표현") or row.get("수정") or "").strip()
+            if not raw or len(raw) < 2:
+                continue
+            row_field = str(row.get("분야") or "")
+            row_product = str(row.get("상품") or "")
+            issue = str(row.get("문제유형") or "")
+            risk = str(row.get("위험도") or "")
+            memo = " ".join([row_field, row_product, issue, risk, raw])
+            score = 0
+            if risk in ["높음", "매우 높음", "상"]:
+                score += 5
+            if row_field and (row_field == field_text or row_field in field_text or field_text in row_field):
+                score += 5
+            if row_product and (row_product == product_type or row_product in product_type or product_type in row_product):
+                score += 3
+            if any(x in joined for x in ["병원", "의료"]) and any(x in memo for x in ["의료", "보장", "효과", "완벽", "최고", "체험"]):
+                score += 3
+            if any(x in joined for x in ["기자단", "후기"]) and any(x in memo for x in ["체험", "직접", "방문"]):
+                score += 3
+            if score <= 0 and row_field not in ["", "전체"]:
+                continue
+            scored.append((score, raw, repl, issue))
+        scored.sort(key=lambda x: (-x[0], len(x[1])))
+        out = []
+        seen = set()
+        for score, raw, repl, issue in scored:
+            key = raw[:60]
+            if key in seen:
+                continue
+            seen.add(key)
+            if repl:
+                out.append(f"- 금지/주의: {raw} → 대체: {repl}")
+            else:
+                out.append(f"- 금지/주의: {raw}")
+            if len(out) >= limit:
+                break
+        if not out:
+            return ""
+        return "\n".join(["[사용자 이상문장 DB 선별 금지 패턴 · v10.0.28]", "- 전체 DB를 다 넣지 않고 현재 분야/글성격과 가까운 패턴만 참고한다."] + out)
+    except Exception:
+        return ""
+
+
+def humanity_db_router_block(field="", usecase_mode="블로그 정보성", article_style="일반 정보성", prompt_mode="달로썸 GPTs용", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", writer_perspective="", topic="", keyword=""):
+    """v10.0.28: 외부 GPT/API 공통으로 쓰는 DB 라우터 출력 블록."""
+    product_type = infer_humanity_product_type(usecase_mode, article_style, field)
+    sensitive = is_sensitive_humanity_field(field)
+    intensity = humanity_router_intensity(field, usecase_mode, article_style)
+    combo = human_medium_rule(product_type).get("추천", ["피곤함+비교피로+확인강박"])[0]
+    categories = humanity_router_categories(field, usecase_mode, article_style, prompt_mode, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, writer_perspective, topic, keyword)
+    sample_text = humanity_router_sample_text(categories, per_category=3 if sensitive else 4)
+    weird_guard = custom_weird_generation_guard_block(field, usecase_mode, article_style, topic, keyword, limit=8)
+    lines = []
+    lines.append("[DB 라우터 적용 지시 · v10.0.28]")
+    lines.append("- 앱에는 감정·귀찮음·행동 DB와 사용자 이상문장 DB가 많이 있지만, 원고 생성에는 현재 조건과 맞는 조각만 사용한다.")
+    lines.append(f"- 선별 기준: 분야={field or '미입력'} / 사용처={usecase_mode or '미입력'} / 글성격={article_style or '미입력'} / 글결={', '.join([x for x in [primary_gyeol, secondary_gyeol_1, secondary_gyeol_2] if x]) or '미입력'}")
+    lines.append(f"- 적용 강도: {intensity} / 선별 카테고리: {', '.join(categories) if categories else '없음'}")
+    if sensitive:
+        lines.append("- 민감 업종이므로 직접 치료·상담·소송·구매를 경험한 척하지 않는다. 독자 입장의 비교 피로, 확인 행동, 상담 전 망설임만 낮게 사용한다.")
+    else:
+        lines.append("- 생활감은 독자가 공감할 정도로만 사용하고, 자료에 없는 방문·구매·체험담은 만들지 않는다.")
+    lines.append(human_authenticity_guide_text(product_type, field, intensity, combo))
+    lines.append("[이번 원고에 사용할 DB 샘플]")
+    lines.append(sample_text or "- 현재 조건에 맞는 샘플이 부족하면 B등급 고민패턴을 우선 사용한다.")
+    if weird_guard:
+        lines.append(weird_guard)
+    lines.append("[사용 방식]")
+    lines.append("- 위 샘플을 그대로 많이 복붙하지 말고, 제목·도입·전환부에 1~3개만 변형해서 사용한다.")
+    lines.append("- 정보 본문은 A등급 사실과 선택 기준을 우선하고, DB 표현은 글을 사람답게 만드는 보조재로만 쓴다.")
+    return "\n".join([x for x in lines if str(x).strip()])
+
+
+# v10.0.26~28: 감정·귀찮음·행동 DB를 외부 GPT/GPTs/API용 프롬프트에도 내보내는 블록
+# - 앱 내부 DB는 외부 GPT가 직접 읽을 수 없으므로, 초안/Claude 패키지 안에 안전 요약을 삽입한다.
+# - v10.0.28부터는 전체 DB를 다 넣지 않고 조건 기반 라우터로 선별한다.
+def humanity_external_prompt_block(field="", usecase_mode="블로그 정보성", article_style="일반 정보성", prompt_mode="달로썸 GPTs용", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", writer_perspective="", topic="", keyword=""):
+    return humanity_db_router_block(field, usecase_mode, article_style, prompt_mode, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, writer_perspective, topic, keyword)
 
 def analyze_humanity_text(text="", product_type="업체형 원고", field="", intensity="1. 은근한 생활감"):
     text = text or ""
@@ -9973,7 +10123,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.27")
+st.title("📝 달로썸 원고 검수기 v10.0.28")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -10921,7 +11071,7 @@ with tab_design:
         st.download_button("GPT/GPTs용 초안 프롬프트 txt 다운로드", draft_prompt, file_name="dalrosom_draft_prompt.txt", key=dynamic_widget_key("draft_download", draft_prompt))
 
         st.write("## GPT/API로 바로 초안 생성")
-        st.caption("복붙하지 않고 앱에서 바로 초안을 생성합니다. v10.0.26의 감정·귀찮음·행동 DB 요약과 현재 조건이 draft_prompt 안에 함께 들어갑니다.")
+        st.caption("복붙하지 않고 앱에서 바로 초안을 생성합니다. v10.0.28 DB 라우터가 현재 조건에 맞는 감정·귀찮음·행동 DB와 이상문장 DB 일부를 선별해 draft_prompt 안에 함께 넣습니다.")
         with st.expander("API 설정 및 실행", expanded=False):
             api_cfg = render_openai_api_box("draft_api", default_model="gpt-5.4-mini", default_tokens=max(3500, int(d_target_len * 2.2)))
             st.warning("실행하면 API 사용량이 발생합니다. API 키는 코드나 ZIP 안에 저장되지 않습니다.")
@@ -10932,7 +11082,7 @@ with tab_design:
                         api_key=api_cfg["api_key"],
                         model=api_cfg["model"],
                         max_output_tokens=api_cfg["max_output_tokens"],
-                        developer_note="너는 달로썸 네이버 블로그 원고 생성 엔진이다. 사용자의 조사자료, A/B/C 설계, 인간성 DB 요약, 업종 안전장치, 키워드 배치, 글결, 작성자 서술 강도를 모두 지켜서 초안을 작성한다. 출력은 제목 후보/최종 제목/본문 형식으로만 한다.",
+                        developer_note="너는 달로썸 네이버 블로그 원고 생성 엔진이다. 사용자의 조사자료, A/B/C 설계, DB 라우터가 선별한 인간성 DB/이상문장 DB, 업종 안전장치, 키워드 배치, 글결, 작성자 서술 강도를 모두 지켜서 초안을 작성한다. 출력은 제목 후보/최종 제목/본문 형식으로만 한다.",
                     )
                     if api_result["ok"]:
                         st.session_state["api_generated_draft"] = api_result["text"]
@@ -11089,7 +11239,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.27 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.28 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

@@ -9,7 +9,7 @@ ns = {'__file__': str((APP_DIR / 'run_menu_fake_test.py').resolve())}
 code = (APP_DIR / 'run_menu_fake_test.py').read_text(encoding='utf-8').split('results=[]')[0]
 exec(code, ns)
 sys.modules['streamlit'] = ns['FakeStreamlit'](press_buttons=False)
-g = runpy.run_path(str(APP), run_name='__v1023_target__')
+g = runpy.run_path(str(APP), run_name='__v1024_compat_target__')
 
 checks = []
 
@@ -21,7 +21,7 @@ intro = g['detect_intro_types']
 hum = g['humanize_sentence_once']
 kw_report = g['keyword_placement_report']
 
-check('version_label_1023', 'v10.0.23' in APP.read_text(encoding='utf-8'))
+check('version_label_1024_compat', 'v10.0.24' in APP.read_text(encoding='utf-8'))
 check('medical_emotion_no_sufficient_false_positive', emo('병원 / 의료', '', '써마지는 한 번으로 충분한지 궁금합니다. 흥분한 상태는 아닙니다.', '써마지') == [])
 check('medical_emotion_detect_real_dispute', bool(emo('병원 / 의료', '', '치료 결과가 안 좋아 억울하고 분하다. 손해 보는 느낌입니다.', '치료')))
 check('checklist_intro_detects_three_boxes', '1. 독자의 상황을 찔러주는 체크리스트 활용' in intro('써마지 한 번으로 충분할지 헷갈리시나요?\n□ 효과가 궁금하다\n□ 통증이 걱정된다\n□ 유지기간이 알고 싶다'))

@@ -1,0 +1,54 @@
+{
+  "summary": {
+    "total": 9,
+    "pass": 9,
+    "failed": []
+  },
+  "tests": [
+    {
+      "name": "version title updated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "openai requirement added",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "api key not hardcoded",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "responses api wrapper present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "draft api generation UI present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "homefeed api generation UI present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "revision api UI present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "check prefill bridge present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "fake streamlit safe spinner",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

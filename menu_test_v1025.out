@@ -2,7 +2,7 @@
   {
     "case": "render_no_buttons",
     "ok": true,
-    "events": 880,
+    "events": 860,
     "errors": [],
     "tabs": [
       [
@@ -40,7 +40,7 @@
   {
     "case": "all_non_destructive_buttons",
     "ok": true,
-    "events": 1081,
+    "events": 1059,
     "errors": [],
     "tabs": [
       [

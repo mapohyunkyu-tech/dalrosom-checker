@@ -1,11 +1,25 @@
-# v10.0.33 SLIM 배포본
+# v10.0.34 SLIM 배포본
 
-## 핵심 핫픽스
+실행에 필요한 파일만 포함한 슬림본입니다.
 
-- ⑪ 통합 출고 판정에서 ⑩ 국어선생님 2차검수 결과를 인식하지 못하던 문제 수정
-- ⑩ 최종 퇴고본을 ⑪에 넣었을 때 국어선생님 점수가 다시 85점권으로 떨어지는 반복 감점 방지
-- ⑪ 결과 화면과 TXT 다운로드에 2차검수 적용 여부 표시
+## 패치 내용
+
+- 카페 정보성/카페 자연글형 전용 반복 방지 추가
+- 같은 키워드 반복 시 질문글·공유글·비교글·체크글·댓글유도글 흐름 분산
+- 카페형 작성자 위치 랜덤 지시 추가
+- 카페형에서도 가짜 경험담, 무조건 추천, 의료/법률/금융 단정 표현 금지 유지
 
 ## 포함 파일
 
-실행에 필요한 핵심 파일만 포함한 슬림 배포본입니다.
+- app.py
+- requirements.txt
+- README.md
+- SLIM_RELEASE_NOTE.md
+- client_presets.json
+- custom_weird_sentence_db.json
+- custom_weird_pattern_db.json
+- dalrosom_settings.json
+- retainer_clients.json
+- quote_history.json
+- portfolio_samples.json
+- work_log.json

@@ -8,7 +8,7 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="달로썸 원고 검수기 v10.0.22", layout="wide")
+st.set_page_config(page_title="달로썸 원고 검수기 v10.0.23", layout="wide")
 
 PURPOSES = [
     "",
@@ -958,7 +958,18 @@ def humanize_sentence_once(sentence="", field="", topic="", keyword="", writer_p
             if bad in s:
                 s = s.replace(bad, _first_rewrite_option(good))
     # 반복 종결형을 말맛 있는 종결로 낮춘다.
-    s = s.replace("확인하는 것이 필요합니다", "먼저 확인해보는 게 좋습니다")
+    # v10.0.23: “확인이 필요합니다” → “확인이 먼저 확인해야 합니다” 같은 오류 차단.
+    is_medical = is_medical_field(field) or industry_group(field, topic, keyword, writer_perspective) in ["medical"]
+    abnormal_context = any(w in s for w in ["이상 반응", "화상", "물집", "색소", "감각 이상", "통증이 심", "오래 지속", "오래가", "열감", "붓기"])
+    if abnormal_context:
+        s = re.sub(r"(?:의료진\s*)?확인이\s*필요합니다", "의료진에게 확인하는 편이 안전합니다", s)
+        s = s.replace("확인하는 것이 필요합니다", "의료진에게 확인하는 편이 안전합니다")
+    elif is_medical:
+        s = re.sub(r"확인이\s*필요합니다", "진료로 확인하는 편이 안전합니다", s)
+        s = s.replace("확인하는 것이 필요합니다", "진료로 확인하는 편이 안전합니다")
+    else:
+        s = re.sub(r"확인이\s*필요합니다", "확인해보는 게 좋습니다", s)
+        s = s.replace("확인하는 것이 필요합니다", "확인해보는 게 좋습니다")
     s = s.replace("확인하는 것이 중요합니다", "먼저 봐야 합니다")
     s = s.replace("선택하는 것이 좋습니다", "선택 전 기준을 나눠보는 편이 좋습니다")
     # '선택을 하는 데 도움이 됩니다'처럼 이미 '하는 데'가 있는 문장은
@@ -968,7 +979,10 @@ def humanize_sentence_once(sentence="", field="", topic="", keyword="", writer_p
     s = s.replace("도움이 될 수 있습니다", "참고할 수 있습니다")
     s = s.replace("도움이 됩니다", "참고가 됩니다")
     s = s.replace("중요합니다", "놓치기 쉽습니다")
-    s = s.replace("필요합니다", "먼저 확인해야 합니다")
+    # 일반적인 “필요합니다”는 문맥을 망치지 않도록 더 이상 일괄 치환하지 않는다.
+    s = re.sub(r"확인이\s*먼저\s*확인해야\s*합니다", "확인이 필요합니다", s)
+    s = re.sub(r"확인을\s*확인해야\s*합니다", "확인이 필요합니다", s)
+    s = re.sub(r"확인하는\s*것이\s*먼저\s*확인해야\s*합니다", "확인해보는 게 좋습니다", s)
     s = re.sub(r"하는 데\s*판단하는 데", "판단하는 데", s)
     s = re.sub(r"\s+", " ", s).strip()
     if s == original and len(s) >= 115:
@@ -989,7 +1003,7 @@ def generate_sentence_revision_suggestions(title="", body="", field="", keyword=
         if not before or not after or before == after:
             return
         # 자동 제안이 원문보다 어색해지는 대표 오류를 차단한다.
-        bad_after_patterns = ["하는 데 판단하는 데", "데 데", "먼저 확인이 먼저", "확인해야 합니다 확인"]
+        bad_after_patterns = ["하는 데 판단하는 데", "데 데", "먼저 확인이 먼저", "확인해야 합니다 확인", "확인이 먼저 확인해야 합니다", "확인을 확인해야 합니다", "확인하는 것이 먼저 확인해야 합니다"]
         if any(pat in after for pat in bad_after_patterns):
             return
         key = (reason, before[:80], after[:80])
@@ -1131,7 +1145,7 @@ WRITING_GYEOL_SECONDARY_OPTIONS = ["선택 안함"] + [x for x in WRITING_GYEOL_
 
 
 # =========================
-# v10.0.22: 작성자 서술 강도
+# v10.0.23: 작성자 서술 강도
 # =========================
 AUTHOR_NARRATION_OPTIONS = [
     "자동 추천",
@@ -1177,7 +1191,7 @@ def resolve_author_narration(mode="", writer_perspective="", primary_gyeol="", s
 
 def author_narration_block(mode="", writer_perspective="", primary_gyeol="", secondary_gyeol_1="", secondary_gyeol_2="", article_style="", brand_name="", field=""):
     resolved = resolve_author_narration(mode, writer_perspective, primary_gyeol, secondary_gyeol_1, secondary_gyeol_2, article_style, brand_name, field)
-    lines = ["[작성자 서술 강도 · v10.0.22]", f"- 적용 서술 강도: {resolved}"]
+    lines = ["[작성자 서술 강도 · v10.0.23]", f"- 적용 서술 강도: {resolved}"]
     if resolved == "중립 정보형":
         lines += [
             "- 제3자가 정리한 정보성 글처럼 쓰되, 전문성과 신뢰가 느껴지게 한다.",
@@ -2191,6 +2205,16 @@ def keyword_placement_report(title, body, keyword, settings=None):
         lines.append(f"|{r['구간']}|{safe_heading}|{r['소제목 횟수']}|{r['본문 횟수']}|{r['판정용 횟수']}|")
     lines.append("")
     verdict = []
+    title_ok = (not settings.get("title_required", True) or title_count == 1)
+    body_ok = body_min <= body_count <= body_max
+    total_ok = total_min <= total_count <= total_max
+    first_ok = True
+    if sections:
+        first_text_count = keyword_count_loose(sections[0].get("text", ""), keyword, form_policy)
+        first_heading_count = keyword_count_loose(sections[0].get("heading", ""), keyword, form_policy)
+        first_ok = (first_text_count + first_heading_count) >= 1
+    placement_base_ok = title_ok and body_ok and total_ok and first_ok
+
     if settings.get("title_required", True) and title_count != 1:
         verdict.append("제목에 키워드가 정확히 1회 들어가야 합니다.")
     if body_count < body_min:
@@ -2201,10 +2225,19 @@ def keyword_placement_report(title, body, keyword, settings=None):
         verdict.append(f"전체 키워드가 {total_min - total_count}회 부족합니다.")
     if total_count > total_max:
         verdict.append(f"전체 키워드가 {total_count - total_max}회 많습니다.")
+
     if missing_sections:
-        verdict.append("키워드가 빠진 문단이 있습니다: " + ", ".join([m.get("role", "문단") for m in missing_sections[:5]]))
+        roles = ", ".join([m.get("role", "문단") for m in missing_sections[:5]])
+        if placement_base_ok:
+            verdict.append("보완 추천: 일부 문단에 키워드가 없지만 전체 횟수·제목·첫 문단은 충족했습니다. 필요하면 해당 문단에 1회만 자연스럽게 추가하세요: " + roles)
+        else:
+            verdict.append("키워드가 빠진 문단이 있습니다: " + roles)
     if over_sections:
-        verdict.append("키워드가 한 문단에 몰린 구간이 있습니다: " + ", ".join([m.get("role", "문단") for m in over_sections[:5]]))
+        roles = ", ".join([m.get("role", "문단") for m in over_sections[:5]])
+        if placement_base_ok:
+            verdict.append("주의: 특정 문단에 키워드가 몰린 느낌이 있습니다. 납품 리스크가 아니라 자연스러움 보완 항목입니다: " + roles)
+        else:
+            verdict.append("키워드가 한 문단에 몰린 구간이 있습니다: " + roles)
     if not verdict:
         verdict.append("키워드 횟수와 위치가 대체로 안정적입니다.")
     lines.append("판정: " + " / ".join(verdict))
@@ -2212,13 +2245,69 @@ def keyword_placement_report(title, body, keyword, settings=None):
     return "\n".join(lines), insertion_prompt
 
 
+def _first_n_sentences_for_intro(text, n=5, max_chars=1200):
+    """도입부 감지는 첫 5문장 또는 1200자 안에서만 본다.
+    체크리스트 줄바꿈이 사라진 경우도 있어 넉넉하게 잡되 본문 전체로 확장하지 않는다.
+    """
+    text = (text or "").strip()[:max_chars]
+    if not text:
+        return ""
+    # Python 정규식의 가변 길이 lookbehind를 피하기 위해 문장 후보를 직접 수집한다.
+    sentences = [m.group(0).strip() for m in re.finditer(r".+?(?:[.!?。]|다\.|요\.|니다\.)(?:\s+|$)", text, re.S)]
+    if not sentences:
+        sentences = [text]
+    return " ".join(sentences[:n]).strip()
+
+
+def _count_intro_check_items(intro):
+    """도입 체크리스트형을 줄바꿈/복사 흔들림까지 감지한다."""
+    lines = [l.strip() for l in (intro or "").splitlines() if l.strip()]
+    # 소제목이나 첫문장에 들어간 하이픈은 제외하고, 독립 줄의 기호만 우선 인정
+    bullet_lines = [
+        l for l in lines
+        if re.match(r"^(?:[-•·□✅☑✓✔]|체크\s*[:：-]?)\s*\S+", l)
+    ]
+    # 줄바꿈이 사라진 복사본: □/✅/☑/체크 기호가 문장 안에 반복된 경우
+    inline_marks = len(re.findall(r"(?:□|✅|☑|✓|✔)", intro or ""))
+    explicit_check = len(re.findall(r"체크\s*(?:사항|리스트|포인트|항목)?", intro or ""))
+    return max(len(bullet_lines), inline_marks, explicit_check)
+
+
+def _count_intro_concern_markers(intro):
+    markers = [
+        "궁금하다", "궁금하", "걱정된다", "걱정되", "헷갈린다", "헷갈리",
+        "확인하고 싶다", "확인하고 싶", "알고 싶다", "알고 싶",
+        "비교하게 된다", "비교하게", "망설여진다", "망설이"
+    ]
+    return sum(1 for m in markers if m in (intro or ""))
+
+
+def _has_comma_concern_list(intro):
+    intro = intro or ""
+    flow_endings = ["분들이 많습니다", "경우가 많습니다", "상담에서 자주 나옵니다", "자주 묻습니다", "많이 묻습니다"]
+    if not any(e in intro for e in flow_endings):
+        return False
+    concern_words = ["효과", "통증", "비용", "가격", "유지기간", "붓기", "열감", "부작용", "샷", "정품", "차이", "비교", "회복", "검사"]
+    # 쉼표/가운뎃점/슬래시로 나열된 독자 고민이 3개 이상이면 체크리스트형으로도 인정
+    chunks = re.split(r"[,·/]| 그리고 | 여기에 ", intro)
+    hits = [c for c in chunks if any(w in c for w in concern_words)]
+    return len(hits) >= 3
+
+
 def detect_intro_types(body):
     intro = body.strip()[:900]
+    intro_block = _first_n_sentences_for_intro(body, n=5, max_chars=1200)
     detected = []
 
-    list_lines = [l for l in intro.splitlines() if l.strip().startswith(("-", "·", "•", "✓", "✔", "☑", "□"))]
-    if "☑" in intro or "□" in intro or len(list_lines) >= 2:
+    # v10.0.23: 체크리스트형 도입 감지 보강
+    check_count = _count_intro_check_items(intro_block)
+    concern_count = _count_intro_concern_markers(intro_block)
+    if check_count >= 3 or concern_count >= 3 or _has_comma_concern_list(intro_block):
         detected.append("1. 독자의 상황을 찔러주는 체크리스트 활용")
+
+    if "☑" in intro or "□" in intro or len([l for l in intro.splitlines() if l.strip().startswith(("-", "·", "•", "✓", "✔", "☑", "□", "✅"))]) >= 2:
+        if "1. 독자의 상황을 찔러주는 체크리스트 활용" not in detected:
+            detected.append("1. 독자의 상황을 찔러주는 체크리스트 활용")
 
     if "|" in intro or ("구분" in intro and ("T존" in intro or "U존" in intro or "차이" in intro)):
         detected.append("2. 비교 표 활용")
@@ -2246,7 +2335,8 @@ def detect_intro_types(body):
     if any(w in intro for w in ["웹툰", "컷", "만화", "그림", "장면", "[컷", "1컷", "2컷"]):
         detected.append("8. 간단한 웹툰 만들어 넣기")
 
-    return detected
+    # 중복 제거하되 순서 유지
+    return list(dict.fromkeys(detected))
 
 
 
@@ -2303,35 +2393,68 @@ def is_medical_choice_text(field="", title="", body="", keyword=""):
 def detect_medical_emotion_mismatch(field="", title="", body="", keyword=""):
     """의료 선택 글에 맞지 않는 법률/피해보상식 감정선 감지.
 
-    v10.0.19: ‘충분한가요/충분하다’ 안의 ‘분한’을 분쟁 감정어로 오탐하지 않도록
-    문맥 기반으로 보정한다. 오해 반박형·질문형 의료 도입의 비교 고민은 정상으로 본다.
+    v10.0.23:
+    - ‘분한’ 단독 부분 문자열 감지를 삭제한다.
+    - ‘충분한지/충분한/불충분한/흥분한’처럼 단어 내부 우연 포함은 제외한다.
+    - 실제 분쟁·피해 감정 표현만 구 단위로 감지한다.
     """
     if not is_medical_choice_text(field, title, body, keyword):
         return []
-    intro = (body or "")[:1000]
+    intro = (body or "")[:1200]
     found = []
 
-    # 명시적인 분쟁/피해 감정어만 잡는다. 단어 일부 매칭으로 ‘충분한가요’를 잡지 않는다.
-    explicit_patterns = [
-        "억울", "억울하고 답답", "손해 보는 느낌", "손해보는 느낌",
-        "피해를 보는 느낌", "납득하기 어렵고 억울", "분합니다", "분했", "분해서", "분한 마음"
+    safe_substrings = [
+        "충분한", "충분한지", "충분하지", "충분히", "불충분", "불충분한",
+        "흥분한", "흥분하다", "흥분감", "흥분 상태", "흥분상태"
     ]
-    for pat in explicit_patterns:
-        if pat in intro and pat not in found:
-            found.append("분하다" if pat.startswith("분") else pat)
+    # 안전 표현은 판정 전 원문에서 임시 치환해 단어 내부 오탐을 막는다.
+    scan = intro
+    for i, safe in enumerate(safe_substrings):
+        scan = scan.replace(safe, f"__SAFE_MED_EMOTION_{i}__")
 
-    # ‘분하다’는 독립 감정 표현일 때만 잡고, 충분/불충분 같은 정상 단어는 제외한다.
-    for m in re.finditer(r"분하(?:다|고|게|여|죠|네|네요|다는|다고)", intro):
-        window = intro[max(0, m.start()-3):m.end()+3]
-        if any(safe in window for safe in ["충분하", "불충분하"]):
-            continue
-        found.append("분하다")
+    phrase_map = {
+        "억울하고 답답하다": "억울하고 답답하다",
+        "억울하고 답답": "억울하고 답답하다",
+        "억울하고 분하다": "억울하고 분하다",
+        "손해 보는 느낌": "손해 보는 느낌",
+        "손해 본 느낌": "손해 본 느낌",
+        "손해보는 느낌": "손해 보는 느낌",
+        "손해본 느낌": "손해 본 느낌",
+        "피해를 봤다": "피해를 봤다",
+        "피해 봤다": "피해를 봤다",
+        "피해를 본": "피해를 봤다",
+        "분한 마음": "분한 마음",
+        "분한 감정": "분한 감정",
+        "화가 난다": "화가 난다",
+        "화가 났다": "화가 났다",
+        "당했다": "당했다",
+        "속았다": "속았다",
+    }
+    for phrase, label in phrase_map.items():
+        if phrase in scan:
+            found.append(label)
 
-    # ‘답답’은 흉통/호흡 등 증상 문맥이면 제외하고, 결정 감정 문맥에서만 잡는다.
-    if "답답" in intro and not _has_any(intro, ["가슴", "호흡", "숨", "코막힘"]):
-        if _has_any(intro, ["결정", "선택", "검사 가능", "말만 듣고", "비용", "상담"]):
+    # 억울하다/분하다 계열은 독립 표현일 때만 감지한다.
+    regex_map = [
+        (r"(?<![가-힣])억울(?:하다|한|하고|해서|했습니다|합니다|하네요)?(?![가-힣])", "억울하다"),
+        (r"(?<![가-힣])분하다(?![가-힣])", "분하다"),
+        (r"(?<![가-힣])분해서(?![가-힣])", "분해서"),
+        (r"(?<![가-힣])분하고(?![가-힣])", "분하고"),
+    ]
+    for pat, label in regex_map:
+        if re.search(pat, scan):
+            found.append(label)
+
+    # ‘답답’은 호흡/흉부 증상 문맥이면 제외하고, 의료 선택 감정선일 때만 잡는다.
+    if "답답" in scan and not _has_any(scan, ["가슴", "호흡", "숨", "코막힘"]):
+        if _has_any(scan, ["억울", "결정", "선택", "검사 가능", "말만 듣고", "비용", "상담", "환불", "피해", "손해"]):
             found.append("답답하다")
-    return sorted(set(found))
+
+    allowed_emotions = ["헷갈", "결정하기 어렵", "망설", "먼저 확인", "비교", "걱정", "궁금", "후회가 걱정"]
+    # 허용 감정만 있는 경우는 감점하지 않는다.
+    if found:
+        return sorted(set(found))
+    return []
 
 
 LAW_RESULT_GUARANTEE_TERMS = [
@@ -9303,7 +9426,7 @@ def v10_collect_backup_payload():
             payload["files"][fname] = []
     return payload
 
-st.title("📝 달로썸 원고 검수기 v10.0.22")
+st.title("📝 달로썸 원고 검수기 v10.0.23")
 st.caption("사용 순서대로 번호를 재정렬했습니다. ① 프리셋 → ② 의뢰조건/GPT 조사 → ③ 조사결과/원고설계 → ④~⑦ 상품별 제작 → ⑧~⑪ 검수·사람화·출고판정 → ⑫~㉑ 운영관리 순서로 사용하세요.")
 
 
@@ -10363,7 +10486,7 @@ with tab_check:
         elif check_target_len and draft_no_space_len < int(check_target_len * 0.85):
             st.warning(f"분량 부족: 현재 공백 제외 {draft_no_space_len}자 / 목표 {check_target_len}자 내외입니다. Claude 패키지에 자연 보강 지시가 포함됩니다.")
 
-    st.write("## v10.0.22 Claude 보강·자연화 복붙 패키지")
+    st.write("## v10.0.23 Claude 보강·자연화 복붙 패키지")
     st.caption("분량 부족·매출전환 마무리 약함이 있으면 자동으로 보강수정 모드가 되고, 충분하면 자연화 모드로 동작합니다.")
     check_topic_for_claude = st.session_state.get("applied_topic", st.session_state.get("r_topic", ""))
     check_forbidden_for_claude = st.session_state.get("client_forbidden_words", "")

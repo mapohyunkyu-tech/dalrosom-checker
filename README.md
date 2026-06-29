@@ -1,12 +1,14 @@
-# 달로썸 원고 검수기 v10.0.22
+# 달로썸 원고 검수기 v10.0.23
 
-## 핫픽스
-- v10.0.21에서 `작성자 서술 강도` 위젯 생성 후 같은 key(`r_author_narration`)를 `st.session_state`에 다시 쓰면서 StreamlitAPIException이 발생하던 문제를 수정했습니다.
-- ③/⑧ 자동 적용 흐름에서 사용할 수 있도록 `applied_author_narration` 저장을 별도 key로 분리했습니다.
+## 패치 요약
+- 의료 감정선 오탐 보정: `충분한지`, `충분한`, `불충분한`, `흥분한`을 `분한` 감정어로 잘못 잡지 않도록 수정.
+- 실제 의료 감정선 오류는 구 단위로 감지: 억울하다, 손해 보는 느낌, 분하다, 화가 난다, 피해를 봤다, 당했다, 속았다 등.
+- 도입 체크리스트 감지 보강: 불릿/체크박스 3개 이상, 고민 표현 3개 이상, 쉼표 나열 고민 + `분들이 많습니다`류 문장을 체크리스트형으로 인정.
+- 사람화 자동수정 오류 보정: `확인이 필요합니다`가 `확인이 먼저 확인해야 합니다`로 변환되는 문제 차단.
+- 키워드 문단 분산 판정 완화: 전체/제목/첫문단 키워드 충족 시 중간 문단 1곳 누락은 납품 리스크가 아니라 보완 추천으로 표시.
 
-## 확인
+## 검사
 - `python -m py_compile app.py` 통과
-- `run_menu_fake_test.py` 통과
-- `run_integration_harmony_check.py` 통과
-- `run_v1021_target_tests.py` 통과
-- `run_v1022_target_tests.py` 통과
+- `python run_menu_fake_test.py` 통과
+- `python run_integration_harmony_check.py` 통과
+- `python run_v1023_target_tests.py` 통과

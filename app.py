@@ -13,7 +13,7 @@ import streamlit as st
 st.set_page_config(page_title="달로썸 원고 검수기 v10.0.29", layout="wide")
 
 
-# v10.0.32: 통합검수 국어선생님 2차판정 강제/자동 보강 핫픽스
+# v10.0.33: 통합검수 국어선생님 기본 2차판정 강제 핫픽스
 # - API 키는 코드/파일에 저장하지 않는다.
 # - Streamlit secrets 또는 OPENAI_API_KEY 환경변수, 또는 실행 화면 입력값만 사용한다.
 DALROSOM_API_MODEL_OPTIONS = [
@@ -8666,7 +8666,7 @@ def _quality_gate_product_specific_blockers(body="", product_type="업체형 원
     return blockers, warnings
 
 
-def integrated_quality_gate(title="", body="", product_type="업체형 원고", field="청소 / 홈케어", style_name="부드러운 블로그형", experience_mode="사진 제공형", keyword="", brand_name="", homepage_mode="홈페이지 정보 없음", homepage_info="", korean_teacher_second_pass=False):
+def integrated_quality_gate(title="", body="", product_type="업체형 원고", field="청소 / 홈케어", style_name="부드러운 블로그형", experience_mode="사진 제공형", keyword="", brand_name="", homepage_mode="홈페이지 정보 없음", homepage_info="", korean_teacher_second_pass=True):
     body = body or ""
     # v10.0.32: ⑪ 통합 출고 판정에서도 ⑩ 국어선생님 2차 재검수 신호를 그대로 전달한다.
     # ⑩에서 이미 최종 퇴고본으로 통과한 원고를 ⑪이 다시 1차 원고처럼 채점하면
@@ -12543,11 +12543,11 @@ with tab_quality_gate:
     q_second_pass_mode = st.selectbox(
         "국어선생님 2차 판정",
         ["자동 판단", "강제로 2차 판정", "1차 원고로 판정"],
-        index=0,
+        index=1,
         key="q_second_pass_mode",
-        help="⑩ 국어선생님이 만든 최종문단을 ⑪에 다시 넣는 경우, 반복 지적 때문에 점수가 떨어지지 않도록 2차 판정으로 처리합니다.",
+        help="⑪ 통합 출고 판정은 보통 ⑩ 국어선생님 최종본을 넣는 단계라 기본값을 2차 판정으로 둡니다. 초안/원본을 바로 넣는 경우에만 1차 원고로 판정을 선택하세요.",
     )
-    st.caption("국어선생님 최종 퇴고본을 다시 통합검수할 때 자동 감지가 안 되면 ‘강제로 2차 판정’을 선택하세요.")
+    st.caption("기본값은 ‘강제로 2차 판정’입니다. ⑪에 초안/원본을 바로 넣을 때만 ‘1차 원고로 판정’을 선택하세요.")
 
     if st.button("통합 출고 판정 실행", type="primary", key="run_quality_gate"):
         # v10.0.32: ⑩ 국어선생님 최종문단을 ⑪에 그대로 넣은 경우
@@ -12566,6 +12566,8 @@ with tab_quality_gate:
             q_kt_second_pass = False
         else:
             q_kt_second_pass = bool(q_auto_second_pass)
+        # v10.0.33: ⑪은 최종 출고판정 단계라 국어선생님 최종본을 넣는 일이 가장 많다.
+        # 자동판단이 실패해도 사용자가 기본값(강제 2차)을 유지하면 국어 점수 85 반복 루트를 타지 않는다.
         st.session_state["quality_gate_second_pass_used"] = q_kt_second_pass
         st.session_state["quality_gate_result"] = integrated_quality_gate(
             title=q_title,

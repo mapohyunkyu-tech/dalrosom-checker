@@ -1,30 +1,28 @@
-# 달로썸 v10.0.29 Slim Release
+# 달로썸 검수기 v10.0.30 SLIM
 
-이 배포본은 실행에 필요한 파일만 포함한 슬림 버전입니다.
+## 국어선생님 2차 재검수 반복 방지 핫픽스
 
-포함 파일:
-- app.py
-- requirements.txt
-- README.md
-- client_presets.json
-- custom_weird_sentence_db.json
-- custom_weird_pattern_db.json
-- dalrosom_settings.json
-- retainer_clients.json
-- quote_history.json
-- portfolio_samples.json
-- work_log.json
+v10.0.29의 국어선생님 개행 복구 핫픽스 위에, 국어선생님이 생성한 최종 퇴고본을 다시 국어선생님에 넣었을 때 같은 지적이 반복되는 문제를 보정했습니다.
 
-제외 파일:
-- __pycache__
-- run_* 테스트 파일
-- patch_* 작업 파일
-- target_*.out / integration_*.out / menu_*.out
-- *_target_tests.json
-- backtest/audit 리포트 파일
+### 반영 내용
 
-실행:
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+1. 국어선생님 최종 퇴고본 2차 검수 판별
+   - 직전 `최종문단`과 현재 입력 원고가 실질적으로 같으면 2차 재검수로 판단합니다.
+   - 공백/문단 개행 차이는 비교에서 제외합니다.
+
+2. 반복 지적 숨김
+   - 2차 검수에서는 말끝 반복, 문체 취향형, AI티 경미 지적을 다시 반복하지 않습니다.
+   - 납품 사고급 표현만 남깁니다.
+
+3. 2차 통과 판정 추가
+   - 납품 사고급 표현이 없으면 `2차 통과 · 추가 수정 없음`으로 표시합니다.
+
+4. 프롬프트 규칙 추가
+   - GPT/GPTs용 국어선생님 프롬프트에도 2차 재검수 반복 금지 문구를 추가했습니다.
+
+### 유지된 v10.0.29 기능
+
+- 최종 퇴고본 문장 중간 강제 줄바꿈 금지
+- 문단 사이 빈 줄 1개 유지
+- 소제목 한 줄 단독 유지
+- 분석용 줄분리와 최종 원고 출력 분리

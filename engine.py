@@ -112,11 +112,21 @@ def _season_bounds(s: pd.Series, peak_idx: pd.Timestamp) -> Tuple[pd.Timestamp,p
     return sm.index[left], sm.index[right]
 
 def _status(entry: date, peak: date, end: date, today: date) -> Tuple[str,str,int]:
+    register = entry - timedelta(days=14)
+    stock = entry - timedelta(days=7)
+    ad = entry - timedelta(days=3)
+    if today < register:
+        d=(register-today).days
+        return ("등록 준비 전", f"{d}일 후 상품 등록", (entry-today).days)
+    if today < stock:
+        return ("상품 등록 기간", "상세페이지 제작·상품 등록", (entry-today).days)
+    if today < ad:
+        return ("재고 확보 기간", "공급처 확인·발주", (entry-today).days)
     if today < entry:
-        d=(entry-today).days
-        return ("진입 대기", f"{d}일 후 판매 준비", d)
-    if today <= peak: return ("진입 가능 · 피크 전", "지금 판매 시작 또는 확대", 0)
-    if today <= end: return ("판매 가능 · 피크 후", "재고를 보수적으로 운영", 0)
+        return ("판매 직전", "가격 점검·광고 준비", (entry-today).days)
+    if today <= peak: return ("진입 가능 · 피크 전", "판매 시작·광고 확대", 0)
+    if today <= end - timedelta(days=7): return ("판매 가능 · 피크 후", "재고를 보수적으로 운영", 0)
+    if today <= end: return ("종료 임박", "광고 축소·재고 소진", 0)
     return ("시즌 종료", "다음 시즌 준비", 0)
 
 def analyze(raw: pd.DataFrame, category_map: Dict[str,List[str]], target_year: int, target_month: int, today: date | None=None) -> pd.DataFrame:
@@ -167,7 +177,7 @@ def analyze(raw: pd.DataFrame, category_map: Dict[str,List[str]], target_year: i
         score=month_strength*.45+consistency*.30+seasonality*.25
         confidence="상" if len(yearly)==3 and peak_spread<=18 else ("중" if peak_spread<=35 else "하")
         state,action,days=_status(entry,peak,end,today)
-        rows.append({"카테고리":reverse[product],"품목":product,"진입일":entry,"피크일":peak,"종료일":end,"판매기간(일)":(end-entry).days+1,"현재상태":state,"진입까지(일)":days,"추천행동":action,"신뢰도":confidence,"계절성점수":round(score,1),"피크편차(일)":round(peak_spread,1),"분석연도":", ".join(map(str,years))})
+        rows.append({"카테고리":reverse[product],"품목":product,"등록시작일":entry-timedelta(days=14),"재고확보일":entry-timedelta(days=7),"광고준비일":entry-timedelta(days=3),"진입일":entry,"피크일":peak,"종료임박일":end-timedelta(days=7),"종료일":end,"판매기간(일)":(end-entry).days+1,"현재상태":state,"진입까지(일)":days,"추천행동":action,"신뢰도":confidence,"계절성점수":round(score,1),"피크편차(일)":round(peak_spread,1),"분석연도":", ".join(map(str,years))})
     out=pd.DataFrame(rows)
     if out.empty:return out
     out=out.sort_values(["카테고리","계절성점수","신뢰도"],ascending=[True,False,True]).reset_index(drop=True)

@@ -1,26 +1,47 @@
-# 달로썸 검수기 v10.0.34
+# MarketScout Streamlit
 
-이번 버전은 카페 정보성/카페 자연글형에서 같은 핵심 키워드로 반복 생성해도 질문글·공유글·비교글·체크글·댓글유도글처럼 다른 흐름이 나오도록 보강한 패치입니다.
+네이버 Search Trend를 이용해 선택한 월의 제철 판매 후보를 카테고리별 TOP 50으로 보여주는 Streamlit 앱입니다.
 
-## 핵심 변경
+## 화면
+- 과일을 누르면 과일만 표시
+- 채소를 누르면 채소만 표시
+- 수산물을 누르면 수산물만 표시
+- 진입일, 피크일, 종료일, 판매기간, 현재 상태, 추천 행동, 신뢰도 표시
+- 품목별 검색지수 그래프와 엑셀 다운로드
+- 쌀, 잡곡, 축산, 계란, 상시 가공식품 및 그래프상 상시형 품목 제외
 
-- 카페형 반복 방지·작성자 위치 랜덤 지시 추가
-- 작성자 위치 후보: 알아보는 사람, 비교 중인 사람, 문의 전 확인하는 사람, 정보 정리 공유자, 댓글로 의견 묻는 사람
-- 도입 후보: 질문형, 비교 고민형, 정보 공유형, 체크리스트형, 수다형
-- 본문 흐름 후보: 질문글형, 공유글형, 비교글형, 체크글형, 망설임형
-- 마무리 후보: 댓글 질문, 상담 전 확인, 추가 기준 요청, 참고용 정리 등
-- 병원/법률/금융/투자 카페글에서도 가짜 경험담·효과 보장·무조건 추천 금지 유지
+## GitHub 업로드
+이 폴더의 파일을 전부 GitHub 저장소 루트에 올립니다. 실제 `secrets.toml`은 올리지 마세요. `.gitignore`에 이미 제외되어 있습니다.
 
-## 사용 방법
+## Streamlit Community Cloud 배포
+1. GitHub 저장소를 Streamlit Community Cloud에 연결합니다.
+2. Main file path는 `app.py`로 지정합니다.
+3. 앱 설정의 Secrets에 아래 내용을 저장합니다.
 
-1. Streamlit 실행
-2. ②/③에서 원고 사용처를 `카페 정보성` 또는 글 성격을 `카페 자연글형`으로 선택
-3. 같은 키워드로 여러 번 생성해도 작성자 위치와 글 흐름이 다르게 나오는지 확인
-4. 실제 경험 자료가 없을 때는 직접 경험담이 들어가지 않는지 확인
+```toml
+[naver]
+auth_mode = "hub"
+client_id = "발급받은 Client ID"
+client_secret = "발급받은 Client Secret"
+```
 
-## 실행
+`auth_mode` 값:
+- `hub`: NAVER API HUB 신규 키(권장)
+- `legacy_ncp`: 이전 NCP Search Trend 키
+- `developer`: 2026-07-31 이전 NAVER Developers에서 신청한 기존 키
 
+## 로컬 실행
 ```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 streamlit run app.py
 ```
+
+## 인증 오류 024
+`Scope Status Invalid (024)`가 뜨면 Client ID/Secret 자체의 오타보다 해당 키에 Search Trend 권한이 연결되어 있는지 먼저 확인하세요.
+
+## 주의
+네이버 트렌드 값은 절대 검색량이 아닌 상대지수입니다. 실제 출하 시기, 물량, 마진은 별도로 확인해야 합니다.

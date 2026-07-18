@@ -1,334 +1,92 @@
-
-from __future__ import annotations
-
-import csv
-import json
-import os
-import re
-import sys
-import time
-from datetime import datetime
-from pathlib import Path
-
+# -*- coding: utf-8 -*-
+from datetime import date
 import pandas as pd
-from rapidfuzz import fuzz, process
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+import streamlit as st
+from engine import ApiConfig, NaverApiError, analyze, collect, to_excel
+from products import PRODUCTS
 
-FROZEN = bool(getattr(sys, "frozen", False))
-APP_DIR = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parent
-RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", APP_DIR))
+st.set_page_config(page_title="MarketScout 제철 선점", page_icon="📈", layout="wide")
+st.title("📈 MarketScout 제철 선점")
+st.caption("항상 팔리는 품목은 제외하고, 선택한 달의 과일·채소·수산물·버섯 TOP 50을 표시합니다.")
 
-BASE_DIR = APP_DIR
-DATA_DIR = BASE_DIR / "data"
-OUT_DIR = BASE_DIR / "output"
-HISTORY_FILE = DATA_DIR / "history.csv"
-MASTER_FILE = RESOURCE_DIR / "master_db.csv"
-CONFIG_FILE = RESOURCE_DIR / "config.json"
-
-DATA_DIR.mkdir(exist_ok=True)
-OUT_DIR.mkdir(exist_ok=True)
-
-def log(message: str) -> None:
-    print(f"[{datetime.now():%H:%M:%S}] {message}", flush=True)
-
-def normalize(value: object) -> str:
-    text = "" if value is None else str(value)
-    text = text.lower().strip()
-    return re.sub(r"[^0-9a-z\uac00-\ud7a3]+", "", text)
-
-def load_config() -> dict:
-    with CONFIG_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
-
-def build_driver(config: dict) -> webdriver.Chrome:
-    options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-notifications")
-    options.add_argument("--lang=ko-KR")
-    profile_dir = BASE_DIR / "chrome_profile"
-    options.add_argument(f"--user-data-dir={profile_dir}")
-    if config.get("headless", False):
-        options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=options)
-    driver.set_page_load_timeout(60)
-    return driver
-
-def rank_keyword_pairs_from_dom(driver: webdriver.Chrome) -> list[tuple[int, str]]:
-    script = r"""
-    const out = [];
-    const seen = new Set();
-    const nodes = [...document.querySelectorAll('li, tr, div, a, span')];
-    for (const el of nodes) {
-      const txt = (el.innerText || '').trim().replace(/\s+/g, ' ');
-      if (!txt || txt.length > 100) continue;
-      const m = txt.match(/^(\d{1,3})\s*[.\-:]?\s+(.{1,60})$/);
-      if (!m) continue;
-      const rank = Number(m[1]);
-      const keyword = m[2].trim();
-      if (rank < 1 || rank > 1000) continue;
-      if (!keyword || /^\d+$/.test(keyword)) continue;
-      const key = rank + '|' + keyword;
-      if (!seen.has(key)) {
-        seen.add(key);
-        out.push([rank, keyword]);
-      }
-    }
-    return out;
-    """
-    raw = driver.execute_script(script) or []
-    pairs = []
-    for rank, keyword in raw:
-        keyword = str(keyword).strip()
-        if 1 <= int(rank) <= 1000 and 1 <= len(keyword) <= 60:
-            pairs.append((int(rank), keyword))
-    return pairs
-
-def pairs_from_page_text(driver: webdriver.Chrome) -> list[tuple[int, str]]:
-    text = driver.find_element(By.TAG_NAME, "body").text
-    lines = [x.strip() for x in text.splitlines() if x.strip()]
-    pairs = []
-    for i, line in enumerate(lines):
-        m = re.fullmatch(r"(\d{1,3})", line)
-        if m and i + 1 < len(lines):
-            rank = int(m.group(1))
-            keyword = lines[i + 1]
-            if 1 <= rank <= 1000 and 1 <= len(keyword) <= 60:
-                pairs.append((rank, keyword))
-        else:
-            m2 = re.match(r"^(\d{1,3})\s*[.\-:]?\s+(.{1,60})$", line)
-            if m2:
-                pairs.append((int(m2.group(1)), m2.group(2).strip()))
-    return pairs
-
-def dedupe_pairs(pairs: list[tuple[int, str]]) -> list[tuple[int, str]]:
-    best = {}
-    for rank, keyword in pairs:
-        key = normalize(keyword)
-        if not key:
-            continue
-        if key not in best or rank < best[key][0]:
-            best[key] = (rank, keyword)
-    return sorted(best.values(), key=lambda x: (x[0], x[1]))
-
-def click_next(driver: webdriver.Chrome) -> bool:
-    # Text is encoded to keep source file ASCII-only.
-    next_words = [
-        "\ub2e4\uc74c",       # next
-        "\ub354\ubcf4\uae30", # more
-        "next", "more", ">"
-    ]
-    candidates = driver.find_elements(By.CSS_SELECTOR, "button, a")
-    for el in candidates:
-        try:
-            if not el.is_displayed() or not el.is_enabled():
-                continue
-            text = (el.text or "").strip().lower()
-            aria = (el.get_attribute("aria-label") or "").strip().lower()
-            title = (el.get_attribute("title") or "").strip().lower()
-            combined = " ".join([text, aria, title])
-            if any(word in combined for word in next_words):
-                driver.execute_script("arguments[0].click();", el)
-                time.sleep(2)
-                return True
-        except Exception:
-            continue
-    return False
-
-def collect_rankings(driver: webdriver.Chrome, config: dict) -> pd.DataFrame:
-    all_pairs = []
-    max_pages = int(config.get("max_pages", 30))
-    stable_rounds = 0
-    previous_count = 0
-
-    for page_no in range(1, max_pages + 1):
-        time.sleep(float(config.get("page_wait_seconds", 2)))
-        pairs = dedupe_pairs(rank_keyword_pairs_from_dom(driver) + pairs_from_page_text(driver))
-        all_pairs.extend(pairs)
-        all_pairs = dedupe_pairs(all_pairs)
-        log(f"Page {page_no}: {len(pairs)} found, {len(all_pairs)} unique total")
-
-        # Scroll to trigger lazy loading.
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(1.5)
-        more_pairs = dedupe_pairs(rank_keyword_pairs_from_dom(driver) + pairs_from_page_text(driver))
-        all_pairs = dedupe_pairs(all_pairs + more_pairs)
-
-        if len(all_pairs) == previous_count:
-            stable_rounds += 1
-        else:
-            stable_rounds = 0
-        previous_count = len(all_pairs)
-
-        if len(all_pairs) >= int(config.get("target_count", 500)):
-            break
-        if stable_rounds >= 2 and not click_next(driver):
-            break
-
-    if not all_pairs:
-        raise RuntimeError(
-            "No ranking rows were detected. Open the ranking list in the browser, "
-            "then return to this window and run again."
-        )
-
-    today = pd.Timestamp.today().normalize()
-    return pd.DataFrame({
-        "collection_date": [today] * len(all_pairs),
-        "rank": [x[0] for x in all_pairs],
-        "keyword": [x[1] for x in all_pairs],
-    }).sort_values(["rank", "keyword"]).drop_duplicates("keyword")
-
-def load_master() -> pd.DataFrame:
-    master = pd.read_csv(MASTER_FILE, encoding="utf-8-sig")
-    master["norm_item"] = master["detail_item"].map(normalize)
-    master["norm_alias"] = master["aliases"].fillna("").map(normalize)
-    return master
-
-def classify(df: pd.DataFrame, master: pd.DataFrame) -> pd.DataFrame:
-    exact = {}
-    for _, row in master.iterrows():
-        for key in [row["norm_item"], row["norm_alias"]]:
-            if key:
-                exact.setdefault(key, row["detail_item"])
-
-    keys = master["norm_item"].dropna().tolist()
-    key_name = dict(zip(master["norm_item"], master["detail_item"]))
-
-    results = []
-    for keyword in df["keyword"]:
-        nq = normalize(keyword)
-        if nq in exact:
-            results.append(("EXISTS", exact[nq], 100))
-            continue
-
-        contains = master[
-            master["norm_item"].map(lambda x: bool(x) and (x in nq or nq in x))
-        ]
-        if len(contains):
-            results.append(("SIMILAR", contains.iloc[0]["detail_item"], 95))
-            continue
-
-        hit = process.extractOne(nq, keys, scorer=fuzz.ratio)
-        if hit and hit[1] >= 82:
-            results.append(("SIMILAR", key_name.get(hit[0], hit[0]), int(hit[1])))
-        else:
-            results.append(("NEW_CANDIDATE", "", int(hit[1]) if hit else 0))
-
-    out = df.copy()
-    out[["db_status", "matched_item", "similarity"]] = pd.DataFrame(results, index=out.index)
-    return out
-
-def add_history(today_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    if HISTORY_FILE.exists():
-        hist = pd.read_csv(HISTORY_FILE, encoding="utf-8-sig")
-        hist["collection_date"] = pd.to_datetime(hist["collection_date"], errors="coerce")
-    else:
-        hist = pd.DataFrame(columns=["collection_date", "rank", "keyword"])
-
-    prev_date = hist["collection_date"].max() if len(hist) else pd.NaT
-    if pd.notna(prev_date):
-        prev = hist[hist["collection_date"] == prev_date][["keyword", "rank"]].rename(
-            columns={"rank": "previous_rank"}
-        )
-        today_df = today_df.merge(prev, on="keyword", how="left")
-    else:
-        today_df["previous_rank"] = pd.NA
-
-    today_df["rank_change"] = today_df["previous_rank"] - today_df["rank"]
-    today_df["surge"] = today_df["rank_change"].fillna(0).ge(30)
-
-    hist_new = pd.concat(
-        [hist[["collection_date", "rank", "keyword"]],
-         today_df[["collection_date", "rank", "keyword"]]],
-        ignore_index=True
-    ).drop_duplicates(["collection_date", "keyword"], keep="last")
-
-    hist_new.to_csv(HISTORY_FILE, index=False, encoding="utf-8-sig")
-    return today_df, hist_new
-
-def season_tables(master: pd.DataFrame) -> dict[str, pd.DataFrame]:
-    today = pd.Timestamp.today().normalize()
-    out = master.copy()
-    for col in ["entry_date", "peak_date", "end_date"]:
-        out[col] = pd.to_datetime(out[col], errors="coerce")
-    out["days_to_entry"] = (out["entry_date"] - today).dt.days
-    out["days_to_peak"] = (out["peak_date"] - today).dt.days
-    out["days_to_end"] = (out["end_date"] - today).dt.days
-    return {
-        "ENTRY_14D": out[(out["days_to_entry"] >= 0) & (out["days_to_entry"] <= 14)].sort_values("days_to_entry"),
-        "PEAK_14D": out[(out["days_to_peak"] >= -7) & (out["days_to_peak"] <= 14)].sort_values("days_to_peak"),
-        "ENDING_14D": out[(out["days_to_end"] >= 0) & (out["days_to_end"] <= 14)].sort_values("days_to_end"),
-        "MASTER_DB": out,
-    }
-
-def save_results(ranked: pd.DataFrame, history: pd.DataFrame, master: pd.DataFrame) -> Path:
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    path = OUT_DIR / f"market_scout_{stamp}.xlsx"
-    seasons = season_tables(master)
-
-    with pd.ExcelWriter(path, engine="openpyxl") as writer:
-        ranked.to_excel(writer, sheet_name="TODAY_RANKING", index=False)
-        ranked[ranked["db_status"] == "NEW_CANDIDATE"].to_excel(
-            writer, sheet_name="NEW_CANDIDATES", index=False
-        )
-        ranked[ranked["surge"]].sort_values("rank_change", ascending=False).to_excel(
-            writer, sheet_name="SURGING", index=False
-        )
-        history.sort_values(["collection_date", "rank"]).to_excel(
-            writer, sheet_name="HISTORY", index=False
-        )
-        for name, frame in seasons.items():
-            frame.to_excel(writer, sheet_name=name[:31], index=False)
-
-        for ws in writer.book.worksheets:
-            ws.freeze_panes = "A2"
-            ws.auto_filter.ref = ws.dimensions
-            for cell in ws[1]:
-                cell.font = cell.font.copy(bold=True)
-            for column in ws.columns:
-                width = min(
-                    max(max((len(str(c.value)) if c.value is not None else 0) for c in column[:200]) + 2, 10),
-                    35,
-                )
-                ws.column_dimensions[column[0].column_letter].width = width
-    return path
-
-def main() -> int:
-    config = load_config()
-    master = load_master()
-    log(f"Master DB loaded: {len(master)} rows")
-    driver = None
+def load_config():
     try:
-        driver = build_driver(config)
-        driver.get(config["start_url"])
-        log("Browser opened.")
-        print()
-        print("In Chrome, open the desired Shopping Insight ranking page.")
-        print("Select the category and date range if needed.")
-        input("When the ranking list is visible, press ENTER here: ")
+        n=st.secrets["naver"]
+        return ApiConfig(str(n["client_id"]),str(n["client_secret"]),str(n.get("auth_mode","hub")))
+    except Exception:
+        return None
 
-        ranked = collect_rankings(driver, config)
-        ranked = classify(ranked, master)
-        ranked, history = add_history(ranked)
-        result = save_results(ranked, history, master)
-        log(f"Saved: {result}")
-        os.startfile(result)
-        return 0
+config=load_config()
+with st.sidebar:
+    st.header("분석 설정")
+    target_year=st.number_input("적용 연도",min_value=2024,max_value=2035,value=date.today().year,step=1)
+    target_month=st.selectbox("분석 월",range(1,13),index=7,format_func=lambda x:f"{x}월")
+    top_n=st.slider("카테고리 표시 개수",10,100,50,10)
+    st.divider()
+    if config:
+        st.success(f"NAVER API 연결 설정됨 ({config.auth_mode})")
+        st.caption(f"Client ID: {'*'*max(4,len(config.client_id)-4)}{config.client_id[-4:]}")
+    else:
+        st.error(".streamlit/secrets.toml 또는 Community Cloud Secrets에 API 키를 저장하세요.")
+    run=st.button("전체 카테고리 분석 시작",type="primary",use_container_width=True,disabled=config is None)
+
+if "results" not in st.session_state: st.session_state.results=None
+if "raw" not in st.session_state: st.session_state.raw=None
+if "analysis_key" not in st.session_state: st.session_state.analysis_key=None
+
+if run:
+    all_items=[]
+    for values in PRODUCTS.values(): all_items.extend(values)
+    status=st.status("네이버 검색 트렌드를 수집하고 있습니다…",expanded=True)
+    bar=st.progress(0)
+    def progress(n,total,batch):
+        bar.progress(n/total); status.write(f"{n}/{total} · {', '.join(batch)}")
+    try:
+        # 완료된 최근 3개년 + 적용연도 현재자료까지 넉넉히 수집
+        start_year=min(int(target_year)-3,date.today().year-3)
+        end_year=max(int(target_year),date.today().year)
+        end_date=min(date.today(),date(end_year,12,31))
+        raw=collect(config,all_items,f"{start_year}-01-01",end_date.isoformat(),progress)
+        results=analyze(raw,PRODUCTS,int(target_year),int(target_month))
+        st.session_state.raw=raw; st.session_state.results=results; st.session_state.analysis_key=(target_year,target_month)
+        status.update(label="분석 완료",state="complete",expanded=False)
+    except NaverApiError as exc:
+        status.update(label="API 오류",state="error"); st.error(str(exc))
     except Exception as exc:
-        log(f"ERROR: {exc}")
-        with (OUT_DIR / "error_log.txt").open("a", encoding="utf-8") as f:
-            f.write(f"\n[{datetime.now().isoformat()}]\n{type(exc).__name__}: {exc}\n")
-        input("Press ENTER to close.")
-        return 1
-    finally:
-        if driver is not None:
-            try:
-                driver.quit()
-            except Exception:
-                pass
+        status.update(label="분석 실패",state="error"); st.exception(exc)
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+results=st.session_state.results
+if results is None:
+    st.info("왼쪽에서 월을 고르고 ‘전체 카테고리 분석 시작’을 누르세요. 분석은 한 번만 실행하며, 이후 카테고리 버튼은 즉시 바뀝니다.")
+    st.stop()
+
+ay,am=st.session_state.analysis_key
+st.subheader(f"{ay}년 {am}월 제철 후보")
+counts=results.groupby("카테고리").size().to_dict() if not results.empty else {}
+category=st.segmented_control("카테고리",list(PRODUCTS.keys()),default="과일",format_func=lambda x:f"{x} ({counts.get(x,0)})")
+category=category or "과일"
+view=results[results["카테고리"]==category].head(top_n).copy()
+if view.empty:
+    st.warning(f"{category}에서 선택 월과 시즌이 겹치는 품목이 없습니다.")
+else:
+    show_cols=["카테고리순위","품목","진입일","피크일","종료일","판매기간(일)","현재상태","진입까지(일)","추천행동","신뢰도","계절성점수"]
+    st.dataframe(view[show_cols],hide_index=True,use_container_width=True,height=720,
+        column_config={"카테고리순위":st.column_config.NumberColumn("순위",format="%d"),"계절성점수":st.column_config.ProgressColumn("계절성점수",min_value=0,max_value=100,format="%.1f")})
+    selected=st.selectbox("그래프 확인 품목",view["품목"].tolist())
+    series=st.session_state.raw[selected].dropna().rename("검색지수")
+    if not series.empty:
+        st.line_chart(series,use_container_width=True)
+
+c1,c2=st.columns(2)
+with c1:
+    st.download_button(f"{category} TOP {top_n} 엑셀 다운로드",to_excel(view,st.session_state.raw[[x for x in view['품목'] if x in st.session_state.raw.columns]]),file_name=f"MarketScout_{ay}_{am:02d}_{category}_TOP{top_n}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True)
+with c2:
+    st.download_button("전체 결과 엑셀 다운로드",to_excel(results,st.session_state.raw),file_name=f"MarketScout_{ay}_{am:02d}_전체.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True)
+
+with st.expander("제외 기준과 판정 방식"):
+    st.markdown("""
+- 쌀·잡곡·콩·소고기·돼지고기·닭·계란·상시 가공식품은 분석 대상에서 처음부터 제외합니다.
+- 남은 품목도 월별 그래프가 거의 평평하고 연중 활성 월이 많은 경우 `상시형`으로 판정해 숨깁니다.
+- 최근 완료된 최대 3개년의 진입일·피크일·종료일을 평균해 적용 연도의 날짜로 환산합니다.
+- 프로그램은 후보 순위를 정하는 도구이며, 이상한 그래프나 실제 출하 여부는 최종적으로 직접 확인해야 합니다.
+""")

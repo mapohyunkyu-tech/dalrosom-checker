@@ -1,0 +1,7 @@
+{
+  "start_url": "https://datalab.naver.com/shoppingInsight/sCategory.naver",
+  "target_count": 500,
+  "max_pages": 30,
+  "page_wait_seconds": 2,
+  "headless": false
+}

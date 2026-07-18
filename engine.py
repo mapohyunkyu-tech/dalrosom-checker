@@ -53,8 +53,16 @@ def call_api(config: ApiConfig, keywords: List[str], start_date: str, end_date: 
                     out[item.get("title")] = s.sort_index()
                 return out
             detail = r.text[:700]
-            if r.status_code == 401 and "024" in detail:
-                raise NaverApiError("인증 범위 오류(024)입니다. NAVER API HUB에서 Search Trend 권한이 연결된 키인지 확인하세요.")
+            if r.status_code == 401:
+                if "024" in detail:
+                    raise NaverApiError("인증 범위 오류(024)입니다. 선택한 인증 방식과 키 발급처가 일치하는지, 해당 애플리케이션에 Search Trend 권한이 연결됐는지 확인하세요.")
+                if '"errorCode":"200"' in detail.replace(" ", "") or "Authentication Failed" in detail:
+                    mode_name = {"hub": "NAVER API HUB", "legacy_ncp": "기존 NAVER Cloud Search Trend", "developer": "NAVER Developers"}.get(config.auth_mode, config.auth_mode)
+                    raise NaverApiError(
+                        f"인증 실패(401/200)입니다. 현재 선택: {mode_name}. "
+                        "Client ID·Secret 오타, 키 발급처와 인증 방식 불일치, 폐기·재발급된 키를 확인하세요. "
+                        "Streamlit Cloud Secrets에 예전 키가 있으면 설정 탭에 저장한 키보다 우선 적용될 수 있으므로 Secrets도 확인하세요."
+                    )
             if r.status_code in (429, 500, 502, 503, 504):
                 last = f"HTTP {r.status_code}: {detail}"
                 time.sleep(1.2 * (attempt + 1)); continue

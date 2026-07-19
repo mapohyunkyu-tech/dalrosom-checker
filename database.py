@@ -1,89 +1,94 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-import csv
-import json
 from pathlib import Path
 from typing import Dict, List
+import pandas as pd
 
-DATA_DIR = Path(__file__).parent / "data"
-DB_FILE = DATA_DIR / "products.json"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 MASTER_CSV = DATA_DIR / "detailed_products_943.csv"
-EVERGREEN_FILE = DATA_DIR / "evergreen.json"
-DEFAULT_EVERGREEN = ["쌀", "잡곡", "현미", "백미", "콩", "소고기", "돼지고기", "닭고기", "계란", "라면", "햄", "소시지"]
+CUSTOM_CSV = DATA_DIR / "custom_products.csv"
+EVERGREEN_CSV = DATA_DIR / "evergreen.csv"
 EXPECTED_COUNTS = {"과일": 298, "채소": 300, "수산물": 248, "버섯": 48, "견과·특용": 49}
+DEFAULT_EVERGREEN = ["쌀", "잡곡", "현미", "백미", "콩", "소고기", "돼지고기", "닭고기", "계란", "라면", "햄", "소시지"]
 
 
-def _write(path: Path, value) -> None:
+def load_master_df() -> pd.DataFrame:
+    if not MASTER_CSV.exists():
+        raise RuntimeError(f"필수 DB 파일이 없습니다: {MASTER_CSV}")
+    df = pd.read_csv(MASTER_CSV, encoding="utf-8-sig", dtype=str).fillna("")
+    required = {"대분류", "기준품목", "세부품목"}
+    if not required.issubset(df.columns):
+        raise RuntimeError("마스터 DB 열 구성이 올바르지 않습니다.")
+    df["대분류"] = df["대분류"].str.strip()
+    df["기준품목"] = df["기준품목"].str.strip()
+    df["세부품목"] = df["세부품목"].str.strip()
+    df = df[(df["대분류"] != "") & (df["세부품목"] != "")].drop_duplicates(["대분류", "세부품목"])
+    counts = df.groupby("대분류")["세부품목"].nunique().to_dict()
+    if len(df) != 943 or any(counts.get(k, 0) != v for k, v in EXPECTED_COUNTS.items()):
+        raise RuntimeError(f"마스터 DB 검증 실패: 총 {len(df)}개 / {counts}")
+    return df.reset_index(drop=True)
+
+
+def load_custom_df() -> pd.DataFrame:
+    if not CUSTOM_CSV.exists():
+        return pd.DataFrame(columns=["대분류", "기준품목", "세부품목"])
+    df = pd.read_csv(CUSTOM_CSV, encoding="utf-8-sig", dtype=str).fillna("")
+    for col in ["대분류", "기준품목", "세부품목"]:
+        if col not in df.columns:
+            df[col] = ""
+        df[col] = df[col].str.strip()
+    return df[(df["대분류"] != "") & (df["세부품목"] != "")][["대분류", "기준품목", "세부품목"]].drop_duplicates()
+
+
+def load_database_df() -> pd.DataFrame:
+    master = load_master_df()[["대분류", "기준품목", "세부품목"]].copy()
+    master["구분"] = "기본DB"
+    custom = load_custom_df().copy()
+    custom["구분"] = "사용자추가"
+    df = pd.concat([master, custom], ignore_index=True)
+    return df.drop_duplicates(["대분류", "세부품목"], keep="first").reset_index(drop=True)
+
+
+def category_map() -> Dict[str, List[str]]:
+    df = load_database_df()
+    return {
+        category: group["세부품목"].drop_duplicates().tolist()
+        for category, group in df.groupby("대분류", sort=False)
+    }
+
+
+def add_custom(category: str, base_product: str, items: List[str]) -> int:
+    current = load_custom_df()
+    rows = [{"대분류": category.strip(), "기준품목": base_product.strip(), "세부품목": x.strip()} for x in items if x.strip()]
+    if not rows:
+        return 0
+    before = len(current)
+    out = pd.concat([current, pd.DataFrame(rows)], ignore_index=True).drop_duplicates(["대분류", "세부품목"])
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+    out.to_csv(CUSTOM_CSV, index=False, encoding="utf-8-sig")
+    return len(out) - before
 
 
-def _load_master_csv() -> Dict[str, List[str]]:
-    """943개 마스터 CSV를 최우선 원본으로 읽습니다."""
-    result: Dict[str, List[str]] = {}
-    with MASTER_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            category = str(row.get("대분류", "")).strip()
-            item = str(row.get("세부품목", "")).strip()
-            if category and item:
-                result.setdefault(category, []).append(item)
-    return {k: list(dict.fromkeys(v)) for k, v in result.items()}
-
-
-def _valid_master(data: Dict[str, List[str]]) -> bool:
-    return all(len(data.get(k, [])) == v for k, v in EXPECTED_COUNTS.items()) and sum(map(len, data.values())) == 943
-
-
-def load_products() -> Dict[str, List[str]]:
-    """항상 CSV의 943개 기본 DB를 사용하고, products.json의 사용자 추가분만 병합합니다."""
-    master = _load_master_csv()
-    if not _valid_master(master):
-        raise RuntimeError(
-            "세부품목 마스터 DB가 손상되었습니다. "
-            f"현재 개수: {sum(len(v) for v in master.values())}, 기대 개수: 943"
-        )
-
-    saved: Dict[str, List[str]] = {}
-    if DB_FILE.exists():
-        try:
-            loaded = json.loads(DB_FILE.read_text(encoding="utf-8"))
-            if isinstance(loaded, dict):
-                saved = loaded
-        except Exception:
-            saved = {}
-
-    merged: Dict[str, List[str]] = {}
-    categories = list(dict.fromkeys([*master.keys(), *saved.keys()]))
-    for category in categories:
-        base = [str(x).strip() for x in master.get(category, []) if str(x).strip()]
-        custom = [str(x).strip() for x in saved.get(category, []) if str(x).strip()]
-        merged[category] = list(dict.fromkeys(base + custom))
-
-    if saved != merged:
-        _write(DB_FILE, merged)
-    return merged
-
-
-def save_products(data: Dict[str, List[str]]) -> None:
-    cleaned = {k: list(dict.fromkeys(x.strip() for x in v if x.strip())) for k, v in data.items()}
-    _write(DB_FILE, cleaned)
-
-
-def reset_products() -> None:
-    master = _load_master_csv()
-    if not _valid_master(master):
-        raise RuntimeError("943개 마스터 CSV를 읽지 못했습니다.")
-    _write(DB_FILE, master)
+def delete_custom(category: str, items: List[str]) -> int:
+    current = load_custom_df()
+    targets = {x.strip() for x in items if x.strip()}
+    mask = (current["대분류"] == category) & current["세부품목"].isin(targets)
+    removed = int(mask.sum())
+    current.loc[~mask].to_csv(CUSTOM_CSV, index=False, encoding="utf-8-sig")
+    return removed
 
 
 def load_evergreen() -> List[str]:
-    if not EVERGREEN_FILE.exists():
-        _write(EVERGREEN_FILE, DEFAULT_EVERGREEN)
+    if not EVERGREEN_CSV.exists():
+        save_evergreen(DEFAULT_EVERGREEN)
     try:
-        return list(dict.fromkeys(json.loads(EVERGREEN_FILE.read_text(encoding="utf-8"))))
+        df = pd.read_csv(EVERGREEN_CSV, encoding="utf-8-sig", dtype=str).fillna("")
+        return [x.strip() for x in df.get("품목", pd.Series(dtype=str)).tolist() if x.strip()]
     except Exception:
         return list(DEFAULT_EVERGREEN)
 
 
 def save_evergreen(items: List[str]) -> None:
-    _write(EVERGREEN_FILE, sorted(set(x.strip() for x in items if x.strip())))
+    values = list(dict.fromkeys(x.strip() for x in items if x.strip()))
+    pd.DataFrame({"품목": values}).to_csv(EVERGREEN_CSV, index=False, encoding="utf-8-sig")

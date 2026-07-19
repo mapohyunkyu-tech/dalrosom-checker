@@ -15,3 +15,7 @@ streamlit run app.py
 - `data/detailed_products_943.csv`: 고정 마스터 DB 943개
 - `data/custom_products.csv`: 앱에서 사용자가 추가한 품목만 저장
 - `products.py`, `products.json`은 존재하지도 사용하지도 않습니다.
+
+
+## v2.1
+`data/detailed_products_943.csv`가 GitHub 업로드에서 빠져도 내장 압축 DB로 자동 복구합니다.

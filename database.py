@@ -15,13 +15,29 @@ def _write(path: Path, value) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def load_products() -> Dict[str, List[str]]:
-    if not DB_FILE.exists():
-        _write(DB_FILE, PRODUCTS)
-    try:
-        data = json.loads(DB_FILE.read_text(encoding="utf-8"))
-        return {str(k): list(dict.fromkeys(map(str, v))) for k, v in data.items()}
-    except Exception:
-        return {k: list(v) for k, v in PRODUCTS.items()}
+    """기본 세부품목 DB를 항상 보존하면서 사용자 추가 품목을 병합합니다.
+
+    이전 버전의 축약 products.json(약 200여 개)이 GitHub/Cloud에 남아 있어도
+    새 기본 DB 943개가 자동으로 복구되도록 합니다.
+    """
+    saved = {}
+    if DB_FILE.exists():
+        try:
+            saved = json.loads(DB_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            saved = {}
+
+    merged: Dict[str, List[str]] = {}
+    categories = list(dict.fromkeys(list(PRODUCTS.keys()) + list(saved.keys())))
+    for category in categories:
+        base = [str(x).strip() for x in PRODUCTS.get(category, []) if str(x).strip()]
+        custom = [str(x).strip() for x in saved.get(category, []) if str(x).strip()]
+        merged[category] = list(dict.fromkeys(base + custom))
+
+    # 축약 DB가 남아 있거나 기본 품목이 빠졌다면 즉시 최신 병합본으로 갱신
+    if saved != merged:
+        _write(DB_FILE, merged)
+    return merged
 
 def save_products(data: Dict[str, List[str]]) -> None:
     cleaned = {k: sorted(set(x.strip() for x in v if x.strip())) for k, v in data.items()}

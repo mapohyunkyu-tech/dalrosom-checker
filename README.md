@@ -1,26 +1,34 @@
-# MarketScout v3.0 제철판매판
+# MarketScout v5
 
-과일·채소·수산물·버섯·견과/특용 품목의 NAVER DataLab 계절성을 분석하고, 등록·소싱·광고·판매 일정을 보여주는 Streamlit 앱입니다.
+농수산물 품목 DB와 네이버 데이터랩 최근 완료 3개 연도를 이용해 제철형·사계절형·복합형, 추천 등록일, 진입일, 피크일, 종료일을 계산하는 Streamlit 앱입니다.
 
-## 핵심 변경
+## v5 통합 기능
+- 대표품목·품종·별칭·유통명을 한 데이터랩 검색그룹으로 통합
+- DB 등록 여부와 대표품목 연결 즉시 확인
+- 교차카테고리와 판매형태 표시
+- 검색오염 주의어와 규칙 메모 표시
+- 신규 품목 추가 후 즉시 3년 분석 및 SQLite 저장
+- 월별 추천, 오늘의 행동, 소싱 캘린더
+- 대표명 누락·주카테고리 누락·별칭 충돌 DB 검수
+- 검색규칙과 판매형태를 화면에서 추가
 
-- DB 행 수를 943개로 고정하던 검사를 완전히 제거했습니다.
-- `data/detailed_products_master.csv` 한 파일을 마스터 DB로 사용합니다.
-- 현재 포함 DB: 총 1,165개 품목
-- 산지명, 별칭, 제철 월, 상품등록 권장월, 판매우선도 열을 포함합니다.
-- 사용자 추가 품목은 `data/custom_products.csv`에 별도로 저장됩니다.
+## 실행
+1. 폴더 압축을 풉니다.
+2. `run_windows.bat`를 실행합니다.
+3. 설정 탭에 NAVER API 키를 저장합니다.
 
-## Streamlit Cloud 배포
-
-1. 압축을 풀고 폴더 안 파일 전체를 GitHub 저장소 최상단에 업로드합니다.
-2. Streamlit Cloud에서 Main file path를 `app.py`로 지정합니다.
-3. 앱의 `설정` 탭에서 NAVER API Client ID와 Client Secret을 입력합니다.
-
-기존 저장소에 덮어쓸 때는 예전 `database.py`와 `data/detailed_products_943.csv`를 남겨두지 않는 것이 안전합니다.
-
-## 로컬 실행
-
+직접 실행:
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## 중요
+네이버 데이터랩 API는 제외 검색어를 직접 차감하는 기능이 없습니다. DB의 제외어는 검색오염 위험을 알려주는 검수 정보로 사용하며, 대표명·품종·별칭은 최대 20개까지 하나의 검색그룹으로 합산합니다.
+
+필수 파일:
+- `agri_fish_item_master_v1.db`
+- `app.py`
+- `database.py`
+- `engine.py`
+- `settings_store.py`

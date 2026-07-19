@@ -10,7 +10,7 @@ from settings_store import delete_credentials, load_settings, save_settings
 
 st.set_page_config(page_title="MarketScout", page_icon="📈", layout="wide")
 st.title("📈 MarketScout")
-st.caption("943개 세부품목을 각각 별도 키워드로 분석해 D-14 등록, 진입, 피크, 종료까지 관리합니다. · v1.0.4")
+st.caption("943개 세부품목을 각각 별도 키워드로 분석해 D-14 등록, 진입, 피크, 종료까지 관리합니다. · v1.0.5")
 
 settings = load_settings()
 products = load_products()
@@ -66,6 +66,7 @@ with tabs[4]:
 with tabs[3]:
     st.subheader("품목 DB 관리")
     st.info(f"현재 세부품목 DB: 총 {sum(len(v) for v in products.values()):,}개 · " + " · ".join(f"{k} {len(v):,}개" for k,v in products.items()))
+    st.caption("DB 원본: data/detailed_products_943.csv · 강제 검증: 943개")
     if "과일" in products:
         watermelon = [x for x in products["과일"] if "수박" in x]
         st.caption("수박류 개별 분석 키워드: " + ", ".join(watermelon))

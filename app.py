@@ -11,12 +11,12 @@ from database import (
 from engine import ApiConfig, NaverApiError, analyze, call_api, collect, to_excel
 from settings_store import delete_credentials, load_settings, save_settings
 
-st.set_page_config(page_title="MarketScout v2", page_icon="📈", layout="wide")
+st.set_page_config(page_title="MarketScout v3", page_icon="📈", layout="wide")
 st.title("📈 MarketScout")
-st.caption("마스터 CSV 하나만 사용하는 세부품목 제철 분석기 · v2.1")
+st.caption("1,165개 제철·산지·품종 DB 기반 실무 판매 대시보드 · v3.0")
 
 settings = load_settings()
-master_df = load_master_df()  # 943개가 아니면 여기서 즉시 중단
+master_df = load_master_df()  # 행 수 고정 없이 필수 열만 검증
 products = category_map()
 db_df = load_database_df()
 
@@ -61,8 +61,8 @@ with tabs[3]:
     st.subheader("품목 DB 관리")
     base_counts = master_df.groupby("대분류")["세부품목"].nunique().to_dict()
     total_counts = db_df.groupby("대분류")["세부품목"].nunique().to_dict()
-    st.success("마스터 DB 검증 완료: 총 943개 · " + " · ".join(f"{k} {base_counts.get(k,0)}개" for k in EXPECTED_COUNTS))
-    st.caption("분석·화면·다운로드 모두 data/detailed_products_943.csv와 사용자 추가 CSV만 사용합니다. products.py/products.json은 사용하지 않습니다.")
+    st.success(f"마스터 DB 검증 완료: 총 {len(master_df):,}개 · " + " · ".join(f"{k} {base_counts.get(k,0):,}개" for k in EXPECTED_COUNTS))
+    st.caption("분석·화면·다운로드 모두 data/detailed_products_master.csv와 사용자 추가 CSV만 사용합니다. products.py/products.json은 사용하지 않습니다.")
     st.info("현재 분석 DB: 총 {:,}개 · ".format(len(db_df)) + " · ".join(f"{k} {total_counts.get(k,0):,}개" for k in products))
     wm = db_df[(db_df["대분류"]=="과일") & db_df["세부품목"].str.contains("수박", na=False)][["기준품목","세부품목","구분"]]
     st.write("**수박류 개별 키워드**")
@@ -114,7 +114,7 @@ with tabs[1]:
             view=view[view["카테고리"]==cat].sort_values("계절성점수",ascending=False).head(top_n)
             cols=[x for x in ["카테고리순위","품목","현재상태","등록시작일","진입일","피크일","종료일","판매기간(일)","추천행동","신뢰도","계절성점수"] if x in view.columns]
             st.dataframe(view[cols],hide_index=True,use_container_width=True,height=650,column_config={"카테고리순위":st.column_config.NumberColumn("순위",format="%d"),"계절성점수":st.column_config.ProgressColumn("추천점수",min_value=0.0,max_value=100.0,format="%.1f")})
-            st.download_button("전체 결과 Excel",to_excel(results,st.session_state.raw),file_name=f"MarketScout_v2_{target_year}_{target_month:02d}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            st.download_button("전체 결과 Excel",to_excel(results,st.session_state.raw),file_name=f"MarketScout_v3_{target_year}_{target_month:02d}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 with tabs[0]:
     st.subheader("오늘의 소싱 대시보드")

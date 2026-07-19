@@ -4,15 +4,23 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
-from database import (
-    add_item, add_product_form, add_search_rule, categories, category_map, get_item_details,
-    get_item_names, keyword_plan, load_analysis, load_database_df, product_forms,
-    save_analysis, search_items, validate_database,
-)
-from engine import (
-    ApiConfig, NaverApiError, analyze, analyze_keyword, call_api, collect,
-    collect_plans, completed_years, to_excel,
-)
+try:
+    from database import (
+        add_item, add_product_form, add_search_rule, categories, category_map, get_item_details,
+        get_item_names, keyword_plan, load_analysis, load_database_df, product_forms,
+        save_analysis, search_items, validate_database,
+    )
+    from engine import (
+        ApiConfig, NaverApiError, analyze, analyze_keyword, call_api, collect,
+        collect_plans, completed_years, to_excel,
+    )
+except ImportError as exc:
+    st.error(
+        "프로그램 파일 버전이 서로 다릅니다. app.py만 교체하지 말고 \"MarketScout_v5_fixed\" 폴더의 "
+        "app.py, database.py, engine.py, settings_store.py와 DB 파일을 모두 같은 저장소에 덮어쓰세요."
+    )
+    st.code(str(exc))
+    st.stop()
 from settings_store import delete_credentials, load_settings, save_settings
 
 st.set_page_config(page_title="MarketScout v4", page_icon="📈", layout="wide")

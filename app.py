@@ -10,7 +10,7 @@ from settings_store import delete_credentials, load_settings, save_settings
 
 st.set_page_config(page_title="MarketScout", page_icon="📈", layout="wide")
 st.title("📈 MarketScout")
-st.caption("제철 품목 발굴부터 D-14 상품 등록, 진입, 피크, 종료까지 한 화면에서 관리합니다.")
+st.caption("943개 세부품목을 각각 분석해 D-14 등록, 진입, 피크, 종료까지 관리합니다.")
 
 settings = load_settings()
 products = load_products()
@@ -65,6 +65,7 @@ with tabs[4]:
 
 with tabs[3]:
     st.subheader("품목 DB 관리")
+    st.info(f"현재 세부품목 DB: 총 {sum(len(v) for v in products.values()):,}개 · " + " · ".join(f"{k} {len(v):,}개" for k,v in products.items()))
     category = st.selectbox("카테고리", list(products.keys()), key="db_category")
     edited = st.text_area("한 줄에 한 품목", value="\n".join(products[category]), height=360)
     c1,c2=st.columns(2)
@@ -86,19 +87,25 @@ with tabs[1]:
     target_month=int(b.selectbox("분석 월",range(1,13),index=max(0,min(11,int(settings.get("target_month",8))-1)),format_func=lambda x:f"{x}월"))
     top_n=int(c.selectbox("표시 개수",[20,30,50,100],index=[20,30,50,100].index(settings.get("top_n",50)) if settings.get("top_n",50) in [20,30,50,100] else 2))
     exclude_low=d.checkbox("신뢰도 낮음 제외",value=bool(settings.get("exclude_low_confidence",False)))
-    run=st.button("전체 카테고리 분석 시작",type="primary",disabled=config is None,use_container_width=True)
+    selected_run_categories = st.multiselect(
+        "분석할 카테고리",
+        list(products.keys()),
+        default=[list(products.keys())[0]],
+        help="세부품목이 943개이므로 필요한 카테고리만 선택하면 API 호출 시간을 크게 줄일 수 있습니다.",
+    )
+    run=st.button("선택 카테고리 분석 시작",type="primary",disabled=(config is None or not selected_run_categories),use_container_width=True)
     if config is None: st.warning("먼저 설정 탭에서 NAVER API 키를 저장하세요.")
     if run:
         settings.update({"target_month":target_month,"top_n":top_n,"exclude_low_confidence":exclude_low}); save_settings(settings)
         all_items=[]
-        for values in products.values(): all_items.extend(values)
+        for cat in selected_run_categories: all_items.extend(products[cat])
         status=st.status("검색 트렌드를 수집하고 있습니다…",expanded=True); bar=st.progress(0)
         def progress(n,total,batch): bar.progress(n/total); status.write(f"{n}/{total} · {', '.join(batch)}")
         try:
             start_year=min(target_year-3,date.today().year-3); end_year=max(target_year,date.today().year)
             end_date=min(date.today(),date(end_year,12,31))
             raw=collect(config,all_items,f"{start_year}-01-01",end_date.isoformat(),progress)
-            results=analyze(raw,products,target_year,target_month)
+            results=analyze(raw,{cat: products[cat] for cat in selected_run_categories},target_year,target_month)
             st.session_state.update(raw=raw,results=results,analysis_key=(target_year,target_month))
             status.update(label="분석 완료",state="complete",expanded=False)
         except NaverApiError as exc: status.update(label="API 오류",state="error"); st.error(str(exc))
@@ -109,7 +116,8 @@ with tabs[1]:
         ay,am=st.session_state.analysis_key
         if exclude_low: results=results[results["신뢰도"]!="하"]
         counts=results.groupby("카테고리").size().to_dict() if not results.empty else {}
-        category=st.segmented_control("카테고리",list(products.keys()),default=list(products.keys())[0],format_func=lambda x:f"{x} ({counts.get(x,0)})") or list(products.keys())[0]
+        available_categories=[x for x in products.keys() if x in counts]
+        category=st.segmented_control("카테고리",available_categories,default=available_categories[0],format_func=lambda x:f"{x} ({counts.get(x,0)})") or available_categories[0]
         sort_by=st.selectbox("정렬",["추천순","등록시작일순","진입일순","종료일순"])
         view=results[results["카테고리"]==category].copy()
         sort_map={"추천순":("계절성점수",False),"등록시작일순":("등록시작일",True),"진입일순":("진입일",True),"종료일순":("종료일",True)}

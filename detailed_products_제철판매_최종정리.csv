@@ -1,0 +1,1166 @@
+﻿대분류,기준품목,세부품목,대표검색어,별칭·검색변형,산지명여부,산지,주출하시작월,주출하종료월,제철표시,소싱확인권장월,상품등록권장월,시즌유형,판매우선도,시즌근거수준,DB구분,출처·메모
+과일,감,감풍단감,감풍단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,갑주백목,갑주백목,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,건시곶감,건시곶감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,고종시감,고종시감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,단감,단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,대봉감,대봉감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,둥시감,둥시감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,로망단감,로망단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,반건시곶감,반건시곶감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,반시감,반시감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,부유단감,부유단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,산청곶감,산청곶감,"곶감, 산청곶감",Y,산청,9,12,9~12월,7,8,단기,4,기준품목,제철판매확장,제철판매 보강
+과일,감,상서조생단감,상서조생단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,상주곶감,상주곶감,"곶감, 상주곶감",Y,상주,9,12,9~12월,7,8,단기,4,기준품목,제철판매확장,제철판매 보강
+과일,감,월하시감,월하시감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,차랑단감,차랑단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,청도반시,청도반시,"반시, 청도반시",Y,청도,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감,태추단감,태추단감,,N,,9,12,9~12월,7,8,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,레드향,레드향,레드향감귤,N,,1,2,1~2월,11,12,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,천혜향,천혜향,천혜향감귤,N,,2,4,2~4월,12,1,단기,4,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,카라향,카라향,,N,,4,5,4~5월,2,3,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,제주하우스감귤,제주하우스감귤,"하우스귤, 제주하우스감귤, 제주하우스, 하우스감귤",Y,제주,5,9,5~9월,3,4,중장기,4,세부품목,제철판매확장,제철판매 보강
+과일,감귤,하우스감귤,하우스감귤,"하우스감귤, 하우스",N,,5,9,5~9월,3,4,중장기,3,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,궁천조생,궁천조생,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,극조생감귤,극조생감귤,"극조생감귤, 극조생",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,노지감귤,노지감귤,"노지감귤, 노지",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,미니향,미니향,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,비가림감귤,비가림감귤,"비가림감귤, 비가림",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,세토카,세토카,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,윈터프린스,윈터프린스,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,유라조생,유라조생,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,제주감귤,제주감귤,"제주귤, 제주감귤, 제주, 감귤",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,감귤,제주레드향,제주레드향,"제주레드향, 레드향감귤, 레드향",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,감귤,제주천혜향,제주천혜향,"천혜향, 천혜향감귤, 제주천혜향",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+과일,감귤,제주카라향,제주카라향,"카라향, 제주카라향",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+과일,감귤,제주한라봉,제주한라봉,"제주한라봉, 한라봉감귤, 한라봉",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,감귤,제주황금향,제주황금향,"황금향, 황금향감귤, 제주황금향",Y,제주,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+과일,감귤,조생감귤,조생감귤,"조생감귤, 조생",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,진지향,진지향,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,청귤,청귤,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,타이벡감귤,타이벡감귤,"타이벡감귤, 타이벡",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,탐나는봉,탐나는봉,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,풋귤,풋귤,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,하례조생,하례조생,,N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,황금향,황금향,황금향감귤,N,,11,1,11~12월·1~1월,9,10,겨울·월동,3,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,감귤,한라봉,한라봉,한라봉감귤,N,,12,3,12~12월·1~3월,10,11,겨울·월동,3,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,개복숭아,개복숭아,"개복숭아, 개",N,,5,11,5~11월,3,4,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,경산대추,경산대추,"대추, 경산대추",Y,경산,5,11,5~11월,3,4,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,고흥석류,고흥석류,"석류, 고흥석류",Y,고흥,5,11,5~11월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,기타과일,고흥유자,고흥유자,"유자, 고흥유자",Y,고흥,5,11,5~11월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,기타과일,공주밤,공주밤,"밤, 공주밤",Y,공주,5,11,5~11월,3,4,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,꾸지뽕열매,꾸지뽕열매,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,남고매실,남고매실,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,다래,다래,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,대보밤,대보밤,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,대추,대추,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,돌배,돌배,돌,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,매실,매실,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,머루,머루,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,모과,모과,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,밤,밤,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,보은대추,보은대추,"대추, 보은대추",Y,보은,5,11,5~11월,3,4,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,살구,살구,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,양살구,양살구,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,옥광밤,옥광밤,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,으름,으름,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,은행,은행,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,제주청귤,제주청귤,"청귤, 제주청귤",Y,제주,5,11,5~11월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,기타과일,청매실,청매실,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,축파밤,축파밤,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,하코트살구,하코트살구,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,기타과일,황매실,황매실,,N,,5,11,5~11월,3,4,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,고슬딸기,고슬딸기,고슬,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,금실딸기,금실딸기,금실,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,논산딸기,논산딸기,"논산설향딸기, 논산, 딸기, 논산딸기",Y,논산,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,딸기,담양딸기,담양딸기,"담양설향딸기, 담양, 딸기, 담양딸기",Y,담양,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,딸기,두리향딸기,두리향딸기,두리향,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,라즈베리,라즈베리,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,매향딸기,매향딸기,매향,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,메리퀸딸기,메리퀸딸기,메리퀸,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,복분자,복분자,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,블랙베리,블랙베리,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,비타베리,비타베리,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,산딸기,산딸기,산,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,산청딸기,산청딸기,"산청설향딸기, 산청, 딸기, 산청딸기",Y,산청,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,딸기,설향딸기,설향딸기,설향,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,아리향딸기,아리향딸기,아리향,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,알타킹딸기,알타킹딸기,알타킹,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,장희딸기,장희딸기,장희,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,죽향딸기,죽향딸기,죽향,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,킹스베리,킹스베리,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,하이베리,하이베리,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,딸기,화이트딸기,화이트딸기,화이트,N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,고창멜론,고창멜론,"고창, 멜론, 고창멜론",Y,고창,4,10,4~10월,2,3,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,골드멜론,골드멜론,골드,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,네트멜론,네트멜론,네트,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,달고나멜론,달고나멜론,달고나,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,레드퀸멜론,레드퀸멜론,레드퀸,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,머스크멜론,머스크멜론,머스크,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,무등산멜론,무등산멜론,무등산,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,미니멜론,미니멜론,미니,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,백자멜론,백자멜론,백자,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,성주멜론,성주멜론,"성주, 멜론, 성주멜론",Y,성주,4,10,4~10월,2,3,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,세지멜론,세지멜론,세지,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,양구멜론,양구멜론,양구,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,얼스멜론,얼스멜론,얼스,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,칸탈루프멜론,칸탈루프멜론,칸탈루프,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,파파야멜론,파파야멜론,파파야,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,하니원멜론,하니원멜론,하니원,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,하미과멜론,하미과멜론,하미과,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,허니듀멜론,허니듀멜론,허니듀,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,허니원멜론,허니원멜론,허니원,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,멜론,홈런스타멜론,홈런스타멜론,홈런스타,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,감천배,감천배,감천,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,그린시스배,그린시스배,그린시스,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,나주배,나주배,"나주신고배, 나주, 배, 나주배",Y,나주,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,배,만풍배,만풍배,만풍,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,미니배,미니배,미니,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,설원배,설원배,설원,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,성환배,성환배,"천안성환배, 성환, 배, 성환배",Y,성환,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,배,슈퍼골드배,슈퍼골드배,슈퍼골드,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,스위트코스트배,스위트코스트배,스위트코스트,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,신고배,신고배,신고,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,신화배,신화배,신화,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,애플페어,애플페어,,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,원황배,원황배,원황,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,조이스킨배,조이스킨배,조이스킨,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,창조배,창조배,창조,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,천안배,천안배,"천안신고배, 천안, 배, 천안배",Y,천안,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,배,추황배,추황배,추황,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,한아름배,한아름배,한아름,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,화산배,화산배,화산,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,배,황금배,황금배,황금,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,구스베리,구스베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,듀크블루베리,듀크블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,레카블루베리,레카블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,보리수열매,보리수열매,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,블루베리,블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,블루크롭블루베리,블루크롭블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,스파르탄블루베리,스파르탄블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,아로니아,아로니아,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,엘리자베스블루베리,엘리자베스블루베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,오디,오디,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,커런트,커런트,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,베리,크랜베리,크랜베리,,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,경봉복숭아,경봉복숭아,"경봉복숭아, 경봉",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,그레이트복숭아,그레이트복숭아,"그레이트복숭아, 그레이트",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,금봉복숭아,금봉복숭아,"금봉복숭아, 금봉",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,금황복숭아,금황복숭아,"금황복숭아, 금황",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,납작복숭아,납작복숭아,"납작복숭아, 납작",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,단금도복숭아,단금도복숭아,"단금도복숭아, 단금도",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,대극천복숭아,대극천복숭아,"대극천복숭아, 대극천",N,,6,7,6~7월,4,5,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,대명복숭아,대명복숭아,"대명복숭아, 대명",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,딱딱이복숭아,딱딱이복숭아,"딱딱이복숭아, 딱복, 딱딱이",N,,6,8,6~8월,4,5,단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,레드골드천도,레드골드천도,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,마도카복숭아,마도카복숭아,"마도카, 마도카복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,몽부사복숭아,몽부사복숭아,"몽부사복숭아, 후지사과, 후지, 몽부사",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,미백복숭아,미백복숭아,"미백, 미백복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,미황복숭아,미황복숭아,"미황복숭아, 미황",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,백도복숭아,백도복숭아,"백도복숭아, 백도",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,백천황도,백천황도,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,선광천도,선광천도,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,선프레복숭아,선프레복숭아,"선프레복숭아, 선프레",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,수황복숭아,수황복숭아,"수황복숭아, 수황",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,신비복숭아,신비복숭아,"신비복숭아, 신비",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,애천중도복숭아,애천중도복숭아,"애천중도, 애천중도복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,엘바트황도,엘바트황도,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,영동복숭아,영동복숭아,"충북영동복숭아, 영동복숭아, 영동, 복숭아",Y,영동,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,오도로키복숭아,오도로키복숭아,"오도로키복숭아, 오도로키",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,옥천복숭아,옥천복숭아,"옥천복숭아, 옥천, 복숭아",Y,옥천,6,9,6~9월,4,5,단기,5,기준품목,제철판매확장,제철판매 보강
+과일,복숭아,용택골드복숭아,용택골드복숭아,"용택골드복숭아, 용택골드",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,유명복숭아,유명복숭아,"유명, 유명복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,장택백봉복숭아,장택백봉복숭아,"장택백봉, 장택백봉복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,장호원복숭아,장호원복숭아,"이천장호원복숭아, 장호원복숭아, 장호원, 복숭아",Y,장호원,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,천도복숭아,천도복숭아,"천도복숭아, 천도",N,,6,8,6~8월,4,5,단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,천중도백도,천중도백도,천중도,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,천홍복숭아,천홍복숭아,"천홍, 천홍복숭아",N,,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,충주복숭아,충주복숭아,"충북충주복숭아, 충주복숭아, 충주, 복숭아",Y,충주,6,9,6~9월,4,5,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+과일,복숭아,화순복숭아,화순복숭아,"화순복숭아, 화순, 복숭아",Y,화순,6,9,6~9월,4,5,단기,5,기준품목,제철판매확장,제철판매 보강
+과일,복숭아,환타지아천도,환타지아천도,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,말랑이복숭아,말랑이복숭아,"말랑이복숭아, 물복, 말랑이",N,,7,9,7~9월,5,6,단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,장호원황도,장호원황도,"장호원황도복숭아, 황도, 장호원황도",Y,장호원,8,9,8~9월,6,7,초단기,5,세부품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,복숭아,황도복숭아,황도복숭아,"황도복숭아, 황도",N,,8,9,8~9월,6,7,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,거창사과,거창사과,"거창꿀사과, 거창사과, 거창, 사과",Y,거창,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,사과,국광사과,국광사과,"국광사과, 국광",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,루비에스,루비에스,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,루비에스사과,루비에스사과,"루비에스, 루비에스사과",N,,7,11,7~11월,5,6,중장기,3,기준품목,제철판매확장,제철판매 보강
+과일,사과,루비에프,루비에프,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,문경사과,문경사과,"문경꿀사과, 문경사과, 문경, 사과",Y,문경,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,사과,미니사과,미니사과,"미니사과, 미니",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,미얀마사과,미얀마사과,"미얀마사과, 미얀마",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,밀양얼음골사과,밀양얼음골사과,"얼음골사과, 밀양얼음골사과, 밀양얼음골",Y,밀양,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,사과,사과대추,사과대추,사과대추,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,시나노골드,시나노골드,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,시나노스위트,시나노스위트,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,썸머킹,썸머킹,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,썸머킹사과,썸머킹사과,"썸머킹, 썸머킹사과",N,,7,8,7~8월,5,6,초단기,5,세부품목,제철판매확장,제철판매 보강
+과일,사과,썸머프린스,썸머프린스,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,쓰가루사과,쓰가루사과,"쓰가루사과, 쓰가루",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,아리수사과,아리수사과,"아리수사과, 아리수",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,아오리사과,아오리사과,"쓰가루, 청사과, 아오리사과, 아오리",N,,7,8,7~8월,5,6,초단기,5,세부품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,안동사과,안동사과,"안동사과, 안동, 사과",Y,안동,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,사과,알프스오토메,알프스오토메,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,양광사과,양광사과,"양광사과, 양광",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,엔비사과,엔비사과,"엔비사과, 엔비",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,영주사과,영주사과,"영주사과, 영주, 사과",Y,영주,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,사과,예산사과,예산사과,"예산사과, 예산, 사과",Y,예산,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+과일,사과,이지플사과,이지플사과,"이지플사과, 이지플",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,청송사과,청송사과,"청송꿀사과, 청송사과, 청송, 사과",Y,청송,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,사과,충주사과,충주사과,"충주꿀사과, 충주사과, 충주, 사과",Y,충주,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,사과,피크닉사과,피크닉사과,"피크닉사과, 피크닉",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,홍옥사과,홍옥사과,"홍옥사과, 홍옥",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,황금사과,황금사과,"황금사과, 황금",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,황옥사과,황옥사과,"황옥사과, 황옥",N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,홍로사과,홍로사과,"홍로사과, 홍로",N,,8,9,8~9월,6,7,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,감홍사과,감홍사과,"감홍사과, 감홍",N,,10,11,10~11월,8,9,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,부사,부사,"후지사과, 후지",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,사과,시나노골드사과,시나노골드사과,"시나노골드, 시나노골드사과",N,,10,11,10~11월,8,9,초단기,5,세부품목,제철판매확장,제철판매 보강
+과일,사과,후지사과,후지사과,"후지사과, 부사, 후지",N,,10,3,10~12월·1~3월,8,9,겨울·월동,3,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,고창수박,고창수박,"고창꿀수박, 고창, 수박, 고창수박",Y,고창,5,8,5~8월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,수박,노란수박,노란수박,노란,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,망고수박,망고수박,망고,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,무등산수박,무등산수박,무등산,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,미니수박,미니수박,미니,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,베개수박,베개수박,베개,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,복수박,복수박,복,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,블랙망고수박,블랙망고수박,블랙망고,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,속노란수박,속노란수박,속노란,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,씨없는수박,씨없는수박,씨없는,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,애플수박,애플수박,애플,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,음성수박,음성수박,"음성다올찬수박, 음성, 수박, 음성수박",Y,음성,5,8,5~8월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,수박,일반수박,일반수박,일반,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,함안수박,함안수박,"함안흑수박, 함안, 수박, 함안수박",Y,함안,5,8,5~8월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,수박,황금수박,황금수박,황금,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,수박,흑피수박,흑피수박,흑피,N,,5,8,5~8월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,골드키위,골드키위,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,골드파인애플,골드파인애플,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,구아바,구아바,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,그린망고,그린망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,그린키위,그린키위,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,금귤,금귤,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,남독마이망고,남독마이망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,대만애플망고,대만애플망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,델몬트바나나,델몬트바나나,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,두리안,두리안,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,라임,라임,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,람부탄,람부탄,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,레드키위,레드키위,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,레몬,레몬,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,롱간,롱간,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,루비골드키위,루비골드키위,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,리치,리치,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,망고스틴,망고스틴,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,몽키바나나,몽키바나나,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,무지개망고,무지개망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,무화과,무화과,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,바나나,바나나,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,백용과,백용과,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,백향과,백향과,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,브라질망고,브라질망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,석류,석류,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,스위티오파인애플,스위티오파인애플,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,스타후르츠,스타후르츠,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,아보카도,아보카도,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,애플망고,애플망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,용과,용과,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,유자,유자,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,자몽,자몽,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,잭프루트,잭프루트,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,적용과,적용과,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,제주애플망고,제주애플망고,"애플망고, 제주애플망고",Y,제주,6,10,6~10월,4,5,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,참다래,참다래,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,체리모야,체리모야,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,카라바오망고,카라바오망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,코코넛,코코넛,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,태국망고,태국망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,파인애플,파인애플,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,파파야,파파야,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,패션후르츠,패션후르츠,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,페루망고,페루망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,포멜로,포멜로,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,열대과일,필리핀망고,필리핀망고,,N,,6,10,6~10월,4,5,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,나디아자두,나디아자두,"나디아자두, 나디아",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,노란자두,노란자두,"노란자두, 노란",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,대석자두,대석자두,"대석자두, 대석",N,,6,7,6~7월,4,5,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,대왕자두,대왕자두,"대왕, 대왕자두",N,,6,9,6~9월,4,5,단기,5,기준품목,제철판매확장,제철판매 보강
+과일,자두,도담자두,도담자두,"도담자두, 도담",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,로얄대석자두,로얄대석자두,"로얄대석, 로얄대석자두",N,,6,7,6~7월,4,5,초단기,5,세부품목,추가DB,시장·산지 검색어 보강
+과일,자두,산타로사자두,산타로사자두,"산타로사자두, 산타로사",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,솔담자두,솔담자두,"솔담자두, 솔담",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,심포니플럼코트,심포니플럼코트,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,왕자두,왕자두,왕,N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,체리자두,체리자두,"체리자두, 체리",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,티파니플럼코트,티파니플럼코트,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,퍼플퀸자두,퍼플퀸자두,"퍼플퀸자두, 퍼플퀸",N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,플럼코트,플럼코트,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,하모니플럼코트,하모니플럼코트,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,호무샤자두,호무샤자두,"후무사, 포모사, 호무샤자두, 호무샤",N,,6,9,6~9월,4,5,단기,5,기준품목,제철판매확장,제철판매 보강
+과일,자두,홍로센자두,홍로센자두,"홍로센자두, 홍로센",N,,6,7,6~7월,4,5,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,홍자두,홍자두,홍,N,,6,9,6~9월,4,5,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,태양자두,태양자두,"태양, 태양자두",N,,7,8,7~8월,5,6,초단기,5,세부품목,추가DB,시장·산지 검색어 보강
+과일,자두,포모사자두,포모사자두,"포모사자두, 포모사",N,,7,8,7~8월,5,6,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,피자두,피자두,피,N,,7,8,7~8월,5,6,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,후무사자두,후무사자두,"후무사자두, 후무사",N,,7,8,7~8월,5,6,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,자두,추희자두,추희자두,"추희자두, 추희",N,,8,9,8~9월,6,7,초단기,5,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,개구리참외,개구리참외,개구리,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,금싸라기참외,금싸라기참외,금싸라기,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,꿀참외,꿀참외,꿀,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,미니참외,미니참외,미니,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,성주참외,성주참외,"성주, 참외, 성주참외",Y,성주,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,스마트꿀참외,스마트꿀참외,스마트꿀,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,참외,오복참외,오복참외,오복,N,,3,8,3~8월,1,2,중장기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,국산체리,국산체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,라핀체리,라핀체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,레이니어체리,레이니어체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,빙체리,빙체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,수입체리,수입체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,스텔라체리,스텔라체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,좌등금체리,좌등금체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,타이톤체리,타이톤체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,체리,홍수봉체리,홍수봉체리,,N,,5,7,5~7월,3,4,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,MBA포도,MBA포도,"MBA포도, MBA",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,골드스위트포도,골드스위트포도,"골드스위트, 골드스위트포도",N,,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,김천포도,김천포도,"김천샤인머스켓, 김천포도, 김천, 포도",Y,김천,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,나르샤포도,나르샤포도,"나르샤포도, 나르샤",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,델라웨어포도,델라웨어포도,"델라웨어포도, 델라웨어",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,레드글로브포도,레드글로브포도,"레드글로브포도, 레드글로브",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,루비로망,루비로망,,N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,마이하트포도,마이하트포도,"마이하트포도, 마이하트",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,머루포도,머루포도,"머루, 머루포도",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,무주머루,무주머루,"무주머루포도, 머루, 무주머루",Y,무주,7,10,7~10월,5,6,단기,4,기준품목,제철판매확장,제철판매 보강
+과일,포도,바이올렛킹포도,바이올렛킹포도,"바이올렛킹포도, 바이올렛킹",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,베니바라드포도,베니바라드포도,"베니바라드, 베니바라드포도",N,,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,블랙사파이어포도,블랙사파이어포도,"블랙사파이어포도, 블랙사파이어",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,상주샤인머스켓,상주샤인머스켓,"상주샤인머스캣, 샤인머스캣, 샤인포도, 샤인머스켓, 상주샤인머스켓",Y,상주,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,상주포도,상주포도,"상주포도, 상주, 포도",Y,상주,7,10,7~10월,5,6,단기,4,기준품목,제철판매확장,제철판매 보강
+과일,포도,새마루포도,새마루포도,"새마루포도, 새마루",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,슈팅스타포도,슈팅스타포도,"슈팅스타포도, 슈팅스타",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,스튜벤포도,스튜벤포도,"스튜벤포도, 스튜벤",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,영동포도,영동포도,"충북영동포도, 영동포도, 영동, 포도",Y,영동,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,천안거봉,천안거봉,"천안거봉포도, 거봉, 천안거봉",Y,천안,7,10,7~10월,5,6,단기,4,기준품목,제철판매확장,제철판매 보강
+과일,포도,청포도,청포도,청,N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,충랑포도,충랑포도,"충랑포도, 충랑",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,코튼캔디포도,코튼캔디포도,"솜사탕포도, 코튼캔디, 코튼캔디포도",N,,7,10,7~10월,5,6,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+과일,포도,크림슨포도,크림슨포도,"크림슨포도, 크림슨",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,킹데라포도,킹데라포도,"킹데라포도, 킹데라",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,홍주씨들리스,홍주씨들리스,,N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,흑보석포도,흑보석포도,"흑보석포도, 흑보석",N,,7,10,7~10월,5,6,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,거봉포도,거봉포도,"거봉, 거봉포도",N,,8,9,8~9월,6,7,초단기,5,세부품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,샤인머스켓,샤인머스켓,"샤인머스캣, 샤인포도",N,,8,10,8~10월,6,7,단기,4,세부품목,기본DB,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+과일,포도,캠벨포도,캠벨포도,"캠벨얼리, 캠벨포도, 캠벨",N,,8,9,8~9월,6,7,초단기,5,세부품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.data.go.kr/data/3060745/openapi.do
+채소,감자,감자,감자,햇감자,N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,강원도감자,강원도감자,"강원감자, 강원도감자, 강원도, 감자",Y,강원도,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,김제감자,김제감자,"김제감자, 김제, 감자",Y,김제,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,대지감자,대지감자,"대지, 대지감자",N,,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,두백감자,두백감자,"두백, 두백감자",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,보성감자,보성감자,"보성감자, 보성, 감자",Y,보성,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,설봉감자,설봉감자,"설봉, 설봉감자",N,,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,수미감자,수미감자,"수미, 수미감자",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,알감자,알감자,"조림감자, 알",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,왕감자,왕감자,"대과감자, 왕",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,자색감자,자색감자,"보라감자, 자색감자, 자색",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,제주감자,제주감자,"제주햇감자, 제주감자, 제주, 감자",Y,제주,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,제주햇감자,제주햇감자,"제주감자, 제주햇감자, 제주햇, 햇감자",Y,제주,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,추백감자,추백감자,"추백, 추백감자",N,,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,감자,평창감자,평창감자,"평창햇감자, 평창감자, 평창, 감자",Y,평창,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,하지감자,하지감자,"봄감자, 하지감자, 하지",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,감자,홍감자,홍감자,"빨간감자, 홍",N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,갓,여수돌산갓,여수돌산갓,"돌산갓, 여수돌산갓",Y,여수,10,12,10~12월,8,9,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,강화고구마,강화고구마,"강화속노랑고구마, 강화고구마, 강화, 고구마",Y,강화,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,고구마,고구마,햇고구마,N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,꿀고구마,꿀고구마,"베니하루카, 꿀고구마, 꿀",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,당진고구마,당진고구마,"당진고구마, 당진, 고구마",Y,당진,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,물고구마,물고구마,"말랑고구마, 물고구마, 물",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,밤고구마,밤고구마,"밤맛고구마, 밤고구마, 밤",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,베니하루카고구마,베니하루카고구마,"베니하루카, 꿀고구마, 베니하루카고구마",N,,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,소담미고구마,소담미고구마,"소담미, 소담미고구마",N,,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,여주고구마,여주고구마,"여주밤고구마, 여주고구마, 여주, 고구마",Y,여주,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,영암고구마,영암고구마,"영암고구마, 영암, 고구마",Y,영암,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,익산고구마,익산고구마,"익산고구마, 익산, 고구마",Y,익산,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,자색고구마,자색고구마,"보라고구마, 자색고구마, 자색",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,진율미고구마,진율미고구마,"진율미, 진율미고구마",N,,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,풍원미고구마,풍원미고구마,"풍원미, 풍원미고구마",N,,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,고구마,한입고구마,한입고구마,"꼬마고구마, 한입고구마, 한입",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,해남고구마,해남고구마,"해남꿀고구마, 해남고구마, 해남, 고구마",Y,해남,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,고구마,호박고구마,호박고구마,"호박꿀고구마, 호박고구마, 호박",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,과채류,가시오이,가시오이,"취청오이, 가시",N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,가지,가지,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,가지고추,가지고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,꽈리고추,꽈리고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,노각,노각,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,노란방울토마토,노란방울토마토,노란방울,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,노랑파프리카,노랑파프리카,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,늙은호박,늙은호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,단호박,단호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,대저토마토,대저토마토,"대저, 토마토, 대저토마토",Y,대저,4,10,4~10월,2,3,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,대추방울토마토,대추방울토마토,대추방울,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,땅콩호박,땅콩호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,마리네이드토마토,마리네이드토마토,마리네이드,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,맷돌호박,맷돌호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,미니단호박,미니단호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,미니오이,미니오이,미니,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,미니파프리카,미니파프리카,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,밤호박,밤호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,방울토마토,방울토마토,방울,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,백가지,백가지,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,백다다기오이,백다다기오이,"백오이, 백다다기",N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,보우짱단호박,보우짱단호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,빨강파프리카,빨강파프리카,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,송이토마토,송이토마토,송이,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,수세미,수세미,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,스테비아토마토,스테비아토마토,스테비아,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,아삭이고추,아삭이고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,애호박,애호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,여주,여주,,Y,여주,4,10,4~10월,2,3,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,오이,오이,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,오이고추,오이고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,완숙토마토,완숙토마토,완숙,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,조선호박,조선호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,주황방울토마토,주황방울토마토,주황방울,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,주황파프리카,주황파프리카,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,쥬키니호박,쥬키니호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,짭짤이토마토,짭짤이토마토,짭짤이,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,찰토마토,찰토마토,찰,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,청가지,청가지,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,청양고추,청양고추,"고추, 청양고추",Y,청양,4,10,4~10월,2,3,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,청피망,청피망,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,취청오이,취청오이,취청,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,쿠마토,쿠마토,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,토마토,토마토,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,파드론고추,파드론고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,파프리카,파프리카,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,페페론치노,페페론치노,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,풋고추,풋고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,풋호박,풋호박,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,피망,피망,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,피클오이,피클오이,피클,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,할라피뇨,할라피뇨,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,홍고추,홍고추,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,홍피망,홍피망,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,흑가지,흑가지,,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,과채류,흑토마토,흑토마토,흑,N,,4,10,4~10월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,가을무,가을무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,강화순무,강화순무,"순무, 강화순무",Y,강화,9,3,9~12월·1~3월,7,8,겨울·월동,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,고랭지무,고랭지무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,골든비트,골든비트,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,단마,단마,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,당근,당근,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,더덕,더덕,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,도라지,도라지,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,동치미무,동치미무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,둥근마,둥근마,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,래디시,래디시,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,레드비트,레드비트,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,마,마,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,무,무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,미니당근,미니당근,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,봄무,봄무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,비트,비트,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,세척당근,세척당근,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,셀러리악,셀러리악,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,순무,순무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,알타리무,알타리무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,야콘,야콘,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,여름무,여름무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,연근,연근,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,열매마,열매마,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,열무,열무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,우엉,우엉,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,월동무,월동무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,장마,장마,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,제주무,제주무,"무, 제주무",Y,제주,9,3,9~12월·1~3월,7,8,겨울·월동,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,초롱무,초롱무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,총각무,총각무,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,콜라비,콜라비,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,토란,토란,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,파스닙,파스닙,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,근채류,흙당근,흙당근,,N,,9,3,9~12월·1~3월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,강황,강황,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,고수,고수,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,고추냉이잎,고추냉이잎,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,구강,구강,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,딜,딜,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,레몬그라스,레몬그라스,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,레몬밤,레몬밤,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,로즈마리,로즈마리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,맹종죽순,맹종죽순,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,민트,민트,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,바질,바질,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,분죽순,분죽순,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,생강,생강,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,애플민트,애플민트,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,와사비잎,와사비잎,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,울금,울금,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,죽순,죽순,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,타임,타임,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,페퍼민트,페퍼민트,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,햇생강,햇생강,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,기타채소,향채,향채,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,가시오가피순,가시오가피순,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,개두릅,개두릅,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,갯방풍,갯방풍,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,건고사리,건고사리,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,고구마순,고구마순,고구마순,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,고비,고비,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,고사리,고사리,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,곤달비,곤달비,곤달비나물,N,,3,6,3~6월,1,2,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,나물산채,곤드레,곤드레,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,곰취,곰취,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,냉이,냉이,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,눈개승마,눈개승마,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,달래,달래,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,돌나물,돌나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,두릅,두릅,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,땅두릅,땅두릅,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,머위,머위,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,머위대,머위대,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,명이나물,명이나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,무청시래기,무청시래기,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,민들레,민들레,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,방아잎,방아잎,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,방풍나물,방풍나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,부지깽이나물,부지깽이나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,비름나물,비름나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,산마늘,산마늘,산,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,삼나물,삼나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,세발나물,세발나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,시래기,시래기,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,식방풍,식방풍,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,쑥,쑥,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,씀바귀,씀바귀,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,어수리,어수리,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,엄나무순,엄나무순,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,울릉도명이나물,울릉도명이나물,"산마늘, 명이나물, 울릉도명이나물",Y,울릉도,3,6,3~6월,1,2,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,나물산채,원방풍,원방풍,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,원추리,원추리,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,유채나물,유채나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,정선곤드레,정선곤드레,"곤드레나물, 곤드레, 정선곤드레",Y,정선,3,6,3~6월,1,2,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,나물산채,질경이,질경이,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,참나물,참나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,참두릅,참두릅,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,참비름,참비름,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,참죽나물,참죽나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,참취,참취,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,취나물,취나물,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,나물산채,토란대,토란대,,N,,3,6,3~6월,1,2,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,당근,구좌당근,구좌당근,"제주구좌당근, 당근, 구좌당근",Y,구좌,11,3,11~12월·1~3월,9,10,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,당근,제주당근,제주당근,"제주구좌당근, 당근, 제주당근",Y,제주,11,3,11~12월·1~3월,9,10,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘,고흥마늘,고흥마늘,"고흥, 마늘, 고흥마늘",Y,고흥,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,마늘,남해마늘,남해마늘,"남해햇마늘, 남해, 마늘, 남해마늘",Y,남해,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘,단양마늘,단양마늘,"단양육쪽마늘, 단양, 마늘, 단양마늘",Y,단양,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘,무안마늘,무안마늘,"무안, 마늘, 무안마늘",Y,무안,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,마늘,서산육쪽마늘,서산육쪽마늘,"서산마늘, 서산육쪽, 육쪽마늘, 서산육쪽마늘",Y,서산,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘,창녕마늘,창녕마늘,"창녕, 마늘, 창녕마늘",Y,창녕,5,7,5~7월,3,4,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,마늘,태안육쪽마늘,태안육쪽마늘,"태안마늘, 태안육쪽, 육쪽마늘, 태안육쪽마늘",Y,태안,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘종,제주마늘쫑,제주마늘쫑,"제주마늘종, 제주마늘쫑, 마늘종, 마늘대, 마늘종대, 제주, 마늘쫑",Y,제주,2,4,2~4월,12,1,단기,5,세부품목,추가DB,시장·산지 검색어 보강
+채소,마늘종,고흥마늘쫑,고흥마늘쫑,"고흥마늘종, 고흥마늘쫑, 마늘종, 마늘대, 마늘종대, 고흥, 마늘쫑",Y,고흥,4,5,4~5월,2,3,초단기,5,세부품목,제철판매확장,제철판매 보강
+채소,마늘종,남해마늘쫑,남해마늘쫑,"남해마늘종, 남해마늘쫑, 마늘종, 마늘대, 마늘종대, 남해, 마늘쫑",Y,남해,4,6,4~6월,2,3,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘종,마늘쫑,마늘쫑,"마늘종, 마늘대, 마늘종대",N,,4,6,4~6월,2,3,단기,5,세부품목,제철판매확장,제철판매 보강
+채소,마늘종,의성마늘쫑,의성마늘쫑,"의성마늘종, 의성마늘쫑, 마늘종, 마늘대, 마늘종대, 의성, 마늘쫑",Y,의성,4,6,4~6월,2,3,단기,5,기준품목,추가DB,시장·산지 검색어 보강
+채소,마늘종,창녕마늘쫑,창녕마늘쫑,"창녕마늘종, 창녕마늘쫑, 마늘종, 마늘대, 마늘종대, 창녕, 마늘쫑",Y,창녕,4,6,4~6월,2,3,단기,5,세부품목,제철판매확장,제철판매 보강
+채소,마늘종,해남마늘쫑,해남마늘쫑,"해남마늘종, 해남마늘쫑, 마늘종, 마늘대, 마늘종대, 해남, 마늘쫑",Y,해남,4,5,4~5월,2,3,초단기,5,세부품목,제철판매확장,제철판매 보강
+채소,마늘종,서산마늘쫑,서산마늘쫑,"서산마늘종, 서산마늘쫑, 마늘종, 마늘대, 마늘종대, 서산, 마늘쫑",Y,서산,5,6,5~6월,3,4,초단기,5,세부품목,제철판매확장,제철판매 보강
+채소,미나리,순천미나리,순천미나리,,N,,2,5,2~5월,12,1,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,미나리,원동미나리,원동미나리,"양산원동미나리, 미나리, 원동미나리",Y,원동,2,5,2~5월,12,1,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,미나리,청도미나리,청도미나리,"청도한재미나리, 미나리, 청도미나리",Y,청도,2,5,2~5월,12,1,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,미나리,한재미나리,한재미나리,"청도한재미나리, 미나리, 한재미나리",Y,한재,2,5,2~5월,12,1,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,배추,괴산절임배추,괴산절임배추,"괴산배추, 괴산절임, 절임배추, 괴산절임배추",Y,괴산,8,12,8~12월,6,7,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,배추,봄동,봄동,봄동배추,N,,8,12,8~12월,6,7,중장기,3,기준품목,추가DB,시장·산지 검색어 보강
+채소,배추,평창고랭지배추,평창고랭지배추,"고랭지배추, 평창고랭지, 평창고랭지배추",Y,평창,8,12,8~12월,6,7,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,배추,해남배추,해남배추,"해남월동배추, 해남, 배추, 해남배추",Y,해남,8,12,8~12월,6,7,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,배추,해남절임배추,해남절임배추,"해남절임, 절임배추, 해남절임배추",Y,해남,8,12,8~12월,6,7,중장기,4,기준품목,제철판매확장,제철판매 보강
+채소,새싹어린잎,마이크로그린,마이크로그린,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,무순,무순,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,밀싹,밀싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,베이비채소,베이비채소,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,보리새싹,보리새싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,브로콜리새싹,브로콜리새싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,새싹삼,새싹삼,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,숙주나물,숙주나물,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,알팔파새싹,알팔파새싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,어린잎채소,어린잎채소,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,적무새싹,적무새싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,청경채새싹,청경채새싹,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,새싹어린잎,콩나물,콩나물,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,라디키오,라디키오,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,로마네스코,로마네스코,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,리크,리크,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,브로콜리,브로콜리,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,브뤼셀스프라우트,브뤼셀스프라우트,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,비트잎,비트잎,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,스위스차드,스위스차드,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,아스파라거스,아스파라거스,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,아티초크,아티초크,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,오크라,오크라,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,차요테,차요테,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,콜라드그린,콜라드그린,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,콜리플라워,콜리플라워,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,서양채소,펜넬,펜넬,,N,,4,11,4~11월,2,3,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,양파,무안양파,무안양파,"무안햇양파, 무안, 양파, 무안양파",Y,무안,4,7,4~7월,2,3,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,양파,무안자색양파,무안자색양파,"무안빨간양파, 무안자색, 자색양파, 무안자색양파",Y,무안,4,7,4~7월,2,3,단기,4,기준품목,제철판매확장,제철판매 보강
+채소,양파,창녕양파,창녕양파,"창녕햇양파, 창녕, 양파, 창녕양파",Y,창녕,4,7,4~7월,2,3,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+채소,엽채류,가을배추,가을배추,가을,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,고랭지배추,고랭지배추,고랭지,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,곰보배추,곰보배추,곰보,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,곱슬케일,곱슬케일,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,근대,근대,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,깻잎,깻잎,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,꽃상추,꽃상추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,남해시금치,남해시금치,"시금치, 남해시금치",Y,남해,3,11,3~11월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+채소,엽채류,남해초,남해초,"초, 남해초",Y,남해,3,11,3~11월,1,2,중장기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,다채,다채,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,돌미나리,돌미나리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,들깻잎,들깻잎,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,라디치오,라디치오,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,로메인,로메인,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,루꼴라,루꼴라,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,멀티리프,멀티리프,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,명일엽,명일엽,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,미나리,미나리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,미니양배추,미니양배추,미니양,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,방울양배추,방울양배추,방울양,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,배추,배추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,버터헤드레터스,버터헤드레터스,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,봄배추,봄배추,봄,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,비타민채,비타민채,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,상추,상추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,샐러리,샐러리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,섬초,섬초,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,셀러리,셀러리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,시금치,시금치,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,신선초,신선초,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,쌈배추,쌈배추,쌈,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,쌈케일,쌈케일,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,쑥갓,쑥갓,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,아욱,아욱,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,알배기배추,알배기배추,알배기,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,양배추,양배추,양,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,양상추,양상추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,얼갈이배추,얼갈이배추,얼갈이,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,엔다이브,엔다이브,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,여름배추,여름배추,여름,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,월동배추,월동배추,월동,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적근대,적근대,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적상추,적상추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적양배추,적양배추,적양,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적청경채,적청경채,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적치커리,적치커리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,적케일,적케일,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,청경채,청경채,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,청상추,청상추,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,치커리,치커리,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,카이피라,카이피라,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,케일,케일,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,콜라비잎,콜라비잎,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,프리제,프리제,,N,,3,11,3~11월,1,2,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,엽채류,신안섬초,신안섬초,"섬초, 신안섬초",Y,신안,11,3,11~12월·1~3월,9,10,겨울·월동,4,세부품목,제철판매확장,제철판매 보강
+채소,엽채류,진도봄동,진도봄동,"봄동배추, 봄동, 진도봄동",Y,진도,11,3,11~12월·1~3월,9,10,겨울·월동,4,세부품목,제철판매확장,제철판매 보강
+채소,엽채류,포항초,포항초,"포항시금치, 초, 포항초",Y,포항,11,3,11~12월·1~3월,9,10,겨울·월동,4,세부품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,오이,토종오이,토종오이,"조선오이, 토종",N,,4,9,4~9월,2,3,중장기,3,기준품목,추가DB,시장·산지 검색어 보강
+채소,옥수수,강원도찰옥수수,강원도찰옥수수,"강원찰옥수수, 찰옥수수, 강원도찰옥수수",Y,강원도,6,9,6~9월,4,5,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,골드초당옥수수,골드초당옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,괴산대학찰옥수수,괴산대학찰옥수수,"대학찰옥수수, 괴산대학찰옥수수",Y,괴산,6,9,6~9월,4,5,단기,4,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,대학찰옥수수,대학찰옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,미백찰옥수수,미백찰옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,찰옥수수,찰옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,초당옥수수,초당옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,캔디옥수수,캔디옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,화이트초당옥수수,화이트초당옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,흑점찰옥수수,흑점찰옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,옥수수,흑찰옥수수,흑찰옥수수,,N,,6,9,6~9월,4,5,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,강낭콩,강낭콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,검정콩,검정콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,그린빈,그린빈,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,녹두,녹두,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,동부콩,동부콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,렌틸콩,렌틸콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,메주콩,메주콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,백태,백태,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,병아리콩,병아리콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,서리태,서리태,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,서리태풋콩,서리태풋콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,스냅완두,스냅완두,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,약콩,약콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,완두콩,완두콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,울타리콩,울타리콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,작두콩,작두콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,적두,적두,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,쥐눈이콩,쥐눈이콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,청태,청태,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,콩나물콩,콩나물콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,팥,팥,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,풋콩,풋콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,호랑이콩,호랑이콩,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,콩류,흑태,흑태,,N,,7,11,7~11월,5,6,중장기,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,토마토,대저짭짤이토마토,대저짭짤이토마토,"부산대저토마토, 짭짤이토마토, 대저짭짤이, 대저짭짤이토마토",Y,대저,2,5,2~5월,12,1,단기,4,세부품목,추가DB,시장·산지 검색어 보강
+채소,토마토,부산대저토마토,부산대저토마토,"대저토마토, 부산대저, 부산대저토마토",Y,부산,2,5,2~5월,12,1,단기,4,세부품목,제철판매확장,제철판매 보강
+채소,파마늘류,깐대파,깐대파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,깐마늘,깐마늘,깐,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,난지형마늘,난지형마늘,난지형,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,남도마늘,남도마늘,남도,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,대서마늘,대서마늘,대서,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,대파,대파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,두메부추,두메부추,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,마늘,마늘,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,마늘종,마늘종,"마늘쫑, 마늘종대, 마늘대",N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,부추,부추,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,삼채,삼채,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,샬롯,샬롯,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,신안대파,신안대파,"대파, 신안대파",Y,신안,8,3,8~12월·1~3월,6,7,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+채소,파마늘류,실파,실파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,양파,양파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,영양부추,영양부추,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,의성마늘,의성마늘,"의성, 마늘, 의성마늘",Y,의성,8,3,8~12월·1~3월,6,7,겨울·월동,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,자색양파,자색양파,자색,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,잔파,잔파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,저장양파,저장양파,저장,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,진도대파,진도대파,"대파, 진도대파",Y,진도,8,3,8~12월·1~3월,6,7,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+채소,파마늘류,쪽파,쪽파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,코끼리마늘,코끼리마늘,코끼리,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,통마늘,통마늘,통,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,포천대파,포천대파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,제철판매확장,제철판매 보강
+채소,파마늘류,풋마늘,풋마늘,풋,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,한지형마늘,한지형마늘,한지형,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,햇마늘,햇마늘,햇,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,햇양파,햇양파,햇,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+채소,파마늘류,흙대파,흙대파,,N,,8,3,8~12월·1~3월,6,7,겨울·월동,3,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+수산물,가오리,가오리,가오리,생가오리,N,,1,12,1~12월,11,12,연중,2,대분류추정,추가DB,시장·산지 검색어 보강
+수산물,가자미,가자미,가자미,생가자미,N,,11,4,11~12월·1~4월,9,10,겨울·월동,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,가자미,강도다리,강도다리,,N,,11,4,11~12월·1~4월,9,10,겨울·월동,3,기준품목,제철판매확장,제철판매 보강
+수산물,가자미,통영도다리,통영도다리,"도다리, 통영도다리",Y,통영,11,4,11~12월·1~4월,9,10,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,간재미,간재미,간재미,갱개미,N,,1,12,1~12월,11,12,연중,2,대분류추정,추가DB,시장·산지 검색어 보강
+수산물,갈치,목포갈치,목포갈치,"목포먹갈치, 목포, 갈치, 목포갈치",Y,목포,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,갈치,목포먹갈치,목포먹갈치,"먹갈치, 목포먹, 목포먹갈치",Y,목포,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,갈치,제주갈치,제주갈치,"제주은갈치, 제주, 갈치, 제주갈치",Y,제주,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,갈치,제주은갈치,제주은갈치,"은갈치, 제주은, 제주은갈치",Y,제주,7,11,7~11월,5,6,중장기,4,세부품목,제철판매확장,제철판매 보강
+수산물,게,꽃게,꽃게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,농게,농게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,대게,대게,,N,,4,6,4~6월,2,3,단기,5,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,돌게,돌게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,민꽃게,민꽃게,민,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,박달대게,박달대게,박달,N,,4,6,4~6월,2,3,단기,5,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,붉은대게,붉은대게,붉은,N,,4,6,4~6월,2,3,단기,5,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,숫꽃게,숫꽃게,숫,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,암꽃게,암꽃게,암,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,절단꽃게,절단꽃게,절단,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,참게,참게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,칠게,칠게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,킹크랩,킹크랩,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,털게,털게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,홍게,홍게,,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,게,활꽃게,활꽃게,활,N,,4,6,4~6월,2,3,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,가숭어,가숭어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,감성돔,감성돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,객주리,객주리,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,까치복,까치복,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,농어,농어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,능성어,능성어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,다금바리,다금바리,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,돌돔,돌돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,말쥐치,말쥐치,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,민농어,민농어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,밀복,밀복,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,벵에돔,벵에돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,복어,복어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,붉바리,붉바리,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,숭어,숭어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,옥돔,옥돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,완도광어,완도광어,"넙치, 광어, 완도광어",Y,완도,1,12,1~12월,11,12,연중,4,기준품목,제철판매확장,제철판매 보강
+수산물,고급활어,은복,은복,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,자리돔,자리돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,자바리,자바리,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,점농어,점농어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,제주광어,제주광어,"넙치, 광어, 제주광어",Y,제주,1,12,1~12월,11,12,연중,4,기준품목,제철판매확장,제철판매 보강
+수산물,고급활어,제주옥돔,제주옥돔,"옥돔, 제주옥돔",Y,제주,1,12,1~12월,11,12,연중,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,쥐치,쥐치,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,참돔,참돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,참복,참복,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,참숭어,참숭어,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,고급활어,황돔,황돔,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,과메기,과메기,과메기,"꽁치과메기, 청어과메기",N,,11,2,11~12월·1~2월,9,10,겨울·월동,5,기준품목,추가DB,시장·산지 검색어 보강
+수산물,과메기,구룡포과메기,구룡포과메기,"구룡포꽁치과메기, 꽁치과메기, 청어과메기, 구룡포, 과메기, 구룡포과메기",Y,구룡포,11,2,11~12월·1~2월,9,10,겨울·월동,5,세부품목,추가DB,시장·산지 검색어 보강
+수산물,과메기,포항과메기,포항과메기,"포항구룡포과메기, 꽁치과메기, 청어과메기, 포항, 과메기, 포항과메기",Y,포항,11,2,11~12월·1~2월,9,10,겨울·월동,5,세부품목,추가DB,시장·산지 검색어 보강
+수산물,굴,여수굴,여수굴,"여수생굴, 굴, 여수굴",Y,여수,10,3,10~12월·1~3월,8,9,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,굴,통영굴,통영굴,"통영생굴, 굴, 통영굴",Y,통영,10,3,10~12월·1~3월,8,9,겨울·월동,4,세부품목,추가DB,시장·산지 검색어 보강
+수산물,굴비,굴비,굴비,"참조기굴비, 영광굴비",N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,굴비,법성포굴비,법성포굴비,"영광법성포굴비, 참조기굴비, 영광굴비, 법성포, 굴비, 법성포굴비",Y,법성포,9,2,9~12월·1~2월,7,8,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,굴비,영광굴비,영광굴비,"영광법성포굴비, 참조기굴비, 영광, 굴비, 영광굴비",Y,영광,9,2,9~12월·1~2월,7,8,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,굴비,추자도참굴비,추자도참굴비,"추자도굴비, 참조기굴비, 영광굴비, 추자도참, 참굴비, 추자도참굴비",Y,추자도,9,2,9~12월·1~2월,7,8,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,기타수산,갑각류모듬,갑각류모듬,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,개불,개불,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,군소,군소,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,돌멍게,돌멍게,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,말똥성게,말똥성게,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,멍게,멍게,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,미더덕,미더덕,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,보라성게,보라성게,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,성게,성게,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,성게알,성게알,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,오만둥이,오만둥이,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,완도해삼,완도해삼,"해삼, 완도해삼",Y,완도,1,12,1~12월,11,12,연중,4,기준품목,제철판매확장,제철판매 보강
+수산물,기타수산,우렁쉥이,우렁쉥이,멍게,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,통영해삼,통영해삼,"해삼, 통영해삼",Y,통영,1,12,1~12월,11,12,연중,4,기준품목,제철판매확장,제철판매 보강
+수산물,기타수산,해삼,해삼,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,해파리,해파리,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,기타수산,보령키조개,보령키조개,"키조개, 보령키조개",Y,보령,4,6,4~6월,2,3,단기,4,세부품목,제철판매확장,제철판매 보강
+수산물,김,광천김,광천김,"광천재래김, 김, 광천김",Y,광천,11,3,11~12월·1~3월,9,10,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,김,서천김,서천김,"서천재래김, 김, 서천김",Y,서천,11,3,11~12월·1~3월,9,10,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,김,완도김,완도김,"완도곱창김, 김, 완도김",Y,완도,11,3,11~12월·1~3월,9,10,겨울·월동,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,꼬막,꼬막,꼬막,"참꼬막, 새꼬막",N,,11,3,11~12월·1~3월,9,10,겨울·월동,5,기준품목,추가DB,시장·산지 검색어 보강
+수산물,꼬막,벌교꼬막,벌교꼬막,"벌교참꼬막, 새꼬막, 참꼬막, 벌교, 꼬막, 벌교꼬막",Y,벌교,11,3,11~12월·1~3월,9,10,겨울·월동,5,세부품목,추가DB,시장·산지 검색어 보강
+수산물,꽃게,군산꽃게,군산꽃게,"군산, 꽃게, 군산꽃게",Y,군산,4,6,4~6월,2,3,단기,4,기준품목,제철판매확장,제철판매 보강
+수산물,꽃게,서천꽃게,서천꽃게,"서천, 꽃게, 서천꽃게",Y,서천,4,6,4~6월,2,3,단기,4,기준품목,제철판매확장,제철판매 보강
+수산물,꽃게,연평도꽃게,연평도꽃게,"연평도암꽃게, 연평도, 꽃게, 연평도꽃게",Y,연평도,4,6,4~6월,2,3,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,꽃게,태안꽃게,태안꽃게,"태안활꽃게, 태안, 꽃게, 태안꽃게",Y,태안,4,6,4~6월,2,3,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,다시마,완도다시마,완도다시마,"완도산다시마, 완도, 다시마, 완도다시마",Y,완도,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,대게,영덕대게,영덕대게,"영덕박달대게, 영덕, 대게, 영덕대게",Y,영덕,11,5,11~12월·1~5월,9,10,겨울·월동,5,세부품목,추가DB,시장·산지 검색어 보강
+수산물,대게,울진대게,울진대게,"울진박달대게, 울진, 대게, 울진대게",Y,울진,11,5,11~12월·1~5월,9,10,겨울·월동,5,세부품목,추가DB,시장·산지 검색어 보강
+수산물,멍게,통영멍게,통영멍게,"통영활멍게, 멍게, 통영멍게",Y,통영,3,5,3~5월,1,2,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,멸치,기장멸치,기장멸치,"멸치, 기장멸치",Y,기장,3,7,3~7월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,멸치,남해멸치,남해멸치,"멸치, 남해멸치",Y,남해,3,7,3~7월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,멸치,멸치,멸치,생멸치,N,,3,7,3~7월,1,2,중장기,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,멸치,죽방렴멸치,죽방렴멸치,죽방멸치,N,,5,7,5~7월,3,4,단기,4,세부품목,제철판매확장,제철판매 보강
+수산물,미역,완도미역,완도미역,"완도산미역, 완도, 미역, 완도미역",Y,완도,2,5,2~5월,12,1,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,민물고기,가물치,가물치,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,동자개,동자개,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,메기,메기,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,미꾸라지,미꾸라지,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,민물송어,민물송어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,백련어,백련어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,붕어,붕어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,빙어,빙어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,빠가사리,빠가사리,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,쏘가리,쏘가리,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,은어,은어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,잉어,잉어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,철갑상어,철갑상어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,민물고기,향어,향어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,밴댕이,밴댕이,밴댕이,반지,N,,5,7,5~7월,3,4,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,붉은살등푸른,가다랑어,가다랑어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,가라지,가라지,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,고등어,고등어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,꽁치,꽁치,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,눈다랑어,눈다랑어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,다랑어,다랑어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,망치고등어,망치고등어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,무지개송어,무지개송어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,방어,방어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,부시리,부시리,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,산천어,산천어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,삼치,삼치,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,생연어,생연어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,송어,송어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,연어,연어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,은연어,은연어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,전갱이,전갱이,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,정어리,정어리,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,참고등어,참고등어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,참다랑어,참다랑어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,통영삼치,통영삼치,"삼치, 통영삼치",Y,통영,9,2,9~12월·1~2월,7,8,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,붉은살등푸른,홍연어,홍연어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,황다랑어,황다랑어,,N,,9,2,9~12월·1~2월,7,8,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,대방어,대방어,,N,,11,2,11~12월·1~2월,9,10,겨울·월동,3,세부품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,붉은살등푸른,제주방어,제주방어,"대방어, 방어, 제주방어",Y,제주,11,2,11~12월·1~2월,9,10,겨울·월동,4,세부품목,제철판매확장,제철판매 보강
+수산물,새우,가시발새우,가시발새우,가시발,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,강화도새우젓,강화도새우젓,"새우젓, 도새우젓, 강화도새우젓",Y,강화,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+수산물,새우,건새우,건새우,건,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,꽃새우,꽃새우,꽃,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,단새우,단새우,단,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,닭새우,닭새우,"독도닭새우, 닭",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,새우,대하,대하,,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,도화새우,도화새우,도화,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,독도새우,독도새우,"독도꽃새우, 독도",N,,8,11,8~11월,6,7,단기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,새우,두절새우,두절새우,두절,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,딱새우,딱새우,딱,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,민물새우,민물새우,민물,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,보리새우,보리새우,보리,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,블랙타이거새우,블랙타이거새우,블랙타이거,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,새뱅이,새뱅이,,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,신안왕새우,신안왕새우,"흰다리새우, 신안왕, 왕새우, 신안왕새우",Y,신안,8,11,8~11월,6,7,단기,4,기준품목,제철판매확장,제철판매 보강
+수산물,새우,토하,토하,,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,홍새우,홍새우,홍,N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,새우,흰다리새우,흰다리새우,"흰다리왕새우, 왕새우, 흰다리",N,,8,11,8~11월,6,7,단기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어,속초오징어,속초오징어,"속초, 오징어, 속초오징어",Y,속초,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,오징어,울릉도오징어,울릉도오징어,"울릉도마른오징어, 울릉도, 오징어, 울릉도오징어",Y,울릉도,7,11,7~11월,5,6,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,오징어,주문진오징어,주문진오징어,"주문진, 오징어, 주문진오징어",Y,주문진,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,오징어,포항오징어,포항오징어,"포항, 오징어, 포항오징어",Y,포항,7,11,7~11월,5,6,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,오징어문어,갑오징어,갑오징어,"참오징어, 갑",N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,꼴뚜기,꼴뚜기,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,낙지,낙지,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,대왕문어,대왕문어,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,돌문어,돌문어,참문어,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,무늬오징어,무늬오징어,무늬,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,문어,문어,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,생물오징어,생물오징어,생물,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,세발낙지,세발낙지,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,여수돌문어,여수돌문어,"돌문어, 여수돌문어",Y,여수,5,10,5~10월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,오징어문어,주꾸미,주꾸미,쭈꾸미,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,쭈꾸미,쭈꾸미,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,참문어,참문어,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,총알오징어,총알오징어,총알,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,통영문어,통영문어,"문어, 통영문어",Y,통영,5,10,5~10월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,오징어문어,피문어,피문어,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,한치,한치,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,호래기,호래기,,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,활오징어,활오징어,활,N,,5,10,5~10월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,오징어문어,제주한치,제주한치,"한치, 제주한치",Y,제주,6,9,6~9월,4,5,단기,4,세부품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,임연수,임연수,임연수,"임연수어, 이면수",N,,11,3,11~12월·1~3월,9,10,겨울·월동,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,장어,갯장어,갯장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,고창풍천장어,고창풍천장어,"민물장어, 풍천장어, 고창풍천장어",Y,고창,5,9,5~9월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,장어,꼼장어,꼼장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,먹장어,먹장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,민물장어,민물장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,바다장어,바다장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,뱀장어,뱀장어,민물장어,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,붕장어,붕장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,아나고,아나고,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,영광민물장어,영광민물장어,"민물장어, 영광민물장어",Y,영광,5,9,5~9월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,장어,장어,장어,생장어,N,,5,9,5~9월,3,4,중장기,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,장어,통영바다장어,통영바다장어,"붕장어, 바다장어, 통영바다장어",Y,통영,5,9,5~9월,3,4,중장기,4,기준품목,제철판매확장,제철판매 보강
+수산물,장어,풍천장어,풍천장어,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,장어,하모,하모,,N,,5,9,5~9월,3,4,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,전복,완도전복,완도전복,"완도활전복, 완도, 전복, 완도전복",Y,완도,5,10,5~10월,3,4,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,조개,가리비,가리비,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,개조개,개조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,고둥,고둥,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,골뱅이,골뱅이,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,관자가리비,관자가리비,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,굴,굴,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,남해피조개,남해피조개,"피꼬막, 피조개, 남해피조개",Y,남해,11,5,11~12월·1~5월,9,10,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,조개,논고둥,논고둥,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,다슬기,다슬기,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,담치,담치,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,대합,대합,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,동죽,동죽,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,맛조개,맛조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,바지락,바지락,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,백골뱅이,백골뱅이,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,백합,백합,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,벚굴,벚굴,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,비단가리비,비단가리비,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,뿔소라,뿔소라,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,새꼬막,새꼬막,"참꼬막, 새",N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,새조개,새조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,석화,석화,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,섭,섭,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,소라,소라,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,오분자기,오분자기,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,왕우럭조개,왕우럭조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,재첩,재첩,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,전복,전복,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,참꼬막,참꼬막,"새꼬막, 참",N,,11,5,11~12월·1~5월,9,10,겨울·월동,5,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,참소라,참소라,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,참전복,참전복,참,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,코끼리조개,코끼리조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,키조개,키조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,피조개,피조개,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,해만가리비,해만가리비,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,홍가리비,홍가리비,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,홍합,홍합,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,활전복,활전복,활,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,황골뱅이,황골뱅이,,N,,11,5,11~12월·1~5월,9,10,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,조개,여수새조개,여수새조개,"새조개, 여수새조개",Y,여수,12,3,12~12월·1~3월,10,11,겨울·월동,4,세부품목,제철판매확장,제철판매 보강
+수산물,해조류,감태,감태,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,곰피,곰피,쇠미역,N,,2,6,2~6월,12,1,중장기,3,기준품목,추가DB,시장·산지 검색어 보강
+수산물,해조류,곱창김,곱창김,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,구운감태,구운감태,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,기장미역,기장미역,"기장, 미역, 기장미역",Y,기장,2,6,2~6월,12,1,중장기,4,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,김,김,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,꼬시래기,꼬시래기,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,다시마,다시마,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,돌미역,돌미역,돌,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,매생이,매생이,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,모자반,모자반,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,물김,물김,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,미역,미역,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,미역귀,미역귀,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,생다시마,생다시마,생,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,생미역,생미역,생,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,세모가사리,세모가사리,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,쌈다시마,쌈다시마,쌈,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,우뭇가사리,우뭇가사리,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,청각,청각,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,톳,톳,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,파래,파래,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,파래김,파래김,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,해조류,해초모듬,해초모듬,,N,,2,6,2~6월,12,1,중장기,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,홍어,목포홍어,목포홍어,"목포삭힌홍어, 삭힌홍어, 생홍어, 홍어, 목포홍어",Y,목포,1,12,1~12월,11,12,연중,4,기준품목,추가DB,시장·산지 검색어 보강
+수산물,홍어,홍어,홍어,"삭힌홍어, 생홍어",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+수산물,홍어,흑산도홍어,흑산도홍어,"신안흑산홍어, 삭힌홍어, 생홍어, 홍어, 흑산도홍어",Y,흑산도,1,12,1~12월,11,12,연중,4,세부품목,추가DB,시장·산지 검색어 보강
+수산물,흰살생선,갈치,갈치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,개복치,개복치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,거제대구,거제대구,"대구, 거제대구",Y,거제,10,4,10~12월·1~4월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,흰살생선,광어,광어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,군산박대,군산박대,"박대, 군산박대",Y,군산,10,4,10~12월·1~4월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,흰살생선,기름가자미,기름가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,꼼치,꼼치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,넙치,넙치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,노가리,노가리,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,대구,대구,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,덕자병어,덕자병어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,도다리,도다리,문치가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,도루묵,도루묵,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,돌가자미,돌가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,동태,동태,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,먹갈치,먹갈치,먹,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,명태,명태,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,목포민어,목포민어,"민어, 목포민어",Y,목포,10,4,10~12월·1~4월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,흰살생선,문치가자미,문치가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,물가자미,물가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,물메기,물메기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,민어,민어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,박대,박대,서대,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,백조기,백조기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,병어,병어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,보구치,보구치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,볼락,볼락,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,부세,부세,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,북어,북어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,생대구,생대구,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,생태,생태,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,서대,서대,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,성대,성대,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,수조기,수조기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,신안민어,신안민어,"민어, 신안민어",Y,신안,10,4,10~12월·1~4월,8,9,겨울·월동,4,기준품목,제철판매확장,제철판매 보강
+수산물,흰살생선,쏨뱅이,쏨뱅이,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,아귀,아귀,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,양미리,양미리,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,양태,양태,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,열기,열기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,용가자미,용가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,우럭,우럭,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,은갈치,은갈치,은,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,전어,전어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,조기,조기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,조피볼락,조피볼락,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,참가자미,참가자미,"참가지미, 생가자미",N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB+제철보강,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,참조기,참조기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,청어,청어,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,코다리,코다리,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,풀치,풀치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,학꽁치,학꽁치,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,홍가자미,홍가자미,생가자미,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,황열기,황열기,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+수산물,흰살생선,황태,황태,,N,,10,4,10~12월·1~4월,8,9,겨울·월동,3,기준품목,기본DB,https://www.nifs.go.kr / https://www.kamis.or.kr
+버섯,느타리버섯,백령버섯,백령버섯,"백령느타리, 백령버섯, 백령",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,느타리버섯,산느타리버섯,산느타리버섯,"산느타리, 산느타리버섯, 참타리, 맛타리",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,느타리버섯,아위버섯,아위버섯,"아위느타리, 아위버섯, 아위",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,느타리버섯,황금느타리버섯,황금느타리버섯,"노랑느타리, 황금느타리버섯, 참타리, 맛타리, 황금느타리",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,송이버섯,봉화송이버섯,봉화송이버섯,"봉화자연산송이, 봉화송이버섯, 봉화송이, 송이버섯",Y,봉화,9,10,9~10월,7,8,초단기,5,세부품목,추가DB,시장·산지 검색어 보강
+버섯,송이버섯,양양송이버섯,양양송이버섯,"양양자연산송이, 양양송이버섯, 양양송이, 송이버섯",Y,양양,9,10,9~10월,7,8,초단기,5,세부품목,추가DB,시장·산지 검색어 보강
+버섯,송이버섯,영덕송이버섯,영덕송이버섯,"자연산송이, 영덕송이버섯, 영덕송이, 송이버섯",Y,영덕,9,10,9~10월,7,8,초단기,5,세부품목,제철판매확장,제철판매 보강
+버섯,송이버섯,울진송이버섯,울진송이버섯,"울진자연산송이, 자연산송이, 울진송이버섯, 울진송이, 송이버섯",Y,울진,9,10,9~10월,7,8,초단기,5,세부품목,추가DB,시장·산지 검색어 보강
+버섯,약용버섯,복령버섯,복령버섯,"복령, 복령버섯",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,자연산버섯,갓버섯,갓버섯,갓,N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,곰보버섯,곰보버섯,"곰보버섯, 곰보",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,꾀꼬리버섯,꾀꼬리버섯,"꾀꼬리버섯, 꾀꼬리",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,능이버섯,능이버섯,"능이버섯, 능이",N,,8,10,8~10월,6,7,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,달걀버섯,달걀버섯,"달걀버섯, 달걀",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,먹버섯,먹버섯,먹,N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,밀버섯,밀버섯,밀,N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,밤버섯,밤버섯,밤,N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,봉화능이버섯,봉화능이버섯,"능이, 봉화능이버섯, 봉화능이, 능이버섯",Y,봉화,8,10,8~10월,6,7,단기,5,세부품목,제철판매확장,제철판매 보강
+버섯,자연산버섯,뽕나무버섯,뽕나무버섯,"뽕나무버섯, 뽕나무",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,석이버섯,석이버섯,"석이버섯, 석이",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,송로버섯,송로버섯,"송로버섯, 송로",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,송이버섯,송이버섯,"송이버섯, 송이",N,,8,10,8~10월,6,7,단기,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,싸리버섯,싸리버섯,"싸리버섯, 싸리",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,양양능이버섯,양양능이버섯,"능이, 양양능이버섯, 양양능이, 능이버섯",Y,양양,8,10,8~10월,6,7,단기,5,세부품목,제철판매확장,제철판매 보강
+버섯,자연산버섯,울진능이버섯,울진능이버섯,"능이, 울진능이버섯, 울진능이, 능이버섯",Y,울진,8,10,8~10월,6,7,단기,5,세부품목,제철판매확장,제철판매 보강
+버섯,자연산버섯,자연산송이,자연산송이,,N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,자연산버섯,참싸리버섯,참싸리버섯,"참싸리버섯, 참싸리",N,,8,10,8~10월,6,7,단기,4,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,갈색만가닥버섯,갈색만가닥버섯,"갈색만가닥버섯, 갈색만가닥",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,갈색양송이,갈색양송이,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,갈색팽이버섯,갈색팽이버섯,"갈색팽이버섯, 갈색팽이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,건표고,건표고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,꽃송이버섯,꽃송이버섯,"꽃송이버섯, 꽃송이",N,,1,12,1~12월,11,12,연중,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,노루궁뎅이버섯,노루궁뎅이버섯,"노루궁뎅이버섯, 노루궁뎅이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,느타리버섯,느타리버섯,"느타리버섯, 참타리, 맛타리, 느타리",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,동고,동고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,동충하초,동충하초,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,만가닥버섯,만가닥버섯,"만가닥버섯, 만가닥",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,맛타리버섯,맛타리버섯,"맛타리버섯, 맛타리",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,목이버섯,목이버섯,"목이버섯, 목이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,미니새송이,미니새송이,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,백만가닥버섯,백만가닥버섯,"백만가닥버섯, 백만가닥",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,백색양송이,백색양송이,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,백화고,백화고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,버들송이버섯,버들송이버섯,"버들송이버섯, 버들송이",N,,1,12,1~12월,11,12,연중,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,보령양송이버섯,보령양송이버섯,"양송이, 보령양송이버섯, 보령양송이, 양송이버섯",Y,보령,1,12,1~12월,11,12,연중,5,기준품목,제철판매확장,제철판매 보강
+버섯,재배버섯,부여양송이버섯,부여양송이버섯,"양송이, 부여양송이버섯, 부여양송이, 양송이버섯",Y,부여,1,12,1~12월,11,12,연중,5,기준품목,제철판매확장,제철판매 보강
+버섯,재배버섯,상황버섯,상황버섯,"목질진흙버섯, 상황버섯, 상황",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,새송이버섯,새송이버섯,"새송이버섯, 큰느타리버섯, 새송이",N,,1,12,1~12월,11,12,연중,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,생표고,생표고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,송화버섯,송화버섯,"송화고버섯, 송화버섯, 송화",N,,1,12,1~12월,11,12,연중,2,기준품목,추가DB,시장·산지 검색어 보강
+버섯,재배버섯,양송이버섯,양송이버섯,"양송이버섯, 양송이",N,,1,12,1~12월,11,12,연중,5,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,영지버섯,영지버섯,"불로초버섯, 영지버섯, 영지",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB+제철보강,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,잎새버섯,잎새버섯,"잎새버섯, 잎새",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,차가버섯,차가버섯,"차가버섯, 차가",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,참송이버섯,참송이버섯,"참송이, 참송이버섯",N,,1,12,1~12월,11,12,연중,5,기준품목,추가DB,시장·산지 검색어 보강
+버섯,재배버섯,참타리버섯,참타리버섯,"참타리버섯, 참타리",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,팽이버섯,팽이버섯,"팽이버섯, 팽이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,표고버섯,표고버섯,"표고버섯, 표고",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,표고송이버섯,표고송이버섯,"표고송이, 표고송이버섯",N,,1,12,1~12월,11,12,연중,5,기준품목,추가DB,시장·산지 검색어 보강
+버섯,재배버섯,향고,향고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,화고,화고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,황금맛버섯,황금맛버섯,"황금맛버섯, 황금맛",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,황금팽이버섯,황금팽이버섯,"황금팽이버섯, 황금팽이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,흑화고,흑화고,,N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,재배버섯,흰목이버섯,흰목이버섯,"은이버섯, 백목이버섯, 흰목이버섯, 흰목이",N,,1,12,1~12월,11,12,연중,2,기준품목,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+버섯,표고버섯,괴산표고버섯,괴산표고버섯,"괴산표고버섯, 괴산표고, 표고버섯",Y,괴산,3,11,3~11월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+버섯,표고버섯,부여표고버섯,부여표고버섯,"부여생표고, 부여표고버섯, 부여표고, 표고버섯",Y,부여,3,11,3~11월,1,2,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+버섯,표고버섯,장수표고버섯,장수표고버섯,"장수표고버섯, 장수표고, 표고버섯",Y,장수,3,11,3~11월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+버섯,표고버섯,장흥표고버섯,장흥표고버섯,"장흥생표고, 장흥표고버섯, 장흥표고, 표고버섯",Y,장흥,3,11,3~11월,1,2,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+버섯,표고버섯,청도표고버섯,청도표고버섯,"청도표고버섯, 청도표고, 표고버섯",Y,청도,3,11,3~11월,1,2,중장기,4,기준품목,제철판매확장,제철판매 보강
+버섯,표고버섯,청양표고버섯,청양표고버섯,"청양생표고, 청양표고버섯, 청양표고, 표고버섯",Y,청양,3,11,3~11월,1,2,중장기,4,기준품목,추가DB,시장·산지 검색어 보강
+견과·특용,견과,깐호두,깐호두,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,도토리,도토리,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,땅콩,땅콩,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,마카다미아,마카다미아,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,백잣,백잣,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,볶음땅콩,볶음땅콩,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,브라질너트,브라질너트,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,아몬드,아몬드,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,잣,잣,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,캐슈넛,캐슈넛,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,캐슈애플,캐슈애플,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,피땅콩,피땅콩,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,피스타치오,피스타치오,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,피칸,피칸,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,피호두,피호두,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,헤이즐넛,헤이즐넛,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,호두,호두,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,견과,황잣,황잣,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,가시오가피,가시오가피,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,감초,감초,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,구기자,구기자,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,구절초,구절초,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,꾸지뽕,꾸지뽕,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,당귀,당귀,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,두충,두충,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,마가목,마가목,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,맥문동,맥문동,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,백수오,백수오,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,비수리,비수리,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,산삼배양근,산삼배양근,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,산수유,산수유,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,산양삼,산양삼,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,삼백초,삼백초,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,쇠비름,쇠비름,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,수삼,수삼,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,야관문,야관문,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,어성초,어성초,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,엄나무,엄나무,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,오가피,오가피,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,오미자,오미자,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,와송,와송,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,익모초,익모초,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,인삼,인삼,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,작약,작약,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,천궁,천궁,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,하수오,하수오,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,헛개열매,헛개열매,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,황기,황기,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
+견과·특용,약용특용,황칠,황칠,,N,,8,12,8~12월,6,7,중장기,3,대분류추정,기본DB,https://www.nongsaro.go.kr / https://www.kamis.or.kr
